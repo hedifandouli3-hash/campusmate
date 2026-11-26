@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { DoorOpen } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
-import { Badge, Button, Card, Input, Select } from "@/components/ui/primitives";
+import { Badge, Button, Card, Input, PageHeader, Select, StatusBadge } from "@/components/ui/primitives";
 import type { CampusRoom, RoomReservation } from "@/types/domain";
 
 export default function StudyRoomsPage() {
@@ -56,16 +55,25 @@ export default function StudyRoomsPage() {
     load();
   }
 
+  async function cancelReservation(id: string) {
+    const res = await fetch("/api/community", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ module: "rooms", action: "cancel", id }),
+    });
+    if (res.ok) {
+      notify("Réservation annulée.", "info");
+      load();
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <DoorOpen className="w-6 h-6 text-emerald-600" /> Salles de Classe & Salles d&apos;Étude
-        </h1>
-        <p className="text-sm text-slate-500">
-          Disponibilité basée sur les plannings et réservations confirmées (anti-conflit serveur).
-        </p>
-      </div>
+      <PageHeader
+        badge={<Badge variant="success">Anti-conflit actif</Badge>}
+        title="Salles de Classe & Salles d'Étude"
+        description="Consultez les créneaux disponibles et réservez une salle d'étude sans chevauchement horaire."
+      />
 
       <Card className="space-y-4">
         <h2 className="font-semibold text-sm">Réserver une salle</h2>
@@ -119,7 +127,14 @@ export default function StudyRoomsPage() {
               <p className="font-semibold">{res.roomName} — {res.purpose}</p>
               <p className="text-slate-500">{res.reservationDate} • {res.startTime} - {res.endTime} • Par {res.requesterName}</p>
             </div>
-            <Badge variant={res.status === "confirmed" ? "success" : "default"}>{res.status}</Badge>
+            <div className="flex items-center gap-2">
+              <StatusBadge status={res.status} />
+              {res.status === "confirmed" && (
+                <Button type="button" size="sm" variant="outline" onClick={() => cancelReservation(res.id)}>
+                  Annuler
+                </Button>
+              )}
+            </div>
           </div>
         ))}
       </Card>

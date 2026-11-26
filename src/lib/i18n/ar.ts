@@ -37,10 +37,10 @@ export const ar = {
     faqTitle: "الأسئلة الشائعة",
   },
   sidebar: {
-    main: "الرئيسية",
+    main: "التعلّم",
     services: "الخدمات الجامعية",
     community: "الحياة الطلابية",
-    career: "المسار المهني والتربصات",
+    career: "المسار المهني",
     account: "الحساب",
     overview: "نظرة عامة",
     courses: "دروسي",

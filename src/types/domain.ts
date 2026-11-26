@@ -98,6 +98,7 @@ export interface UserProfile {
   organizationId?: string;
   organizationName?: string;
   isDemoAccount?: boolean;
+  sessionVersion?: number;
 }
 
 export type DocProcessingStatus = "uploaded" | "processing" | "ready" | "failed";
@@ -365,10 +366,30 @@ export interface ChatMessage {
   replyToId?: string;
   content: string;
   attachmentName?: string;
+  attachmentMime?: string;
+  attachmentSizeBytes?: number;
   isPinned: boolean;
   isAnnouncement: boolean;
   isDeleted: boolean;
+  editedAt?: string;
+  encryptionVersion?: "cmv1-aead" | "plaintext";
   createdAt: string;
+}
+
+export interface AIConversation {
+  id: string;
+  userId: string;
+  institutionId: string;
+  title: string;
+  messages: Array<{
+    role: "user" | "assistant";
+    content: string;
+    citations?: AICitation[];
+    suggestedActions?: AISuggestedAction[];
+    isDemoFallback?: boolean;
+    createdAt: string;
+  }>;
+  updatedAt: string;
 }
 
 export interface Announcement {
@@ -564,18 +585,38 @@ export interface InternshipApplication {
 }
 
 export interface CVProfile {
+  id?: string;
   studentId: string;
+  title?: string;
   fullName: string;
   email: string;
+  phone?: string;
+  city?: string;
+  website?: string;
+  linkedin?: string;
+  github?: string;
+  photoDataUrl?: string;
   headline: string;
   summary: string;
-  template: "modern" | "classic" | "minimal";
-  education: Array<{ school: string; degree: string; period: string }>;
+  template: "classic" | "modern" | "ats" | "technical" | "academic" | "minimal";
+  accentColor?: string;
+  fontStyle?: "sans" | "serif" | "mono";
+  language?: Locale;
+  isDefault?: boolean;
+  tailoredOfferId?: string;
+  sectionOrder?: string[];
+  hiddenSections?: string[];
+  education: Array<{ school: string; degree: string; period: string; details?: string }>;
   experience: Array<{ role: string; company: string; period: string; details: string }>;
-  projects: Array<{ name: string; stack: string; description: string }>;
+  internships?: Array<{ role: string; organization: string; period: string; details: string }>;
+  projects: Array<{ name: string; stack: string; description: string; link?: string }>;
   certifications: Array<{ name: string; issuer: string; year: string }>;
+  awards?: Array<{ title: string; issuer: string; year: string }>;
+  volunteer?: Array<{ role: string; organization: string; period: string; details: string }>;
   skills: string[];
+  softSkills?: string[];
   languages: string[];
+  updatedAt?: string;
 }
 
 export interface ContentReport {

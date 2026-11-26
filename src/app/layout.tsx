@@ -1,20 +1,29 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Noto_Sans_Arabic } from "next/font/google";
 import { AppProvider, LocaleSync } from "@/components/providers/app-provider";
 import { LOCALE_COOKIE } from "@/lib/i18n";
 import type { Locale } from "@/types/domain";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const notoArabic = Noto_Sans_Arabic({
+  variable: "--font-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -35,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="fr"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${notoArabic.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppProvider initialLocale="fr">

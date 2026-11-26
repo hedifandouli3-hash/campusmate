@@ -1,7 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { chunkPages, extractDocumentContent, neutralizePromptInjection } from "@/lib/ai/document-processor";
 import { stripHtmlToCleanText } from "@/lib/ai/isetb-sync";
-import { answerWithRag, generateDocumentSummary, generateQuizFromText, generateStudyPlanWithAI, resetKeyCooldownsForTests, runWithKeyPool } from "@/lib/ai/service";
+import {
+  answerWithRag,
+  evaluateCvHeuristically,
+  generateDocumentSummary,
+  generateQuizFromText,
+  generateStudyPlanWithAI,
+  resetKeyCooldownsForTests,
+  runWithKeyPool,
+} from "@/lib/ai/service";
 import {
   authenticateUser,
   getAuthorizedChunksForUser,
@@ -12,6 +20,15 @@ import {
   toPublicProfile,
 } from "@/lib/data/store";
 import { DEMO_IDS, DEMO_PASSWORDS } from "@/lib/demo/seed";
+import {
+  decryptChatPayload,
+  encryptChatPayload,
+  isEncryptedChatPayload,
+  isSafeHttpUrl,
+  sanitizeDownloadFilename,
+  sanitizeRedirectPath,
+  verifyDocumentMagicBytes,
+} from "@/lib/security/crypto";
 import { hashPassword, signSessionToken, verifyPassword, verifySessionToken } from "@/lib/security/session";
 
 describe("CampusMate Core Security, Multi-Tenancy, RAG & Workflows", () => {
@@ -233,5 +250,57 @@ describe("CampusMate Core Security, Multi-Tenancy, RAG & Workflows", () => {
     const { enrollmentReference, ...rest } = amira;
     expect(enrollmentReference).toContain("PRIVATE");
     expect("enrollmentReference" in rest).toBe(false);
+  });
+
+  it("encrypts chat payloads with AES-256-GCM AEAD and detects tampering", () => {
+    const plain = "Bonjour le groupe TI-2 DSI-A : réunion projet à 14h.";
+    const sealed = encryptChatPayload(plain);
+    expect(isEncryptedChatPayload(sealed)).toBe(true);
+    expect(sealed).not.toContain("TI-2 DSI-A");
+    expect(decryptChatPayload(sealed)).toBe(plain);
+
+    const tampered = `${sealed.slice(0, -4)}AAAA`;
+    expect(decryptChatPayload(tampered)).toBe("[Contenu chiffré indisponible]");
+  });
+
+  it("blocks open redirects, unsafe URL schemes, header injection, and active/fake file magic bytes", () => {
+    expect(sanitizeRedirectPath("//evil.com/phish")).toBe("/");
+    expect(sanitizeRedirectPath("https://evil.com")).toBe("/");
+    expect(sanitizeRedirectPath("/student/courses?sem=1")).toBe("/student/courses?sem=1");
+
+    expect(isSafeHttpUrl("https://github.com/student")).toBe(true);
+    expect(isSafeHttpUrl("javascript:alert(1)")).toBe(false);
+    expect(isSafeHttpUrl("data:text/html,<script>1</script>")).toBe(false);
+
+    expect(sanitizeDownloadFilename('doc\r\nSet-Cookie: evil=1".txt')).not.toContain("\r");
+    expect(sanitizeDownloadFilename('doc\r\nSet-Cookie: evil=1".txt')).not.toContain("\n");
+
+    const fakePdf = Buffer.from("<svg onload=alert(1)>", "utf8");
+    expect(verifyDocumentMagicBytes(fakePdf, "notes.pdf", "application/pdf").valid).toBe(false);
+
+    const realPdf = Buffer.from("%PDF-1.7 sample", "ascii");
+    expect(verifyDocumentMagicBytes(realPdf, "notes.pdf", "application/pdf").valid).toBe(true);
+  });
+
+  it("evaluates CV structure transparently with non-proprietary ATS disclaimer", () => {
+    const evalRes = evaluateCvHeuristically(
+      {
+        fullName: "Amira Ben Ali",
+        email: "amira@isetb.rnu.tn",
+        phone: "+21622000000",
+        headline: "Développeuse Full-Stack React",
+        summary: "Étudiante en 2ème année Développement des Systèmes d'Information passionnée par React et PostgreSQL.",
+        education: [{ school: "ISET Béja" }],
+        experience: [],
+        projects: [{ name: "CampusMate" }],
+        skills: ["React", "TypeScript", "PostgreSQL"],
+        languages: ["Français", "Arabe"],
+      },
+      ["React", "PostgreSQL", "Docker"]
+    );
+    expect(evalRes.heuristicScore).toBeGreaterThan(70);
+    expect(evalRes.matchedKeywords).toEqual(["React", "PostgreSQL"]);
+    expect(evalRes.missingKeywords).toEqual(["Docker"]);
+    expect(evalRes.disclaimer).toContain("heuristique");
   });
 });

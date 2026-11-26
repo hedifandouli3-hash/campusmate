@@ -3,6 +3,11 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import {
+  getPersistenceDiagnostics,
+  loadSnapshotFromSupabase,
+  syncSnapshotToSupabase,
+} from "@/lib/data/persistence";
+import {
   buildInitialDemoState,
   type CampusMateStoreState,
   type DemoAccountRecord,
@@ -52,11 +57,27 @@ export function persistToDisk(state: CampusMateStoreState): void {
   } catch {
     // Ignore read-only fs environments (e.g., some serverless runtimes)
   }
+  if (!process.env.VITEST) {
+    void syncSnapshotToSupabase(state);
+  }
+}
+
+export async function ensureStoreHydrated(): Promise<CampusMateStoreState> {
+  if (!globalThis.__campusmateStore && !process.env.VITEST) {
+    const cloud = await loadSnapshotFromSupabase();
+    if (cloud && Array.isArray(cloud.users) && Array.isArray(cloud.institutions)) {
+      globalThis.__campusmateStore = cloud;
+      return cloud;
+    }
+  }
+  return loadFromDisk();
 }
 
 export function getStore(): CampusMateStoreState {
   return loadFromDisk();
 }
+
+export { getPersistenceDiagnostics };
 
 export function resetDemoStore(): CampusMateStoreState {
   const fresh = buildInitialDemoState();
@@ -80,9 +101,16 @@ export function toSafeDirectoryProfile(record: DemoAccountRecord): Omit<UserProf
 export async function getCurrentUser(): Promise<UserProfile | null> {
   const session = await getServerSession();
   if (!session) return null;
-  const store = getStore();
+  const store = await ensureStoreHydrated();
   const user = store.users.find((u) => u.id === session.userId);
   if (!user || user.isSuspended) return null;
+  if (
+    typeof session.sessionVersion === "number" &&
+    typeof user.sessionVersion === "number" &&
+    session.sessionVersion !== user.sessionVersion
+  ) {
+    return null;
+  }
   return toPublicProfile(user);
 }
 

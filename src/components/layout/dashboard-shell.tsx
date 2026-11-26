@@ -41,7 +41,7 @@ import {
   X,
 } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
-import { Badge } from "@/components/ui/primitives";
+import { Badge, Breadcrumbs } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 import type { Locale, UserProfile, UserRole } from "@/types/domain";
 
@@ -199,13 +199,17 @@ export function DashboardShell({
   geminiLive: boolean;
   children: React.ReactNode;
 }) {
-  const { locale, setLocale, t, dark, toggleTheme } = useApp();
+  const { locale, setLocale, t, dark, toggleTheme, isRtl } = useApp();
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [moduleQuery, setModuleQuery] = useState("");
+  const [globalResults, setGlobalResults] = useState<
+    Array<{ id: string; category: string; title: string; subtitle: string; href: string }>
+  >([]);
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     fetch("/api/notifications")
@@ -218,13 +222,57 @@ export function DashboardShell({
       .catch(() => {});
   }, [pathname]);
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      if (e.key === "Escape") {
+        setModuleQuery("");
+        setGlobalResults([]);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const q = moduleQuery.trim();
+    if (q.length < 2) {
+      const clearId = setTimeout(() => setGlobalResults([]), 0);
+      return () => clearTimeout(clearId);
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal })
+        .then((r) => (r.ok ? r.json() : { results: [] }))
+        .then((d) => setGlobalResults(d.results || []))
+        .catch(() => {});
+    }, 200);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [moduleQuery]);
+
   const navGroups = useMemo(() => getNavForRole(user.role, t), [user.role, t]);
   const allItems = useMemo(() => navGroups.flatMap((g) => g.items), [navGroups]);
   const quickMatches = useMemo(() => {
     const q = moduleQuery.trim().toLowerCase();
     if (!q) return [];
-    return allItems.filter((item) => item.label.toLowerCase().includes(q)).slice(0, 6);
+    return allItems.filter((item) => item.label.toLowerCase().includes(q)).slice(0, 5);
   }, [allItems, moduleQuery]);
+
+  const breadcrumbs = useMemo(() => {
+    const matched = allItems.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+    const rootHref = allItems[0]?.href || "/";
+    const list: Array<{ label: string; href?: string }> = [{ label: t.roles[user.role], href: rootHref }];
+    if (matched && matched.href !== rootHref) {
+      list.push({ label: matched.label, href: matched.href });
+    }
+    return list;
+  }, [allItems, pathname, t.roles, user.role]);
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -249,9 +297,13 @@ export function DashboardShell({
         <button
           onClick={() => setCollapsed((c) => !c)}
           className="hidden lg:inline-flex rounded-md p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          aria-label="Toggle sidebar"
+          aria-label="Basculer la barre latérale"
         >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          {collapsed ? (
+            isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
+          ) : (
+            isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />
+          )}
         </button>
         <button
           onClick={() => setMobileOpen(false)}
@@ -317,8 +369,25 @@ export function DashboardShell({
     </div>
   );
 
+  const notificationsHref =
+    user.role === "student"
+      ? "/student/notifications"
+      : user.role === "university_admin"
+        ? "/administration/document-requests"
+        : user.role === "teacher"
+          ? "/teacher/announcements"
+          : user.role === "organization"
+            ? "/organization/applications"
+            : "/admin/audit-logs";
+
   return (
     <div className="min-h-screen flex bg-[var(--bg-page)]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:start-2 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-3 focus:py-2 focus:text-xs focus:font-semibold focus:text-white"
+      >
+        Aller au contenu principal
+      </a>
       {/* Desktop Sidebar */}
       <aside
         className={cn(
@@ -351,27 +420,52 @@ export function DashboardShell({
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Instant Module Quick-Jump Search */}
-            <div className="relative flex-1 max-w-xs">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute start-3 top-2.5" />
+            {/* Unified Global Search (Modules + Authorized Content, Ctrl+K) */}
+            <div className="relative flex-1 max-w-sm">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute start-3 top-2.5 pointer-events-none" />
               <input
+                ref={searchInputRef}
                 type="search"
+                aria-label="Recherche globale CampusMate"
                 value={moduleQuery}
                 onChange={(e) => setModuleQuery(e.target.value)}
-                placeholder="Aller à un module..."
+                placeholder="Rechercher cours, modules, offres... (Ctrl+K)"
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 ps-8 pe-3 py-1.5 text-xs focus:border-blue-500 focus:bg-white dark:focus:bg-slate-950 focus:outline-none"
               />
-              {quickMatches.length > 0 && (
-                <div className="absolute start-0 end-0 top-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-[var(--bg-surface)] shadow-xl p-1.5 z-50 space-y-0.5">
+              {(quickMatches.length > 0 || globalResults.length > 0) && (
+                <div className="absolute start-0 end-0 top-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-[var(--bg-surface)] shadow-xl p-1.5 z-50 space-y-0.5 max-h-80 overflow-y-auto">
                   {quickMatches.map((m) => (
                     <Link
-                      key={m.href}
+                      key={`nav-${m.href}`}
                       href={m.href}
-                      onClick={() => setModuleQuery("")}
-                      className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-600"
+                      onClick={() => {
+                        setModuleQuery("");
+                        setGlobalResults([]);
+                      }}
+                      className="flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs font-medium hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-600"
                     >
-                      {m.icon}
-                      <span>{m.label}</span>
+                      <span className="flex items-center gap-2 min-w-0">
+                        {m.icon}
+                        <span className="truncate">{m.label}</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 uppercase shrink-0">Module</span>
+                    </Link>
+                  ))}
+                  {globalResults.map((res) => (
+                    <Link
+                      key={res.id}
+                      href={res.href}
+                      onClick={() => {
+                        setModuleQuery("");
+                        setGlobalResults([]);
+                      }}
+                      className="block rounded-lg px-2.5 py-2 text-xs hover:bg-blue-50 dark:hover:bg-blue-950/50"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold truncate text-slate-900 dark:text-white">{res.title}</span>
+                        <span className="text-[10px] uppercase text-blue-600 shrink-0">{res.category}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate">{res.subtitle}</p>
                     </Link>
                   ))}
                 </div>
@@ -414,24 +508,25 @@ export function DashboardShell({
               {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {user.role === "student" && (
-              <Link
-                href="/student/notifications"
-                className="relative rounded-lg border border-slate-200 dark:border-slate-700 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                aria-label="Notifications"
-              >
-                <Bell className="w-4 h-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
-                    {unreadCount}
-                  </span>
-                )}
-              </Link>
-            )}
+            <Link
+              href={notificationsHref}
+              className="relative rounded-lg border border-slate-200 dark:border-slate-700 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
+                  {unreadCount}
+                </span>
+              )}
+            </Link>
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">{children}</main>
+        <main id="main-content" className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-4">
+          <Breadcrumbs items={breadcrumbs} />
+          {children}
+        </main>
       </div>
     </div>
   );

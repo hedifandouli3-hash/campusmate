@@ -117,7 +117,16 @@ export async function PATCH(request: Request) {
         if (plan.studentId !== user.id) continue;
         const sess = plan.sessions.find((s) => s.id === body.id);
         if (sess) {
-          sess.isCompleted = Boolean(body.isCompleted);
+          if (typeof body.isCompleted === "boolean") sess.isCompleted = body.isCompleted;
+          if (typeof body.sessionDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.sessionDate)) {
+            sess.sessionDate = body.sessionDate;
+          }
+          if (typeof body.durationMinutes === "number" && body.durationMinutes >= 15 && body.durationMinutes <= 180) {
+            sess.durationMinutes = Math.round(body.durationMinutes);
+          }
+          if (body.priority && ["high", "medium", "low"].includes(body.priority)) {
+            sess.priority = body.priority;
+          }
           persistToDisk(store);
           return NextResponse.json({ ok: true, session: sess });
         }

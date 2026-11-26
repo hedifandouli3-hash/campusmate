@@ -3,18 +3,27 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Bot, CheckCircle2, FileText, HelpCircle, Layers, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Bot, CheckCircle2, Download, FileText, HelpCircle, Layers, Send, Sparkles } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
 import { Badge, Button, Card, Input, Select } from "@/components/ui/primitives";
 import type { AICitation, CourseDocument, Quiz } from "@/types/domain";
 
 type SummaryMode = "short" | "detailed" | "key_concepts" | "exam_prep" | "beginner";
 
+interface QuizFeedbackItem {
+  questionId: string;
+  isCorrect: boolean;
+  correctAnswer: string;
+  explanation: string;
+  topic: string;
+}
+
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { locale, notify } = useApp();
   const [doc, setDoc] = useState<CourseDocument | null>(null);
   const [loading, setLoading] = useState(true);
+  const [markedRead, setMarkedRead] = useState(false);
 
   const [summaryMode, setSummaryMode] = useState<SummaryMode>("short");
   const [summaryText, setSummaryText] = useState("");
@@ -29,18 +38,42 @@ export default function CourseDetailPage() {
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [quizResult, setQuizResult] = useState<{ score: number; maxScore: number; weakTopics: string[] } | null>(null);
+  const [quizResult, setQuizResult] = useState<{
+    score: number;
+    maxScore: number;
+    weakTopics: string[];
+    feedback?: QuizFeedbackItem[];
+  } | null>(null);
+  const [pastAttempts, setPastAttempts] = useState<Array<{ id: string; score: number; maxScore: number; createdAt: string }>>([]);
+  const [flippedCard, setFlippedCard] = useState<number | null>(null);
   const [generatingQuiz, setGeneratingQuiz] = useState(false);
 
   useEffect(() => {
-    fetch("/api/courses")
-      .then((r) => r.json())
-      .then((data) => {
+    Promise.all([
+      fetch("/api/courses").then((r) => r.json()),
+      fetch("/api/ai/quiz").then((r) => (r.ok ? r.json() : { attempts: [] })),
+    ])
+      .then(([data, quizData]) => {
         const found = (data.documents || []).find((d: CourseDocument) => d.id === id);
         setDoc(found || null);
+        setMarkedRead((data.readDocIds || []).includes(id));
+        setPastAttempts((quizData.attempts || []).slice(0, 5));
       })
       .finally(() => setLoading(false));
   }, [id]);
+
+  async function markAsRead() {
+    if (!doc) return;
+    const res = await fetch("/api/courses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "mark_read", documentId: doc.id }),
+    });
+    if (res.ok) {
+      setMarkedRead(true);
+      notify("Progression enregistrée.", "success");
+    }
+  }
 
   async function handleSummarize() {
     if (!doc) return;
@@ -122,7 +155,8 @@ export default function CourseDetailPage() {
     });
     const data = await res.json();
     if (data.attempt) {
-      setQuizResult(data.attempt);
+      setQuizResult({ ...data.attempt, feedback: data.feedback || [] });
+      setPastAttempts((prev) => [data.attempt, ...prev].slice(0, 5));
       notify(`Score : ${data.attempt.score}/${data.attempt.maxScore}`, "success");
     }
   }
@@ -149,7 +183,18 @@ export default function CourseDetailPage() {
             {doc.subjectName} • {doc.uploaderName} • {doc.fileName} ({doc.pageCount} p.)
           </p>
         </div>
-        <Badge variant="success">Indexé RAG</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" size="sm" variant={markedRead ? "outline" : "primary"} onClick={markAsRead} disabled={markedRead}>
+            <CheckCircle2 className="w-3.5 h-3.5" /> {markedRead ? "Document lu" : "Marquer comme lu"}
+          </Button>
+          <a
+            href={`/api/courses?downloadDocId=${encodeURIComponent(doc.id)}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            <Download className="w-3.5 h-3.5" /> Télécharger
+          </a>
+          <Badge variant="success">Indexé RAG</Badge>
+        </div>
       </div>
 
       {/* Document Content Preview */}
@@ -298,7 +343,7 @@ export default function CourseDetailPage() {
             <Button onClick={handleSubmitQuiz}>Valider mes réponses</Button>
 
             {quizResult && (
-              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 text-sm space-y-1">
+              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 text-sm space-y-3">
                 <p className="font-semibold flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   Résultat : {quizResult.score} / {quizResult.maxScore}
@@ -308,8 +353,55 @@ export default function CourseDetailPage() {
                     Sujets recommandés à réviser : {quizResult.weakTopics.join(", ")}
                   </p>
                 )}
+                {quizResult.feedback && quizResult.feedback.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-emerald-200 dark:border-emerald-800">
+                    {quizResult.feedback.map((fb, idx) => (
+                      <div key={fb.questionId} className="text-xs">
+                        <p className={fb.isCorrect ? "text-emerald-700 dark:text-emerald-300 font-medium" : "text-rose-700 dark:text-rose-300 font-medium"}>
+                          Question {idx + 1} ({fb.topic}) : {fb.isCorrect ? "Correct" : `Incorrect — Réponse attendue : ${fb.correctAnswer}`}
+                        </p>
+                        <p className="text-slate-600 dark:text-slate-300">{fb.explanation}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Flashcards extracted cleanly from document segments */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Cartes mémo rapides (cliquez pour retourner)
+          </p>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {doc.extractedText
+              .split(/(?<=[.!?])\s+/)
+              .filter((s) => s.trim().length > 30)
+              .slice(0, 3)
+              .map((sentence, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setFlippedCard(flippedCard === idx ? null : idx)}
+                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900 p-3 text-start text-xs cursor-pointer hover:border-blue-500 transition"
+                >
+                  <p className="font-semibold text-blue-600 mb-1">
+                    {flippedCard === idx ? "Extrait source" : `Carte #${idx + 1} — ${doc.subjectName}`}
+                  </p>
+                  <p className="text-slate-700 dark:text-slate-200 line-clamp-3">
+                    {flippedCard === idx ? sentence : `Quel point clé de « ${doc.title} » concerne : ${sentence.slice(0, 48)}... ?`}
+                  </p>
+                </button>
+              ))}
+          </div>
+        </div>
+
+        {pastAttempts.length > 0 && (
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+            <span className="font-semibold">Historique des tentatives : </span>
+            {pastAttempts.map((a) => `${a.score}/${a.maxScore}`).join(" • ")}
           </div>
         )}
       </Card>

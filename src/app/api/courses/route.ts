@@ -8,6 +8,7 @@ import {
   extractDocumentContent,
   neutralizePromptInjection,
 } from "@/lib/ai/document-processor";
+import { uploadPrivateFileToStorage } from "@/lib/data/persistence";
 import {
   addAuditLog,
   addNotification,
@@ -16,13 +17,40 @@ import {
   persistToDisk,
   requireUser,
 } from "@/lib/data/store";
+import { sanitizeDownloadFilename, verifyDocumentMagicBytes } from "@/lib/security/crypto";
+import { sanitizeText } from "@/lib/utils";
 import type { CourseDocument } from "@/types/domain";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await requireUser();
     const store = getStore();
     const documents = getVisibleCourseDocuments(user);
+    const url = new URL(request.url);
+    const downloadDocId = url.searchParams.get("downloadDocId");
+
+    if (downloadDocId) {
+      const target = documents.find((d) => d.id === downloadDocId);
+      if (!target) {
+        return NextResponse.json({ error: "Document introuvable ou accès refusé." }, { status: 404 });
+      }
+      const safeName = sanitizeDownloadFilename(
+        `${target.title}.txt`,
+        "support-cours.txt"
+      );
+      return new NextResponse(
+        `${target.title}\nMatière : ${target.subjectName}\nEnseignant : ${target.uploaderName}\n\n${target.extractedText}`,
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Content-Disposition": `attachment; filename="${safeName}"`,
+            "X-Content-Type-Options": "nosniff",
+          },
+        }
+      );
+    }
+
     const courses = store.courses.filter(
       (c) => user.role === "super_admin" || c.institutionId === user.institutionId
     );
@@ -33,8 +61,9 @@ export async function GET() {
       (s) => user.role === "super_admin" || s.institutionId === user.institutionId
     );
     const personalDocs = store.personalDocuments.filter((p) => p.ownerId === user.id);
+    const readDocIds = store.courseReadIds?.[user.id] || [];
 
-    return NextResponse.json({ courses, documents, subjects, sections, personalDocs });
+    return NextResponse.json({ courses, documents, subjects, sections, personalDocs, readDocIds });
   } catch (err) {
     const status = err instanceof Error && err.message === "UNAUTHORIZED" ? 401 : 403;
     return NextResponse.json({ error: "Accès non autorisé." }, { status });
@@ -97,23 +126,59 @@ export async function POST(request: Request) {
             { status: 400 }
           );
         }
-        fileName = file.name;
+        fileName = sanitizeDownloadFilename(file.name, "document.pdf");
         mimeType = file.type || "application/octet-stream";
         fileSize = file.size;
         buffer = Buffer.from(await file.arrayBuffer());
+        const magicCheck = verifyDocumentMagicBytes(buffer, fileName, mimeType);
+        if (!magicCheck.valid) {
+          return NextResponse.json(
+            { error: magicCheck.reason || "Contenu de fichier rejeté." },
+            { status: 400 }
+          );
+        }
       }
     } else {
+      const bodySchema = z.object({
+        action: z.enum(["mark_read", "upload"]).optional(),
+        documentId: z.string().optional(),
+        title: z.string().min(3).max(160).optional(),
+        description: z.string().max(800).optional(),
+        subjectId: z.string().optional(),
+        sectionId: z.string().optional(),
+        docKind: z.enum(["lecture", "exercise", "correction", "exam_sample", "syllabus"]).optional(),
+        isPublished: z.boolean().optional(),
+        isTeacherOnly: z.boolean().optional(),
+        inlineText: z.string().max(100_000).optional(),
+        fileName: z.string().max(120).optional(),
+      });
       const body = await request.json();
-      title = String(body.title || "").trim();
-      description = String(body.description || "").trim();
-      subjectId = String(body.subjectId || "").trim();
-      sectionId = String(body.sectionId || user.sectionId || "").trim();
-      docKind = body.docKind || "lecture";
-      isPublished = body.isPublished !== false;
-      isTeacherOnly = Boolean(body.isTeacherOnly);
+      const parsedBody = bodySchema.safeParse(body);
+      if (!parsedBody.success) {
+        return NextResponse.json({ error: "Données du document invalides." }, { status: 400 });
+      }
+      if (parsedBody.data.action === "mark_read" && parsedBody.data.documentId) {
+        const visible = getVisibleCourseDocuments(user);
+        if (!visible.some((d) => d.id === parsedBody.data.documentId)) {
+          return NextResponse.json({ error: "Document introuvable." }, { status: 404 });
+        }
+        if (!store.courseReadIds) store.courseReadIds = {};
+        const set = new Set(store.courseReadIds[user.id] || []);
+        set.add(parsedBody.data.documentId);
+        store.courseReadIds[user.id] = [...set];
+        persistToDisk(store);
+        return NextResponse.json({ ok: true, readDocIds: store.courseReadIds[user.id] });
+      }
+      title = sanitizeText(parsedBody.data.title || "", 160);
+      description = sanitizeText(parsedBody.data.description || "", 800);
+      subjectId = String(parsedBody.data.subjectId || "").trim();
+      sectionId = String(parsedBody.data.sectionId || user.sectionId || "").trim();
+      docKind = parsedBody.data.docKind || "lecture";
+      isPublished = parsedBody.data.isPublished !== false;
+      isTeacherOnly = Boolean(parsedBody.data.isTeacherOnly);
       scope = user.role === "student" ? "personal" : "course";
-      inlineText = String(body.inlineText || "").trim();
-      fileName = String(body.fileName || "support-cours.txt");
+      inlineText = String(parsedBody.data.inlineText || "").trim();
+      fileName = sanitizeDownloadFilename(parsedBody.data.fileName || "support-cours.txt", "support-cours.txt");
     }
 
     if (!title || title.length < 3) {
@@ -182,11 +247,20 @@ export async function POST(request: Request) {
     }
 
     // Teacher / Admin course upload
-    const subject =
-      store.subjects.find((s) => s.id === subjectId && s.institutionId === user.institutionId) ||
-      store.subjects.find((s) => s.institutionId === user.institutionId);
+    const subject = subjectId
+      ? store.subjects.find((s) => s.id === subjectId && s.institutionId === user.institutionId)
+      : store.subjects.find((s) => s.institutionId === user.institutionId);
     if (!subject) {
       return NextResponse.json({ error: "Matière introuvable dans votre institution." }, { status: 400 });
+    }
+
+    if (buffer) {
+      void uploadPrivateFileToStorage({
+        bucket: "course-materials",
+        objectPath: `${user.institutionId}/${subject.id}/${Date.now()}-${fileName}`,
+        buffer,
+        contentType: mimeType,
+      });
     }
 
     const section =

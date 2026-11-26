@@ -23,6 +23,7 @@ export const env = {
   demoModeFlag: process.env.DEMO_MODE ?? process.env.NEXT_PUBLIC_DEMO_MODE ?? "false",
   allowDemoLogin: process.env.ALLOW_DEMO_LOGIN ?? "false",
   sessionSecret: process.env.SESSION_SECRET || "campusmate-local-dev-secret-change-in-prod",
+  chatEncryptionKey: process.env.CHAT_ENCRYPTION_KEY || "",
 };
 
 export function getGeminiApiKeys(): string[] {

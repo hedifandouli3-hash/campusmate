@@ -1,9 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FileUp, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
-import { Badge, Button, Card, Input, Select, Textarea } from "@/components/ui/primitives";
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  FileUploadDropzone,
+  Input,
+  PageHeader,
+  Select,
+  StatusBadge,
+  Textarea,
+} from "@/components/ui/primitives";
 import type { AcademicSection, CourseDocument, Subject } from "@/types/domain";
 
 export default function TeacherDocumentsPage() {
@@ -22,6 +33,7 @@ export default function TeacherDocumentsPage() {
   const [inlineText, setInlineText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch("/api/courses");
@@ -86,14 +98,11 @@ export default function TeacherDocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FileUp className="w-6 h-6 text-blue-600" /> Dépôt de Supports & Pipeline RAG
-        </h1>
-        <p className="text-sm text-slate-500">
-          Importez un fichier PDF, DOCX, PPTX ou TXT. Les documents publiés deviennent instantanément accessibles aux étudiants de la section et indexés par l&apos;assistant IA.
-        </p>
-      </div>
+      <PageHeader
+        badge={<Badge variant="primary">Pipeline RAG Sécurisé</Badge>}
+        title="Dépôt de Supports & Pipeline RAG"
+        description="Glissez-déposez un fichier PDF, DOCX, PPTX ou TXT. Les documents publiés sont accessibles aux étudiants de la section et indexés automatiquement."
+      />
 
       <Card className="space-y-4">
         <h2 className="font-semibold text-sm">Nouveau support de cours</h2>
@@ -126,11 +135,10 @@ export default function TeacherDocumentsPage() {
           />
 
           <div className="md:col-span-2">
-            <label className="block text-xs font-medium mb-1">Fichier (PDF, DOCX, PPTX, TXT — max 20 Mo)</label>
-            <Input
-              type="file"
+            <FileUploadDropzone
               accept=".pdf,.docx,.pptx,.txt,.md"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              selectedFile={file}
+              onSelectFile={setFile}
             />
           </div>
 
@@ -167,10 +175,11 @@ export default function TeacherDocumentsPage() {
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-semibold">{d.title}</p>
-                <Badge variant={d.processingStatus === "ready" ? "success" : "warning"}>{d.processingStatus}</Badge>
-                <Badge variant={d.isPublished && !d.isTeacherOnly ? "primary" : "default"}>
-                  {d.isTeacherOnly ? "Réservé enseignant" : d.isPublished ? "Publié" : "Brouillon"}
-                </Badge>
+                <StatusBadge status={d.processingStatus} />
+                <StatusBadge
+                  status={d.isTeacherOnly ? "draft" : d.isPublished ? "published" : "draft"}
+                  label={d.isTeacherOnly ? "Réservé enseignant" : d.isPublished ? "Publié" : "Brouillon"}
+                />
               </div>
               <p className="text-xs text-slate-500">{d.subjectName} • {d.sectionName} • {d.fileName}</p>
             </div>
@@ -180,13 +189,25 @@ export default function TeacherDocumentsPage() {
               ) : (
                 <Button size="sm" onClick={() => docAction(d.id, "publish")}>Publier</Button>
               )}
-              <Button size="sm" variant="danger" onClick={() => docAction(d.id, "delete")}>
+              <Button size="sm" variant="danger" onClick={() => setDeleteTargetId(d.id)} aria-label="Supprimer">
                 <Trash2 className="w-3.5 h-3.5" />
               </Button>
             </div>
           </Card>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={Boolean(deleteTargetId)}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={() => {
+          if (deleteTargetId) void docAction(deleteTargetId, "delete");
+          setDeleteTargetId(null);
+        }}
+        title="Supprimer ce support de cours ?"
+        message="Le document et ses segments d'indexation IA seront définitivement retirés."
+        confirmLabel="Supprimer"
+      />
     </div>
   );
 }

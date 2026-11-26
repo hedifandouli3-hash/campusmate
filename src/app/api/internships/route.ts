@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { recommendInternshipsForStudent } from "@/lib/ai/service";
 import { addAuditLog, addNotification, getStore, persistToDisk, requireUser } from "@/lib/data/store";
+import { isSafeHttpUrl } from "@/lib/security/crypto";
+import { sanitizeText } from "@/lib/utils";
 
 export async function GET() {
   try {
@@ -175,11 +177,15 @@ export async function POST(request: Request) {
         );
       }
 
+      const { action: _ignoredAction, ...offerFields } = parsed.data;
+      void _ignoredAction;
       const offer = {
         id: `int-${crypto.randomUUID()}`,
         organizationId: org.id,
         organizationName: org.name,
-        ...parsed.data,
+        ...offerFields,
+        title: sanitizeText(offerFields.title, 160),
+        description: sanitizeText(offerFields.description, 3000),
         createdAt: new Date().toISOString(),
       };
       store.internshipOffers.unshift(offer);
@@ -218,7 +224,9 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "Statut invalide." }, { status: 400 });
       }
       app.status = body.status;
-      app.organizationNote = body.organizationNote || app.organizationNote;
+      app.organizationNote = body.organizationNote
+        ? sanitizeText(String(body.organizationNote), 1000)
+        : app.organizationNote;
       app.updatedAt = new Date().toISOString();
 
       addNotification({
@@ -251,6 +259,15 @@ export async function PATCH(request: Request) {
       );
       if (!offer) return NextResponse.json({ error: "Offre introuvable." }, { status: 404 });
       if (["draft", "published", "closed"].includes(body.status)) {
+        if (body.status === "published") {
+          const org = store.organizations.find((o) => o.id === user.organizationId);
+          if (!org || org.verificationStatus !== "verified") {
+            return NextResponse.json(
+              { error: "Votre organisation doit être vérifiée avant de publier une offre." },
+              { status: 403 }
+            );
+          }
+        }
         offer.status = body.status;
         persistToDisk(store);
         return NextResponse.json({ offer });
@@ -260,12 +277,27 @@ export async function PATCH(request: Request) {
     if (body.action === "update_org_profile" && user.role === "organization") {
       const org = store.organizations.find((o) => o.id === user.organizationId);
       if (!org) return NextResponse.json({ error: "Organisation introuvable." }, { status: 404 });
-      if (body.name) org.name = String(body.name);
-      if (body.sector) org.sector = String(body.sector);
-      if (body.city) org.city = String(body.city);
-      if (body.website !== undefined) org.website = String(body.website);
-      if (body.description) org.description = String(body.description);
-      if (body.registrationNumber) org.registrationNumber = String(body.registrationNumber);
+      const orgSchema = z.object({
+        name: z.string().min(2).max(120).optional(),
+        sector: z.string().min(2).max(80).optional(),
+        city: z.string().min(2).max(80).optional(),
+        website: z.string().max(200).optional(),
+        description: z.string().max(1500).optional(),
+        registrationNumber: z.string().max(80).optional(),
+      });
+      const parsedOrg = orgSchema.safeParse(body);
+      if (!parsedOrg.success) {
+        return NextResponse.json({ error: "Données organisation invalides." }, { status: 400 });
+      }
+      if (parsedOrg.data.website !== undefined && !isSafeHttpUrl(parsedOrg.data.website)) {
+        return NextResponse.json({ error: "URL du site web invalide (http/https uniquement)." }, { status: 400 });
+      }
+      if (parsedOrg.data.name) org.name = sanitizeText(parsedOrg.data.name, 120);
+      if (parsedOrg.data.sector) org.sector = sanitizeText(parsedOrg.data.sector, 80);
+      if (parsedOrg.data.city) org.city = sanitizeText(parsedOrg.data.city, 80);
+      if (parsedOrg.data.website !== undefined) org.website = sanitizeText(parsedOrg.data.website, 200);
+      if (parsedOrg.data.description) org.description = sanitizeText(parsedOrg.data.description, 1500);
+      if (parsedOrg.data.registrationNumber) org.registrationNumber = sanitizeText(parsedOrg.data.registrationNumber, 80);
       persistToDisk(store);
       return NextResponse.json({ organization: org });
     }

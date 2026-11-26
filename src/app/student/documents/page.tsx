@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Download, FileText, Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
-import { Badge, Button, Card, Input, Select, Textarea } from "@/components/ui/primitives";
+import { Badge, Button, Card, Input, PageHeader, Select, StatusBadge, Textarea } from "@/components/ui/primitives";
 import type { DocumentRequest } from "@/types/domain";
 
 export default function StudentDocumentsPage() {
@@ -53,14 +53,11 @@ export default function StudentDocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FileText className="w-6 h-6 text-blue-600" /> Administration Digitale — Mes Demandes
-        </h1>
-        <p className="text-sm text-slate-500">
-          Soumettez vos demandes d&apos;attestations et suivez leur avancement en temps réel jusqu&apos;au téléchargement.
-        </p>
-      </div>
+      <PageHeader
+        badge={<Badge variant="primary">Scolarité en ligne</Badge>}
+        title="Administration Digitale — Mes Demandes"
+        description="Soumettez vos demandes d'attestations, suivez leur traitement étape par étape et téléchargez vos documents validés."
+      />
 
       <Card className="space-y-4">
         <h2 className="font-semibold text-sm flex items-center gap-2">
@@ -104,9 +101,7 @@ export default function StudentDocumentsPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={r.status === "available_for_download" ? "success" : r.status === "rejected" ? "danger" : "warning"}>
-                  {r.status}
-                </Badge>
+                <StatusBadge status={r.status} />
                 {r.status === "available_for_download" && (
                   <a
                     href={`/api/documents?download=${r.id}`}

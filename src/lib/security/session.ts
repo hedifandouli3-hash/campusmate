@@ -10,11 +10,23 @@ export interface SessionPayload {
   email: string;
   role: UserRole;
   institutionId: string | null;
+  sessionVersion?: number;
   exp: number;
 }
 
 function getSecret(): string {
-  return env.sessionSecret;
+  const secret = env.sessionSecret;
+  if (
+    process.env.NODE_ENV === "production" &&
+    !process.env.VITEST &&
+    env.demoModeFlag !== "true" &&
+    (secret === "campusmate-local-dev-secret-change-in-prod" ||
+      secret === "replace-with-secure-random-32-char-secret" ||
+      secret.length < 24)
+  ) {
+    throw new Error("SESSION_SECRET_MISCONFIGURED");
+  }
+  return secret;
 }
 
 export function signSessionToken(payload: Omit<SessionPayload, "exp">, ttlSeconds = 60 * 60 * 24 * 7): string {

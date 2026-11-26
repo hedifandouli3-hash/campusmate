@@ -9,6 +9,8 @@ import {
   persistToDisk,
   requireUser,
 } from "@/lib/data/store";
+import { sanitizeDownloadFilename } from "@/lib/security/crypto";
+import { sanitizeText } from "@/lib/utils";
 
 const DOC_TYPES = [
   { code: "ATTEST_INSCR", name: "Attestation d'inscription" },
@@ -31,11 +33,13 @@ export async function GET(request: Request) {
       if (!target || !target.approvedDocumentContent) {
         return NextResponse.json({ error: "Document introuvable ou non approuvé." }, { status: 404 });
       }
+      const safeName = sanitizeDownloadFilename(`${target.referenceNumber}-document-scolarite.txt`);
       return new NextResponse(target.approvedDocumentContent, {
         status: 200,
         headers: {
           "Content-Type": "text/plain; charset=utf-8",
-          "Content-Disposition": `attachment; filename="${target.referenceNumber}-specimen-demo.txt"`,
+          "Content-Disposition": `attachment; filename="${safeName}"`,
+          "X-Content-Type-Options": "nosniff",
         },
       });
     }
@@ -131,8 +135,8 @@ const UpdateRequestSchema = z.object({
     "available_for_download",
   ]),
   adminComment: z.string().max(600).optional(),
-  approvedDocumentTitle: z.string().optional(),
-  approvedDocumentContent: z.string().optional(),
+  approvedDocumentTitle: z.string().max(180).optional(),
+  approvedDocumentContent: z.string().max(10000).optional(),
 });
 
 export async function PATCH(request: Request) {
@@ -156,7 +160,9 @@ export async function PATCH(request: Request) {
 
     const now = new Date().toISOString();
     reqItem.status = parsed.data.status;
-    reqItem.adminComment = parsed.data.adminComment || reqItem.adminComment;
+    reqItem.adminComment = parsed.data.adminComment
+      ? sanitizeText(parsed.data.adminComment, 600)
+      : reqItem.adminComment;
     reqItem.updatedAt = now;
 
     if (
@@ -165,11 +171,11 @@ export async function PATCH(request: Request) {
     ) {
       reqItem.status = "available_for_download";
       reqItem.approvedDocumentTitle =
-        parsed.data.approvedDocumentTitle ||
+        (parsed.data.approvedDocumentTitle && sanitizeText(parsed.data.approvedDocumentTitle, 180)) ||
         `${reqItem.requestTypeName} — ${reqItem.referenceNumber}`;
       reqItem.approvedDocumentContent =
-        parsed.data.approvedDocumentContent ||
-        `==================================================\nINSTITUT SUPERIEUR DES ETUDES TECHNOLOGIQUES DE BEJA\n==================================================\nDocument : ${reqItem.requestTypeName}\nRéférence : ${reqItem.referenceNumber}\nÉtudiant(e) : ${reqItem.studentName}\nAnnée universitaire : ${reqItem.academicYearLabel}\nMotif : ${reqItem.purpose}\nValidé par : ${user.fullName}\nDate : ${now}\n`;
+        (parsed.data.approvedDocumentContent && sanitizeText(parsed.data.approvedDocumentContent, 10000)) ||
+        `==================================================\nINSTITUT SUPERIEUR DES ETUDES TECHNOLOGIQUES DE BEJA\n==================================================\nDocument : ${reqItem.requestTypeName}\nRéférence : ${reqItem.referenceNumber}\nÉtudiant(e) : ${reqItem.studentName}\nAnnée universitaire : ${reqItem.academicYearLabel}\nMotif : ${reqItem.purpose}\nValidé par : ${user.fullName}\nDate : ${now}\n(Document généré sur CampusMate — À vérifier auprès de la scolarité si cachet physique requis)\n`;
     }
 
     reqItem.history.push({
@@ -186,7 +192,7 @@ export async function PATCH(request: Request) {
       title: `Demande ${reqItem.referenceNumber} : ${reqItem.status}`,
       body:
         reqItem.status === "available_for_download"
-          ? `Votre document (${reqItem.requestTypeName} — spécimen démo) est prêt au téléchargement.`
+          ? `Votre document (${reqItem.requestTypeName}) est prêt au téléchargement.`
           : parsed.data.adminComment || "Le statut de votre demande administrative a changé.",
       actionUrl: "/student/documents",
     });

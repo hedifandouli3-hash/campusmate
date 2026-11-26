@@ -67,10 +67,10 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const user = await requireUser();
-    if (!user.institutionId && user.role !== "super_admin") {
-      return NextResponse.json({ error: "Institution requise." }, { status: 400 });
+    if (!user.institutionId) {
+      return NextResponse.json({ error: "Action réservée aux membres d'une institution." }, { status: 403 });
     }
-    const instId = user.institutionId || "11111111-1111-1111-1111-111111111101";
+    const instId = user.institutionId;
     const body = await request.json();
     const store = getStore();
     const now = new Date().toISOString();
@@ -94,6 +94,35 @@ export async function POST(request: Request) {
           item.status = "sold";
           persistToDisk(store);
           return NextResponse.json({ item });
+        }
+        if (body.action === "delete_listing") {
+          const item = store.marketplaceListings.find(
+            (m) =>
+              m.id === body.id &&
+              m.institutionId === instId &&
+              (m.sellerId === user.id || user.role === "university_admin")
+          );
+          if (!item) return NextResponse.json({ error: "Non autorisé." }, { status: 403 });
+          item.status = "removed";
+          persistToDisk(store);
+          return NextResponse.json({ ok: true, id: item.id });
+        }
+        if (body.action === "report") {
+          const item = store.marketplaceListings.find((m) => m.id === body.id && m.institutionId === instId);
+          if (!item) return NextResponse.json({ error: "Annonce introuvable." }, { status: 404 });
+          store.contentReports.unshift({
+            id: `rep-${crypto.randomUUID()}`,
+            institutionId: instId,
+            reporterId: user.id,
+            reporterName: user.fullName,
+            targetType: "marketplace_listing",
+            targetId: item.id,
+            reason: sanitizeText(String(body.reason || "Annonce signalée"), 300),
+            status: "open",
+            createdAt: now,
+          });
+          persistToDisk(store);
+          return NextResponse.json({ ok: true });
         }
         const allowedCategories = new Set([
           "textbooks",
@@ -180,8 +209,13 @@ export async function POST(request: Request) {
         const date = String(body.reservationDate || "");
         const startTime = String(body.startTime || "");
         const endTime = String(body.endTime || "");
-        if (!date || !startTime || !endTime || startTime >= endTime) {
-          return NextResponse.json({ error: "Plage horaire invalide." }, { status: 400 });
+        if (
+          !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+          !/^\d{2}:\d{2}$/.test(startTime) ||
+          !/^\d{2}:\d{2}$/.test(endTime) ||
+          startTime >= endTime
+        ) {
+          return NextResponse.json({ error: "Plage horaire ou date invalide (YYYY-MM-DD / HH:MM)." }, { status: 400 });
         }
 
         // Prevent overlapping reservations server-side
@@ -251,16 +285,27 @@ export async function POST(request: Request) {
           persistToDisk(store);
           return NextResponse.json({ report: fb });
         }
+        const allowedFeedbackCats = new Set([
+          "suggestion",
+          "complaint",
+          "facility",
+          "academic",
+          "administrative",
+          "improvement",
+        ]);
+        const safeCategory = (
+          allowedFeedbackCats.has(String(body.category)) ? body.category : "suggestion"
+        ) as "suggestion" | "complaint" | "facility" | "academic" | "administrative" | "improvement";
         const report = {
           id: `fb-${crypto.randomUUID()}`,
           institutionId: instId,
           authorId: user.id,
           authorName: body.isConfidential ? "Soumission confidentielle" : user.fullName,
-          category: body.category || "suggestion",
+          category: safeCategory,
           title: sanitizeText(String(body.title || ""), 140),
           description: sanitizeText(String(body.description || ""), 1500),
           isConfidential: Boolean(body.isConfidential),
-          aiTheme: body.category === "facility" ? "Infrastructures" : "Vie Académique",
+          aiTheme: safeCategory === "facility" ? "Infrastructures" : "Vie Académique",
           status: "submitted" as const,
           responses: [],
           createdAt: now,
@@ -327,14 +372,14 @@ export async function POST(request: Request) {
           id: `cp-${crypto.randomUUID()}`,
           institutionId: instId,
           driverId: user.id,
-          driverName: `${user.fullName} (Démo)`,
+          driverName: user.fullName,
           departureArea: sanitizeText(String(body.departureArea || ""), 100),
           destinationArea: sanitizeText(String(body.destinationArea || "Campus ISET Béja"), 100),
           departureWindow: sanitizeText(String(body.departureWindow || ""), 80),
           availableSeats: Math.min(4, Math.max(1, Number(body.availableSeats || 2))),
           isInstitutionApproved: true,
           adultsOnly: true,
-          isDemoSample: true,
+          isDemoSample: false,
         };
         store.carpoolOffers.unshift(offer);
         persistToDisk(store);

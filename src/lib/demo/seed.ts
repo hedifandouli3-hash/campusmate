@@ -2,6 +2,7 @@ import { hashPassword } from "@/lib/security/session";
 import type {
   AcademicSection,
   AcademicYear,
+  AIConversation,
   Announcement,
   ApprovedCarpoolOffer,
   AuditLog,
@@ -85,6 +86,9 @@ export interface CampusMateStoreState {
   personalTasks: Array<{ id: string; studentId: string; title: string; dueDate: string; isCompleted: boolean }>;
   chatGroups: ChatGroup[];
   chatMessages: ChatMessage[];
+  chatReadCursors?: Record<string, Record<string, string>>;
+  aiConversations?: AIConversation[];
+  courseReadIds?: Record<string, string[]>;
   announcements: Announcement[];
   notifications: NotificationItem[];
   marketplaceListings: MarketplaceListing[];

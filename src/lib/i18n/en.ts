@@ -37,10 +37,10 @@ export const en = {
     faqTitle: "Frequently asked questions",
   },
   sidebar: {
-    main: "Main",
+    main: "Learning",
     services: "University Services",
     community: "Community",
-    career: "Career & Internships",
+    career: "Career",
     account: "Account",
     overview: "Overview",
     courses: "My Courses",

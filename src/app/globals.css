@@ -8,8 +8,9 @@
   --color-emerald-accent: #10b981;
   --color-surface: #ffffff;
   --color-background: #f8fafc;
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --font-arabic: var(--font-arabic), system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
 }
 
 :root {
@@ -22,7 +23,7 @@
 }
 
 .dark {
-  --bg-page: #020617;
+  --bg-page: #090d16;
   --bg-surface: #0f172a;
   --bg-muted: #1e293b;
   --text-main: #f8fafc;
@@ -34,32 +35,43 @@ html,
 body {
   background-color: var(--bg-page);
   color: var(--text-main);
+  font-family: var(--font-sans);
   scroll-behavior: smooth;
+}
+
+html[lang="ar"],
+html[lang="ar"] body {
+  font-family: var(--font-arabic), var(--font-sans);
+  line-height: 1.65;
 }
 
 .cm-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 0.875rem;
-  box-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.04), 0 1px 2px -1px rgb(15 23 42 / 0.03);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.03);
 }
 
 .cm-card-interactive {
-  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .cm-card-interactive:hover {
   border-color: #93c5fd;
-  box-shadow: 0 8px 20px -6px rgb(37 99 235 / 0.12);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -4px rgb(37 99 235 / 0.1);
 }
 
 .dark .cm-card-interactive:hover {
-  border-color: #1d4ed8;
+  border-color: #2563eb;
 }
 
 .cm-muted {
   background-color: var(--bg-muted);
+}
+
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 /* Subtle custom scrollbars */
@@ -79,6 +91,17 @@ body {
 
 .dark ::-webkit-scrollbar-thumb {
   background: #334155;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @media print {

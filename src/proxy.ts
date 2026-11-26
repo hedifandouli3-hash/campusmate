@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { sanitizeRedirectPath } from "@/lib/security/crypto";
 
 const PORTAL_REDIRECTS: Array<{ prefix: string; loginPath: string }> = [
   { prefix: "/student", loginPath: "/login/student" },
@@ -27,7 +28,9 @@ export function proxy(request: NextRequest) {
         return NextResponse.json({ error: "Invalid Origin header." }, { status: 403 });
       }
     }
-    return NextResponse.next();
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "no-store, private");
+    return res;
   }
 
   const matchedPortal = PORTAL_REDIRECTS.find(
@@ -40,11 +43,13 @@ export function proxy(request: NextRequest) {
   const sessionCookie = request.cookies.get("campusmate_session")?.value;
   if (!sessionCookie) {
     const loginUrl = new URL(matchedPortal.loginPath, request.url);
-    loginUrl.searchParams.set("next", pathname);
+    loginUrl.searchParams.set("next", sanitizeRedirectPath(pathname, matchedPortal.loginPath));
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  res.headers.set("Cache-Control", "no-store, private");
+  return res;
 }
 
 export const config = {

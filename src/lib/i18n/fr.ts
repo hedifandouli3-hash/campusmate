@@ -35,10 +35,10 @@ export const fr = {
     faqTitle: "Questions fréquentes",
   },
   sidebar: {
-    main: "Principal",
+    main: "Apprentissage",
     services: "Services Universitaires",
     community: "Communauté",
-    career: "Carrière & Stages",
+    career: "Carrière",
     account: "Compte",
     overview: "Vue d'ensemble",
     courses: "Mes Cours",

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("CampusMate End-to-End Journeys (Separate Role Portals)", () => {
+test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () => {
   test("Landing page loads, switches to Arabic RTL, and returns to French", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText("CampusMate").first()).toBeVisible();
@@ -12,7 +12,7 @@ test.describe("CampusMate End-to-End Journeys (Separate Role Portals)", () => {
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
   });
 
-  test("Student logs in via /login/student -> AI Assistant -> Courses, and cannot use /login/teacher", async ({ page }) => {
+  test("Student portal isolation, AI Assistant, Courses, Encrypted Chat persistence, and CV Studio", async ({ page }) => {
     // Rejects student credentials on teacher portal
     await page.goto("/login/teacher");
     await page.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
@@ -36,6 +36,20 @@ test.describe("CampusMate End-to-End Journeys (Separate Role Portals)", () => {
     // Student Courses
     await page.goto("/student/courses");
     await expect(page.getByText(/Architectures Web Modernes/i).first()).toBeVisible();
+
+    // Encrypted Chat persistence across page reload
+    await page.goto("/student/chats");
+    const uniqueMsg = `Test E2E chiffré ${Date.now()}`;
+    await page.getByPlaceholder("Écrire un message au groupe...").fill(uniqueMsg);
+    await page.locator('form button[type="submit"]').click();
+    await expect(page.getByText(uniqueMsg)).toBeVisible();
+    await page.reload();
+    await expect(page.getByText(uniqueMsg)).toBeVisible();
+
+    // CV Builder Studio & 5 templates
+    await page.goto("/student/cv-builder");
+    await expect(page.getByRole("heading", { name: /Studio CV/i })).toBeVisible();
+    await page.getByRole("button", { name: /Exporter PDF A4/i }).click();
   });
 
   test("Teacher logs in via /login/teacher and cannot access /administration/dashboard", async ({ page }) => {
@@ -75,12 +89,14 @@ test.describe("CampusMate End-to-End Journeys (Separate Role Portals)", () => {
     await expect(page.getByRole("heading", { name: /Super Administration CampusMate/i })).toBeVisible();
   });
 
-  test("Mobile responsiveness check has no horizontal overflow", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/");
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth
-    );
-    expect(overflow).toBe(false);
+  test("Responsive breakpoints 360px, 768px, and 1440px have zero horizontal overflow", async ({ page }) => {
+    for (const width of [360, 768, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto("/");
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+      );
+      expect(overflow).toBe(false);
+    }
   });
 });

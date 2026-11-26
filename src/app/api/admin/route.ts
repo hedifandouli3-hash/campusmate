@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { chunkPages, neutralizePromptInjection } from "@/lib/ai/document-processor";
 import { fetchOfficialIsetBejaPages } from "@/lib/ai/isetb-sync";
 import {
@@ -16,7 +17,9 @@ export async function GET() {
     const store = getStore();
     const isSuper = user.role === "super_admin";
 
-    const institutions = store.institutions;
+    const institutions = isSuper
+      ? store.institutions
+      : store.institutions.filter((i) => i.id === user.institutionId);
     const departments = store.departments.filter(
       (d) => isSuper || d.institutionId === user.institutionId
     );
@@ -80,7 +83,7 @@ export async function POST(request: Request) {
         fileName: `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.txt`,
         contentText,
         isPublished: true,
-        isDemoSample: true,
+        isDemoSample: false,
         processingStatus: "ready" as const,
         createdAt: new Date().toISOString(),
       };
@@ -148,13 +151,26 @@ export async function POST(request: Request) {
     }
 
     if (body.action === "add_institution" && user.role === "super_admin") {
+      const schema = z.object({
+        code: z.string().trim().min(2).max(20),
+        name: z.string().trim().min(3).max(160),
+        city: z.string().trim().min(2).max(80).default("Tunis"),
+      });
+      const parsedInst = schema.safeParse(body);
+      if (!parsedInst.success) {
+        return NextResponse.json({ error: "Informations institution invalides." }, { status: 400 });
+      }
+      const code = parsedInst.data.code.toUpperCase();
+      if (store.institutions.some((i) => i.code.toUpperCase() === code)) {
+        return NextResponse.json({ error: "Code institution déjà utilisé." }, { status: 409 });
+      }
       const inst = {
         id: `inst-${crypto.randomUUID()}`,
-        code: String(body.code || "").toUpperCase(),
-        name: String(body.name || ""),
-        city: String(body.city || "Tunis"),
+        code,
+        name: parsedInst.data.name,
+        city: parsedInst.data.city,
         country: "Tunisia",
-        isDemo: true,
+        isDemo: false,
         isActive: true,
       };
       store.institutions.push(inst);
@@ -163,12 +179,25 @@ export async function POST(request: Request) {
     }
 
     if (body.action === "add_department") {
+      const schema = z.object({
+        code: z.string().trim().min(2).max(16),
+        name: z.string().trim().min(3).max(140),
+        description: z.string().max(400).optional(),
+      });
+      const parsedDept = schema.safeParse(body);
+      if (!parsedDept.success) {
+        return NextResponse.json({ error: "Données département invalides." }, { status: 400 });
+      }
+      const code = parsedDept.data.code.toUpperCase();
+      if (store.departments.some((d) => d.institutionId === instId && d.code.toUpperCase() === code)) {
+        return NextResponse.json({ error: "Code département déjà existant." }, { status: 409 });
+      }
       const dept = {
         id: `dept-${crypto.randomUUID()}`,
         institutionId: instId,
-        code: String(body.code || "DEPT").toUpperCase(),
-        name: String(body.name || ""),
-        description: String(body.description || ""),
+        code,
+        name: parsedDept.data.name,
+        description: parsedDept.data.description || "",
       };
       store.departments.push(dept);
       persistToDisk(store);
@@ -176,14 +205,25 @@ export async function POST(request: Request) {
     }
 
     if (body.action === "add_subject") {
+      const schema = z.object({
+        departmentId: z.string().min(1).optional(),
+        code: z.string().trim().min(2).max(20),
+        name: z.string().trim().min(3).max(140),
+        semester: z.coerce.number().int().min(1).max(2).default(1),
+        credits: z.coerce.number().min(0.5).max(30).default(3),
+      });
+      const parsedSub = schema.safeParse(body);
+      if (!parsedSub.success) {
+        return NextResponse.json({ error: "Données matière invalides." }, { status: 400 });
+      }
       const subj = {
         id: `sub-${crypto.randomUUID()}`,
         institutionId: instId,
-        departmentId: String(body.departmentId || store.departments[0]?.id || ""),
-        code: String(body.code || "TI-300"),
-        name: String(body.name || ""),
-        semester: (Number(body.semester) === 2 ? 2 : 1) as 1 | 2,
-        credits: Number(body.credits || 3),
+        departmentId: parsedSub.data.departmentId || store.departments.find((d) => d.institutionId === instId)?.id || "",
+        code: parsedSub.data.code.toUpperCase(),
+        name: parsedSub.data.name,
+        semester: (parsedSub.data.semester === 2 ? 2 : 1) as 1 | 2,
+        credits: parsedSub.data.credits,
       };
       store.subjects.push(subj);
       persistToDisk(store);
@@ -229,6 +269,9 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "Action impossible." }, { status: 400 });
       }
       target.isSuspended = Boolean(body.isSuspended);
+      if (target.isSuspended) {
+        target.sessionVersion = (target.sessionVersion ?? 1) + 1;
+      }
       addAuditLog({
         actorId: user.id,
         actorName: user.fullName,
@@ -239,6 +282,27 @@ export async function PATCH(request: Request) {
       });
       persistToDisk(store);
       return NextResponse.json({ ok: true });
+    }
+
+    if (body.action === "revoke_sessions" && (user.role === "super_admin" || user.role === "university_admin")) {
+      const target = store.users.find(
+        (u) =>
+          u.id === body.userId &&
+          (user.role === "super_admin" || u.institutionId === user.institutionId)
+      );
+      if (!target) return NextResponse.json({ error: "Utilisateur introuvable." }, { status: 404 });
+      target.sessionVersion = (target.sessionVersion ?? 1) + 1;
+      addAuditLog({
+        institutionId: target.institutionId,
+        actorId: user.id,
+        actorName: user.fullName,
+        action: "USER_SESSIONS_REVOKED",
+        resourceType: "profile",
+        resourceId: target.id,
+        details: `Sessions révoquées (v${target.sessionVersion})`,
+      });
+      persistToDisk(store);
+      return NextResponse.json({ ok: true, sessionVersion: target.sessionVersion });
     }
 
     if (body.action === "verify_org" && user.role === "super_admin") {

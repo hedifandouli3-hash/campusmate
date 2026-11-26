@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bookmark, Briefcase, MapPin, Sparkles } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
-import { Badge, Card, Input, Select } from "@/components/ui/primitives";
+import { Badge, Card, EmptyState, PageHeader, SearchField, Select } from "@/components/ui/primitives";
 import type { InternshipOffer } from "@/types/domain";
 
 export default function StudentInternshipsPage() {
@@ -14,6 +14,8 @@ export default function StudentInternshipsPage() {
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const [modeFilter, setModeFilter] = useState("");
+  const [savedOnly, setSavedOnly] = useState(false);
 
   async function load() {
     const res = await fetch("/api/internships");
@@ -45,6 +47,8 @@ export default function StudentInternshipsPage() {
 
   const filtered = offers.filter((o) => {
     if (typeFilter && o.internshipType !== typeFilter) return false;
+    if (modeFilter && o.workMode !== modeFilter) return false;
+    if (savedOnly && !savedIds.includes(o.id)) return false;
     if (search && !`${o.title} ${o.organizationName} ${o.requiredSkills.join(" ")}`.toLowerCase().includes(search.toLowerCase())) {
       return false;
     }
@@ -53,17 +57,19 @@ export default function StudentInternshipsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Briefcase className="w-6 h-6 text-blue-600" /> Offres de Stage & Opportunités
-        </h1>
-        <p className="text-sm text-slate-500">
-          Offres publiées par des organisations vérifiées, avec recommandations IA transparentes basées sur vos compétences.
-        </p>
-      </div>
+      <PageHeader
+        badge={<Badge variant="primary">Organisations Vérifiées</Badge>}
+        title="Offres de Stage & Opportunités"
+        description="Offres publiées par des partenaires vérifiés avec recommandations IA explicables."
+      />
 
-      <div className="grid sm:grid-cols-2 gap-3">
-        <Input placeholder="Rechercher par titre, entreprise ou compétence..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      <Card className="grid sm:grid-cols-4 gap-3 p-4 items-center">
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          placeholder="Titre, entreprise ou compétence..."
+          ariaLabel="Rechercher un stage"
+        />
         <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
           <option value="">Tous types de stage</option>
           <option value="initiation">Stage d&apos;initiation</option>
@@ -72,7 +78,25 @@ export default function StudentInternshipsPage() {
           <option value="summer">Stage d&apos;été</option>
           <option value="research">Recherche</option>
         </Select>
-      </div>
+        <Select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)}>
+          <option value="">Tous modes</option>
+          <option value="onsite">Présentiel</option>
+          <option value="hybrid">Hybride</option>
+          <option value="remote">Télétravail</option>
+        </Select>
+        <label className="inline-flex items-center gap-2 text-xs font-medium cursor-pointer">
+          <input type="checkbox" checked={savedOnly} onChange={(e) => setSavedOnly(e.target.checked)} />
+          <span>Sauvegardées uniquement ({savedIds.length})</span>
+        </label>
+      </Card>
+
+      {filtered.length === 0 && (
+        <EmptyState
+          icon={<Briefcase className="w-6 h-6" />}
+          title="Aucune offre correspondante"
+          description="Modifiez vos filtres pour afficher davantage d'offres de stage."
+        />
+      )}
 
       <div className="grid md:grid-cols-2 gap-5">
         {filtered.map((offer) => {

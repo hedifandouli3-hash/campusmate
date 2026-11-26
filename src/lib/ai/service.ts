@@ -688,10 +688,148 @@ export async function generateMotivationLetterWithAI(params: {
 
   const letter =
     params.locale === "en"
-      ? `Dear ${params.organizationName} Hiring Team,\n\nI am writing to apply for the "${params.offerTitle}" internship. As ${params.headline}, I have developed practical skills in ${params.skills.join(", ") || "software development and teamwork"}${matched.length ? `, directly aligned with your needs in ${matched.join(", ")}` : ""}.\n\nI would welcome the opportunity to contribute to your projects and learn alongside your team.\n\nSincerely,\n${params.studentName}\n[Generated in Demo AI Fallback — please review and customize before submitting]`
-      : `Madame, Monsieur (${params.organizationName}),\n\nActuellement ${params.headline}, je souhaite soumettre ma candidature pour le poste « ${params.offerTitle} ».\n\nAu cours de ma formation universitaire, j'ai acquis des compétences concrètes en ${params.skills.join(", ") || "développement et analyse"}${matched.length ? `, qui correspondent directement aux attentes de votre offre (${matched.join(", ")})` : ""}.\n\nMotivé(e) et rigoureux(se), je serais ravi(e) de mettre ces acquis en pratique au sein de votre équipe.\n\nCordialement,\n${params.studentName}\n[Brouillon IA Mode Démo — relu et personnalisable avant envoi]`;
+      ? `Dear ${params.organizationName} Hiring Team,\n\nI am writing to apply for the "${params.offerTitle}" internship. As ${params.headline}, I have developed practical skills in ${params.skills.join(", ") || "software development and teamwork"}${matched.length ? `, directly aligned with your needs in ${matched.join(", ")}` : ""}.\n\nI would welcome the opportunity to contribute to your projects and learn alongside your team.\n\nSincerely,\n${params.studentName}`
+      : `Madame, Monsieur (${params.organizationName}),\n\nActuellement ${params.headline}, je souhaite soumettre ma candidature pour le poste « ${params.offerTitle} ».\n\nAu cours de ma formation universitaire, j'ai acquis des compétences concrètes en ${params.skills.join(", ") || "développement et analyse"}${matched.length ? `, qui correspondent directement aux attentes de votre offre (${matched.join(", ")})` : ""}.\n\nMotivé(e) et rigoureux(se), je serais ravi(e) de mettre ces acquis en pratique au sein de votre équipe.\n\nCordialement,\n${params.studentName}`;
 
   return { letter, isDemoFallback: true };
+}
+
+export async function improveCvContentWithAI(params: {
+  task: "improve_summary" | "improve_experience" | "translate" | "interview_prep" | "tailor_offer";
+  headline: string;
+  summary: string;
+  skills: string[];
+  experienceText?: string;
+  targetOfferTitle?: string;
+  targetOfferSkills?: string[];
+  targetLocale?: Locale;
+}): Promise<{ suggestion: string; isFallback: boolean }> {
+  const targetLang = params.targetLocale || "fr";
+  const promptMap: Record<typeof params.task, string> = {
+    improve_summary: `Polish this student CV headline & summary in "${targetLang}". Use ONLY facts present. Headline: "${params.headline}". Summary: "${params.summary}". Skills: ${params.skills.slice(0, 12).join(", ")}. Return concise 3-line improved summary.`,
+    improve_experience: `Rewrite these bullet points concisely with strong action verbs in "${targetLang}" without inventing metrics or employers:\n${(params.experienceText || "").slice(0, 800)}`,
+    translate: `Translate this CV summary and headline accurately into "${targetLang}" preserving technical terms verbatim. Headline: "${params.headline}". Summary: "${params.summary}".`,
+    interview_prep: `Generate 4 concise internship interview questions and talking tips in "${targetLang}" tailored to this student (${params.headline}, skills: ${params.skills.slice(0, 8).join(", ")})${params.targetOfferTitle ? ` applying to "${params.targetOfferTitle}"` : ""}.`,
+    tailor_offer: `Suggest 3 concise, truthful summary refinements and matching keywords in "${targetLang}" aligning the student's existing skills (${params.skills.join(", ")}) with "${params.targetOfferTitle || "stage"}" requiring (${(params.targetOfferSkills || []).join(", ")}). Never invent missing experience.`,
+  };
+
+  const raw = await generateCompactText({
+    prompt: promptMap[params.task],
+    systemInstruction:
+      "CampusMate Career AI. Never invent degrees, employers, certifications, or skills. Output clean editable text only.",
+    maxOutputTokens: 360,
+    temperature: 0.25,
+  });
+
+  if (raw) {
+    return { suggestion: raw.trim(), isFallback: false };
+  }
+
+  // Transparent deterministic fallback when live AI is unavailable
+  const topSkills = params.skills.slice(0, 5).join(", ");
+  if (params.task === "improve_summary") {
+    return {
+      isFallback: true,
+      suggestion: `${params.headline} doté(e) de compétences pratiques en ${topSkills || "informatique et travail en équipe"}. Rigoureux(se) et orienté(e) résultats, je cherche à contribuer concrètement à vos projets applicatifs tout en consolidant mon parcours universitaire.`,
+    };
+  }
+  if (params.task === "improve_experience") {
+    return {
+      isFallback: true,
+      suggestion: (params.experienceText || "")
+        .split(/\n+/)
+        .filter(Boolean)
+        .map((line) => `• Conception et réalisation de : ${line.replace(/^[-•]\s*/, "")}`)
+        .join("\n") || "• Structuration du projet académique avec méthodologie agile et documentation technique.",
+    };
+  }
+  if (params.task === "interview_prep") {
+    return {
+      isFallback: true,
+      suggestion: `1. Présentez un projet utilisant ${params.skills[0] || "vos compétences clés"} et votre rôle précis.\n2. Quelle difficulté technique avez-vous résolue récemment ?\n3. Pourquoi souhaitez-vous rejoindre ${params.targetOfferTitle || "ce stage"} ?\n4. Comment organisez-vous vos délais et tests sous contrainte ?`,
+    };
+  }
+  if (params.task === "tailor_offer") {
+    const matched = (params.targetOfferSkills || []).filter((r) =>
+      params.skills.some((s) => s.toLowerCase().includes(r.toLowerCase()))
+    );
+    return {
+      isFallback: true,
+      suggestion: `Mots-clés authentiques déjà présents à mettre en avant : ${matched.join(", ") || topSkills}. Adaptez votre accroche vers « ${params.targetOfferTitle || "Stage"} » en détaillant vos projets universitaires liés.`,
+    };
+  }
+  return {
+    isFallback: true,
+    suggestion: `[${targetLang.toUpperCase()}] ${params.headline} — ${params.summary}`,
+  };
+}
+
+export function evaluateCvHeuristically(
+  cv: {
+    fullName: string;
+    email: string;
+    phone?: string;
+    headline: string;
+    summary: string;
+    education: Array<unknown>;
+    experience: Array<unknown>;
+    internships?: Array<unknown>;
+    projects: Array<unknown>;
+    skills: string[];
+    languages: string[];
+    github?: string;
+    linkedin?: string;
+  },
+  offerSkills: string[] = []
+): {
+  heuristicScore: number;
+  disclaimer: string;
+  checks: Array<{ label: string; passed: boolean; tip: string }>;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+} {
+  const checks = [
+    {
+      label: "Coordonnées complètes",
+      passed: Boolean(cv.fullName && cv.email && (cv.phone || cv.linkedin || cv.github)),
+      tip: "Ajoutez un numéro de téléphone ou un profil LinkedIn/GitHub vérifié.",
+    },
+    {
+      label: "Accroche & Résumé ciblé (≥ 40 caractères)",
+      passed: Boolean(cv.headline.length >= 5 && cv.summary.trim().length >= 40),
+      tip: "Rédigez un résumé concis de 2 à 3 phrases mettant en avant votre spécialité.",
+    },
+    {
+      label: "Formation académique renseignée",
+      passed: cv.education.length > 0,
+      tip: "Ajoutez votre diplôme actuel (ex. Licence ISET Béja) et la période.",
+    },
+    {
+      label: "Expériences ou Projets concrets",
+      passed: cv.experience.length + (cv.internships?.length || 0) + cv.projects.length >= 1,
+      tip: "Ajoutez au moins un stage, projet académique PFE/mini-projet ou expérience.",
+    },
+    {
+      label: "Compétences & Langues structurées (≥ 3 compétences)",
+      passed: cv.skills.length >= 3 && cv.languages.length >= 1,
+      tip: "Listez vos compétences techniques réelles et les langues parlées.",
+    },
+  ];
+  const passedCount = checks.filter((c) => c.passed).length;
+  const matchedKeywords = offerSkills.filter((req) =>
+    cv.skills.some((s) => s.toLowerCase().includes(req.toLowerCase()) || req.toLowerCase().includes(s.toLowerCase()))
+  );
+  const missingKeywords = offerSkills.filter((req) => !matchedKeywords.includes(req));
+  const offerBonus = offerSkills.length ? Math.round((matchedKeywords.length / offerSkills.length) * 20) : 20;
+  const heuristicScore = Math.min(100, passedCount * 16 + offerBonus);
+
+  return {
+    heuristicScore,
+    disclaimer: "Score heuristique interne CampusMate (vérification de structure et lisibilité — ne reproduit pas un ATS propriétaire).",
+    checks,
+    matchedKeywords,
+    missingKeywords,
+  };
 }
 
 export function recommendInternshipsForStudent(params: {

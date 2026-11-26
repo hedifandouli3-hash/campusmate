@@ -59,6 +59,7 @@ export async function POST(request: Request) {
       email: demoUser.email,
       role: demoUser.role,
       institutionId: demoUser.institutionId,
+      sessionVersion: demoUser.sessionVersion ?? 1,
     });
     return NextResponse.json({
       user: { id: demoUser.id, fullName: demoUser.fullName, role: demoUser.role, email: demoUser.email },
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
     email: user.email,
     role: user.role,
     institutionId: user.institutionId,
+    sessionVersion: user.sessionVersion ?? 1,
   });
 
   addAuditLog({
