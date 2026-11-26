@@ -22,7 +22,7 @@ describe("CampusMate Core Security, Multi-Tenancy, RAG & Workflows", () => {
   it("signs and verifies session tokens and rejects tampered tokens", () => {
     const token = signSessionToken({
       userId: DEMO_IDS.studentAmira,
-      email: "amira.benali@isetb.demo.tn",
+      email: "amira.benali@isetb.rnu.tn",
       role: "student",
       institutionId: DEMO_IDS.instBeja,
     });
@@ -40,12 +40,26 @@ describe("CampusMate Core Security, Multi-Tenancy, RAG & Workflows", () => {
     expect(verifyPassword("WrongPass!", hash)).toBe(false);
   });
 
-  it("authenticates demo accounts and never allows self-assignment of admin roles", () => {
-    const student = authenticateUser("amira.benali@isetb.demo.tn", DEMO_PASSWORDS["amira.benali@isetb.demo.tn"]);
+  it("authenticates all 5 role accounts and rejects wrong passwords or self-escalation", () => {
+    const student = authenticateUser("amira.benali@isetb.rnu.tn", DEMO_PASSWORDS["amira.benali@isetb.rnu.tn"]);
     expect(student?.role).toBe("student");
 
+    const teacher = authenticateUser("karim.trabelsi@isetb.rnu.tn", DEMO_PASSWORDS["karim.trabelsi@isetb.rnu.tn"]);
+    expect(teacher?.role).toBe("teacher");
+
+    const admin = authenticateUser("administration@isetb.rnu.tn", DEMO_PASSWORDS["administration@isetb.rnu.tn"]);
+    expect(admin?.role).toBe("university_admin");
+
+    const org = authenticateUser("rh@techbeja.tn", DEMO_PASSWORDS["rh@techbeja.tn"]);
+    expect(org?.role).toBe("organization");
+
+    const superAdmin = authenticateUser("superadmin@campusmate.tn", DEMO_PASSWORDS["superadmin@campusmate.tn"]);
+    expect(superAdmin?.role).toBe("super_admin");
+
+    expect(authenticateUser("amira.benali@isetb.rnu.tn", "wrong-password")).toBeNull();
+
     const reg = registerStudentOrOrg({
-      email: "new.student@isetb.demo.tn",
+      email: "new.student@isetb.rnu.tn",
       password: "Password2026!",
       fullName: "Nouvel Étudiant",
       role: "student",

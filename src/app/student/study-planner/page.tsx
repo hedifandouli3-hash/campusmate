@@ -151,8 +151,8 @@ export default function StudyPlannerPage() {
         <Card key={plan.id} className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">{plan.title}</h3>
-            <Badge variant={plan.isDemoFallback ? "warning" : "success"}>
-              {plan.isDemoFallback ? "Plan Démo" : "Gemini AI"}
+            <Badge variant={plan.isDemoFallback ? "primary" : "success"}>
+              {plan.isDemoFallback ? "Plan Généré" : "Gemini AI"}
             </Badge>
           </div>
           <div className="grid md:grid-cols-2 gap-2.5">

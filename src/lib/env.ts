@@ -17,11 +17,11 @@ export const env = {
   geminiApiKey: process.env.GEMINI_API_KEY || "",
   geminiApiKeys: process.env.GEMINI_API_KEYS || "",
   aiProvider: process.env.AI_PROVIDER || "gemini",
-  aiGenerationModel: process.env.AI_GENERATION_MODEL || "gemini-3.8-flash",
-  aiFallbackModel: process.env.AI_FALLBACK_MODEL || "gemini-3.5-flash-lite",
+  aiGenerationModel: process.env.AI_GENERATION_MODEL || "gemini-3.5-flash-lite",
+  aiFallbackModel: process.env.AI_FALLBACK_MODEL || "gemini-3.8-flash",
   aiEmbeddingModel: process.env.AI_EMBEDDING_MODEL || "gemini-embedding-001",
-  demoModeFlag: process.env.DEMO_MODE ?? process.env.NEXT_PUBLIC_DEMO_MODE ?? "true",
-  allowDemoLogin: process.env.ALLOW_DEMO_LOGIN ?? "true",
+  demoModeFlag: process.env.DEMO_MODE ?? process.env.NEXT_PUBLIC_DEMO_MODE ?? "false",
+  allowDemoLogin: process.env.ALLOW_DEMO_LOGIN ?? "false",
   sessionSecret: process.env.SESSION_SECRET || "campusmate-local-dev-secret-change-in-prod",
 };
 
@@ -49,15 +49,9 @@ export function isGeminiConfigured(): boolean {
 }
 
 export function isDemoMode(): boolean {
-  if (env.demoModeFlag === "false" && isSupabaseConfigured()) {
-    return false;
-  }
-  return env.demoModeFlag !== "false" || !isSupabaseConfigured();
+  return env.demoModeFlag === "true";
 }
 
 export function isDemoLoginAllowed(): boolean {
-  if (process.env.NODE_ENV === "production" && env.allowDemoLogin !== "true") {
-    return false;
-  }
-  return env.allowDemoLogin !== "false";
+  return env.allowDemoLogin === "true";
 }

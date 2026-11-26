@@ -47,7 +47,7 @@ export default function AdminDocumentRequestsPage() {
           <FileText className="w-6 h-6 text-blue-600" /> Traitement des Demandes Administratives
         </h1>
         <p className="text-sm text-slate-500">
-          L&apos;approbation en mode démonstration génère un spécimen clairement marqué « Non Officiel » pour l&apos;étudiant.
+          Examinez les demandes étudiantes, ajoutez vos commentaires et mettez à disposition les documents validés.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export default function AdminDocumentRequestsPage() {
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "under_review")}>En cours d&apos;examen</Button>
               <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "additional_info_required")}>Complément requis</Button>
-              <Button size="sm" onClick={() => updateStatus(r.id, "available_for_download")}>Approuver & Déposer Spécimen Démo</Button>
+              <Button size="sm" onClick={() => updateStatus(r.id, "available_for_download")}>Approuver &amp; Mettre à disposition</Button>
               <Button size="sm" variant="danger" onClick={() => updateStatus(r.id, "rejected")}>Rejeter</Button>
             </div>
           </Card>

@@ -9,10 +9,10 @@ export default function TermsPage() {
         <h1 className="text-3xl font-bold">Conditions d&apos;utilisation</h1>
         <Card className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
           <p>
-            L&apos;environnement actuel est configuré pour le hackathon IA Student Discovery Camp avec un jeu de données fictif pour l&apos;ISET Béja.
+            CampusMate met à disposition des étudiants, enseignants, services administratifs et partenaires professionnels un environnement unifié pour les cours, démarches et opportunités de stage.
           </p>
           <p>
-            Les spécimens administratifs téléchargés en mode démonstration portent la mention « Spécimen Non Officiel » et ne remplacent aucun document officiel délivré par un établissement d&apos;enseignement supérieur.
+            Les utilisateurs s&apos;engagent à utiliser le portail correspondant à leur statut et à respecter la confidentialité des données académiques et des documents mis à disposition.
           </p>
         </Card>
       </main>

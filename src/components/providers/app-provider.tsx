@@ -14,6 +14,7 @@ interface ToastItem {
 interface AppContextValue {
   locale: Locale;
   setLocale: (loc: Locale) => Promise<void>;
+  hydrateLocale: (loc: Locale) => void;
   t: TranslationDict;
   isRtl: boolean;
   dark: boolean;
@@ -57,6 +58,10 @@ export function AppProvider({
     }).catch(() => {});
   }, []);
 
+  const hydrateLocale = useCallback((loc: Locale) => {
+    setLocaleState((prev) => (prev === loc ? prev : loc));
+  }, []);
+
   const toggleTheme = useCallback(() => {
     setDark((prev) => {
       const next = !prev;
@@ -78,7 +83,7 @@ export function AppProvider({
   const isRtl = isRtlLocale(locale);
 
   return (
-    <AppContext.Provider value={{ locale, setLocale, t, isRtl, dark, toggleTheme, notify }}>
+    <AppContext.Provider value={{ locale, setLocale, hydrateLocale, t, isRtl, dark, toggleTheme, notify }}>
       {children}
       {/* Accessible Toast Stack */}
       <div
@@ -102,6 +107,15 @@ export function AppProvider({
       </div>
     </AppContext.Provider>
   );
+}
+
+export function LocaleSync({ locale }: { locale: Locale }) {
+  const { hydrateLocale } = useApp();
+  useEffect(() => {
+    const id = setTimeout(() => hydrateLocale(locale), 0);
+    return () => clearTimeout(id);
+  }, [locale, hydrateLocale]);
+  return null;
 }
 
 export function useApp() {

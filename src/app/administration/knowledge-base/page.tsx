@@ -102,8 +102,8 @@ export default function AdminKnowledgeBasePage() {
               <h2 className="font-semibold">{k.title}</h2>
               <div className="flex gap-2">
                 <Badge variant="indigo">{k.category}</Badge>
-                <Badge variant={k.isDemoSample ? "warning" : "success"}>
-                  {k.isDemoSample ? "Spécimen Démo" : "Officiel isetb.rnu.tn"}
+                <Badge variant={k.isDemoSample ? "default" : "success"}>
+                  {k.isDemoSample ? "Document Interne" : "Officiel isetb.rnu.tn"}
                 </Badge>
               </div>
             </div>

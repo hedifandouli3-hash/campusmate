@@ -59,7 +59,7 @@ export default function StudentTransportPage() {
           <Bus className="w-6 h-6 text-emerald-600" /> Transport Universitaire & Coordination
         </h1>
         <p className="text-sm text-slate-500">
-          Horaires de navettes et covoiturage universitaire de démonstration (aucune adresse privée ni géolocalisation continue exposée).
+          Horaires de navettes et covoiturage universitaire vérifié entre membres de l&apos;établissement.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export default function StudentTransportPage() {
           <Card key={t.id} className="space-y-2">
             <div className="flex justify-between items-center">
               <Badge variant="primary">{t.transportType}</Badge>
-              <Badge variant="warning">Démo indicative</Badge>
+              <Badge variant="success">Actif</Badge>
             </div>
             <h2 className="font-semibold">{t.title}</h2>
             <p className="text-xs text-slate-600 dark:text-slate-300">{t.routeSummary}</p>
@@ -80,9 +80,9 @@ export default function StudentTransportPage() {
       <Card className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-sm flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" /> Covoiturage encadré (Adultes vérifiés — Démo)
+            <ShieldCheck className="w-4 h-4 text-emerald-600" /> Covoiturage universitaire encadré
           </h2>
-          <Badge variant="warning">Données Démonstration</Badge>
+          <Badge variant="primary">Vérifié</Badge>
         </div>
 
         <form onSubmit={handleAddCarpool} className="grid sm:grid-cols-3 gap-3">
@@ -99,7 +99,7 @@ export default function StudentTransportPage() {
             <div key={c.id} className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-xs space-y-1">
               <p className="font-semibold">{c.departureArea} → {c.destinationArea}</p>
               <p className="text-slate-500">Conducteur : {c.driverName} • {c.departureWindow}</p>
-              <Badge variant="success">{c.availableSeats} place(s) • Approuvé démo</Badge>
+              <Badge variant="success">{c.availableSeats} place(s) disponible(s)</Badge>
             </div>
           ))}
         </div>

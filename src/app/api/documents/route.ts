@@ -166,10 +166,10 @@ export async function PATCH(request: Request) {
       reqItem.status = "available_for_download";
       reqItem.approvedDocumentTitle =
         parsed.data.approvedDocumentTitle ||
-        `${reqItem.requestTypeName} — Spécimen Démo Non Officiel`;
+        `${reqItem.requestTypeName} — ${reqItem.referenceNumber}`;
       reqItem.approvedDocumentContent =
         parsed.data.approvedDocumentContent ||
-        `==================================================\nSPECIMEN DE DEMONSTRATION NON OFFICIEL — CAMPUSMATE\n==================================================\nDocument : ${reqItem.requestTypeName}\nRéférence : ${reqItem.referenceNumber}\nÉtudiant(e) : ${reqItem.studentName}\nAnnée universitaire : ${reqItem.academicYearLabel}\nMotif : ${reqItem.purpose}\nApprouvé par : ${user.fullName} (Mode Démonstration)\nDate : ${now}\n\nAVERTISSEMENT : Ce fichier est un spécimen de démonstration.\nIl ne constitue pas un acte administratif officiel.\n`;
+        `==================================================\nINSTITUT SUPERIEUR DES ETUDES TECHNOLOGIQUES DE BEJA\n==================================================\nDocument : ${reqItem.requestTypeName}\nRéférence : ${reqItem.referenceNumber}\nÉtudiant(e) : ${reqItem.studentName}\nAnnée universitaire : ${reqItem.academicYearLabel}\nMotif : ${reqItem.purpose}\nValidé par : ${user.fullName}\nDate : ${now}\n`;
     }
 
     reqItem.history.push({

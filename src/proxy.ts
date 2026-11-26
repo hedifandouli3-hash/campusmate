@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PROTECTED_PREFIXES = [
-  "/student",
-  "/teacher",
-  "/administration",
-  "/organization",
-  "/admin",
+const PORTAL_REDIRECTS: Array<{ prefix: string; loginPath: string }> = [
+  { prefix: "/student", loginPath: "/login/student" },
+  { prefix: "/teacher", loginPath: "/login/teacher" },
+  { prefix: "/administration", loginPath: "/login/administration" },
+  { prefix: "/organization", loginPath: "/login/organization" },
+  { prefix: "/admin", loginPath: "/login/admin" },
 ];
 
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -14,7 +14,6 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Cross-site request forgery protection for state-changing API calls
   if (pathname.startsWith("/api/") && MUTATING_METHODS.has(request.method)) {
     const origin = request.headers.get("origin");
     const host = request.headers.get("host");
@@ -31,16 +30,16 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isProtected = PROTECTED_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  const matchedPortal = PORTAL_REDIRECTS.find(
+    (p) => pathname === p.prefix || pathname.startsWith(`${p.prefix}/`)
   );
-  if (!isProtected) {
+  if (!matchedPortal) {
     return NextResponse.next();
   }
 
   const sessionCookie = request.cookies.get("campusmate_session")?.value;
   if (!sessionCookie) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL(matchedPortal.loginPath, request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }

@@ -171,8 +171,8 @@ export default function CourseDetailPage() {
               <Sparkles className="w-4 h-4 text-indigo-600" /> Résumé & Concepts IA
             </h2>
             {summaryText && (
-              <Badge variant={summaryDemo ? "warning" : "success"}>
-                {summaryDemo ? "IA Fallback Démo" : "Gemini Live"}
+              <Badge variant={summaryDemo ? "default" : "success"}>
+                {summaryDemo ? "Synthèse Locale" : "Gemini AI"}
               </Badge>
             )}
           </div>

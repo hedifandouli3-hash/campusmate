@@ -58,7 +58,7 @@ export default function StudentDocumentsPage() {
           <FileText className="w-6 h-6 text-blue-600" /> Administration Digitale — Mes Demandes
         </h1>
         <p className="text-sm text-slate-500">
-          Soumettez vos demandes d&apos;attestations et suivez l&apos;avancement. Les spécimens approuvés en mode démo sont clairement identifiés comme non officiels.
+          Soumettez vos demandes d&apos;attestations et suivez leur avancement en temps réel jusqu&apos;au téléchargement.
         </p>
       </div>
 
@@ -112,7 +112,7 @@ export default function StudentDocumentsPage() {
                     href={`/api/documents?download=${r.id}`}
                     className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
                   >
-                    <Download className="w-3.5 h-3.5" /> Télécharger Spécimen Démo
+                    <Download className="w-3.5 h-3.5" /> Télécharger le document
                   </a>
                 )}
               </div>

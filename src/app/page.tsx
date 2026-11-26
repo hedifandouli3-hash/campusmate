@@ -103,8 +103,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-20 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="primary">IA Student Discovery Camp</Badge>
-              <Badge variant="warning">Démo ISET Béja • Multi-Tenant</Badge>
+              <Badge variant="primary">ISET Béja • Écosystème Universitaire IA</Badge>
+              <Badge variant="success">Multi-Tenant • 14 Modules</Badge>
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
               {t.landing.heroTitle}
@@ -279,8 +279,8 @@ export default function LandingPage() {
           <div className="grid gap-4">
             {[
               {
-                q: "Les données d'ISET Béja affichées sont-elles des dossiers officiels réels ?",
-                a: "Les profils étudiants/enseignants et demandes d'attestation utilisent un jeu de données fictif de démonstration, tandis que la Base de Connaissances RAG intègre aussi les pages publiques officielles de isetb.rnu.tn.",
+                q: "Comment accéder à mon espace selon mon statut ?",
+                a: "Chaque profil dispose d'un portail dédié (/login/student, /login/teacher, /login/administration, /login/organization, /login/admin) avec vérification de rôle côté serveur.",
               },
               {
                 q: "Comment fonctionne l'IA sans inventer de fausses informations ?",
@@ -300,15 +300,15 @@ export default function LandingPage() {
 
           <div className="rounded-2xl bg-slate-900 text-white p-8 text-center space-y-4">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-600/20 px-3 py-1 text-xs font-medium text-blue-300">
-              <Sparkles className="w-3.5 h-3.5" /> Prêt pour la démonstration
+              <Sparkles className="w-3.5 h-3.5" /> Écosystème Unifié
             </div>
-            <h3 className="text-2xl font-bold">Prêt à explorer CampusMate ?</h3>
+            <h3 className="text-2xl font-bold">Prêt à accéder à votre espace CampusMate ?</h3>
             <p className="text-sm text-slate-300 max-w-xl mx-auto">
-              Testez les 5 rôles en un clic depuis la page de connexion démonstration et changez de rôle instantanément depuis la barre supérieure.
+              Connectez-vous à votre portail dédié (Étudiant, Enseignant, Administration ou Entreprise Partenaire).
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link href="/login" className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition">
-                Accéder à la démo
+                Choisir un portail
               </Link>
               <Link href="/register" className="rounded-xl border border-slate-700 px-5 py-2.5 text-sm font-semibold hover:bg-slate-800 transition">
                 Créer un compte

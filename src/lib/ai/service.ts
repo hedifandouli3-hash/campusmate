@@ -94,7 +94,15 @@ export function isQuotaOrKeyFailure(err: unknown): "quota" | "auth" | "transient
   if (msg.includes("401") || msg.includes("403") || msg.includes("api_key_invalid") || msg.includes("permission_denied")) {
     return "auth";
   }
-  if (msg.includes("503") || msg.includes("unavailable") || msg.includes("high demand")) {
+  if (
+    msg.includes("503") ||
+    msg.includes("504") ||
+    msg.includes("unavailable") ||
+    msg.includes("high demand") ||
+    msg.includes("timeout") ||
+    msg.includes("deadline") ||
+    msg.includes("aborted")
+  ) {
     return "transient";
   }
   return "other";
@@ -153,7 +161,7 @@ async function generateCompactText(params: {
   if (keys.length === 0) return null;
 
   const callModel = async (apiKey: string, model: string) => {
-    const client = new GoogleGenAI({ apiKey });
+    const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: 10000 } });
     const response = await client.models.generateContent({
       model,
       contents: params.prompt,
@@ -161,7 +169,7 @@ async function generateCompactText(params: {
         systemInstruction: params.systemInstruction,
         maxOutputTokens: params.maxOutputTokens,
         temperature: params.temperature ?? 0.2,
-        thinkingConfig: { thinkingBudget: 0 },
+        ...(model.includes("lite") ? {} : { thinkingConfig: { thinkingBudget: 0 } }),
         ...(params.jsonMode ? { responseMimeType: "application/json" } : {}),
       },
     });

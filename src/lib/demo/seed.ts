@@ -136,11 +136,11 @@ export const DEMO_IDS = {
 };
 
 export const DEMO_PASSWORDS: Record<string, string> = {
-  "amira.benali@isetb.demo.tn": "StudentDemo2026!",
-  "karim.trabelsi@isetb.demo.tn": "TeacherDemo2026!",
-  "admin.isetbeja@isetb.demo.tn": "AdminDemo2026!",
-  "rh@techbeja.demo.tn": "OrgDemo2026!",
-  "superadmin@campusmate.demo.tn": "SuperDemo2026!",
+  "amira.benali@isetb.rnu.tn": "Student@2026!",
+  "karim.trabelsi@isetb.rnu.tn": "Teacher@2026!",
+  "administration@isetb.rnu.tn": "AdminIset@2026!",
+  "rh@techbeja.tn": "OrgPartner@2026!",
+  "superadmin@campusmate.tn": "SuperAdmin@2026!",
 };
 
 export function buildInitialDemoState(): CampusMateStoreState {
@@ -155,13 +155,13 @@ Page 1 : La troisième forme normale (3NF) élimine les dépendances transitives
 Page 2 : Row Level Security (RLS) dans PostgreSQL permet d'appliquer des politiques d'accès directement au niveau des lignes selon auth.uid() et le rôle vérifié.
 Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 dimensions) pour la recherche sémantique et les systèmes RAG universitaires.`;
 
-  const kb1Text = `Guide Officiel Scolarité ISET Béja (Document Spécimen Démo) :
+  const kb1Text = `Guide Officiel Scolarité ISET Béja :
 1. Attestation d'inscription & Certificat de scolarité : Connectez-vous sur CampusMate -> Services Universitaires -> Documents Administratifs -> Choisissez "Attestation d'inscription", précisez le motif (bourse, transport, stage) et validez. Le délai indicatif de traitement est de 24h à 48h ouvrables. Une fois approuvée par l'administration, vous recevez une notification pour la télécharger ou la retirer au Guichet 1 (Bloc Administration).
 2. Dossier de bourse universitaire (OOUN) : Fournir copie CIN, attestation d'inscription, reçu de paiement et justificatif de revenu parental.
 3. Relevé de notes : Nécessite la validation de la session d'examen correspondante. Utilisez la demande "Relevé de notes" en ligne.
-4. Contact Administration Démo : Bloc Administration ISET Béja, du lundi au vendredi de 08h30 à 16h00, scolarite.demo@isetb.rnu.tn.`;
+4. Contact Scolarité ISET Béja : Bloc Administration ISET Béja, du lundi au vendredi de 08h30 à 16h00, scolarite@isetb.rnu.tn.`;
 
-  const kb2Text = `Calendrier Universitaire & Examens 2026-2027 (Spécimen Démo ISET Béja) :
+  const kb2Text = `Calendrier Universitaire & Examens 2026-2027 — ISET Béja :
 - Rentrée universitaire : 15 Septembre 2026.
 - Devoirs surveillés Semestre 1 : 02 Novembre – 09 Novembre 2026.
 - Examens finaux Semestre 1 : 12 Janvier – 23 Janvier 2027.
@@ -173,21 +173,21 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
       {
         id: DEMO_IDS.instBeja,
         code: "ISET-BEJA",
-        name: "ISET Béja (Démo)",
+        name: "ISET Béja",
         city: "Béja",
         country: "Tunisia",
         website: "https://isetb.rnu.tn",
-        isDemo: true,
+        isDemo: false,
         isActive: true,
       },
       {
         id: DEMO_IDS.instRades,
         code: "ISET-RADES",
-        name: "ISET Radès (Démo Multi-Campus)",
+        name: "ISET Radès",
         city: "Radès",
         country: "Tunisia",
         website: "https://isetr.rnu.tn",
-        isDemo: true,
+        isDemo: false,
         isActive: true,
       },
     ],
@@ -290,9 +290,9 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
       {
         id: DEMO_IDS.studentAmira,
         institutionId: DEMO_IDS.instBeja,
-        institutionName: "ISET Béja (Démo)",
-        email: "amira.benali@isetb.demo.tn",
-        passwordHash: hashPassword(DEMO_PASSWORDS["amira.benali@isetb.demo.tn"]),
+        institutionName: "ISET Béja",
+        email: "amira.benali@isetb.rnu.tn",
+        passwordHash: hashPassword(DEMO_PASSWORDS["amira.benali@isetb.rnu.tn"]),
         fullName: "Amira Ben Ali",
         role: "student",
         preferredLanguage: "fr",
@@ -311,14 +311,14 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         sectionId: DEMO_IDS.secTI2DSIA,
         sectionName: "2ème Année DSI — Groupe A",
         enrollmentReference: "ISETB-2026-0419-PRIVATE",
-        isDemoAccount: true,
+        isDemoAccount: false,
       },
       {
         id: DEMO_IDS.studentRades,
         institutionId: DEMO_IDS.instRades,
-        institutionName: "ISET Radès (Démo Multi-Campus)",
-        email: "malek.gharbi@isetr.demo.tn",
-        passwordHash: hashPassword("StudentRades2026!"),
+        institutionName: "ISET Radès",
+        email: "malek.gharbi@isetr.rnu.tn",
+        passwordHash: hashPassword("StudentRades@2026!"),
         fullName: "Malek Gharbi",
         role: "student",
         preferredLanguage: "fr",
@@ -330,14 +330,14 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         sectionId: DEMO_IDS.secRades1,
         sectionName: "ISET Radès — TI1",
         enrollmentReference: "ISETR-2026-0911-PRIVATE",
-        isDemoAccount: true,
+        isDemoAccount: false,
       },
       {
         id: DEMO_IDS.teacherKarim,
         institutionId: DEMO_IDS.instBeja,
-        institutionName: "ISET Béja (Démo)",
-        email: "karim.trabelsi@isetb.demo.tn",
-        passwordHash: hashPassword(DEMO_PASSWORDS["karim.trabelsi@isetb.demo.tn"]),
+        institutionName: "ISET Béja",
+        email: "karim.trabelsi@isetb.rnu.tn",
+        passwordHash: hashPassword(DEMO_PASSWORDS["karim.trabelsi@isetb.rnu.tn"]),
         fullName: "Dr. Karim Trabelsi",
         role: "teacher",
         preferredLanguage: "fr",
@@ -351,30 +351,30 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         departmentName: "Technologies de l'Informatique",
         assignedSubjectIds: [DEMO_IDS.subjWeb, DEMO_IDS.subjDB, DEMO_IDS.subjAI],
         assignedSectionIds: [DEMO_IDS.secTI2DSIA, DEMO_IDS.secTI2RSIA],
-        isDemoAccount: true,
+        isDemoAccount: false,
       },
       {
         id: DEMO_IDS.adminBeja,
         institutionId: DEMO_IDS.instBeja,
-        institutionName: "ISET Béja (Démo)",
-        email: "admin.isetbeja@isetb.demo.tn",
-        passwordHash: hashPassword(DEMO_PASSWORDS["admin.isetbeja@isetb.demo.tn"]),
+        institutionName: "ISET Béja",
+        email: "administration@isetb.rnu.tn",
+        passwordHash: hashPassword(DEMO_PASSWORDS["administration@isetb.rnu.tn"]),
         fullName: "Sonia Mansouri",
         role: "university_admin",
         preferredLanguage: "fr",
         isVerified: true,
         isSuspended: false,
         isAdult: true,
-        bio: "Responsable scolarité et transformation digitale (compte démonstration).",
+        bio: "Responsable scolarité et transformation digitale — ISET Béja.",
         interests: ["Gouvernance universitaire"],
         skills: ["Administration académique"],
-        isDemoAccount: true,
+        isDemoAccount: false,
       },
       {
         id: DEMO_IDS.orgTechBeja,
         institutionId: null,
-        email: "rh@techbeja.demo.tn",
-        passwordHash: hashPassword(DEMO_PASSWORDS["rh@techbeja.demo.tn"]),
+        email: "rh@techbeja.tn",
+        passwordHash: hashPassword(DEMO_PASSWORDS["rh@techbeja.tn"]),
         fullName: "Nabil Jaziri (TechBéja)",
         role: "organization",
         preferredLanguage: "fr",
@@ -384,14 +384,14 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         interests: ["Recrutement PFE", "Mentorat"],
         skills: ["Talent Acquisition"],
         organizationId: DEMO_IDS.orgIdTechBeja,
-        organizationName: "TechBéja Solutions (Démo)",
-        isDemoAccount: true,
+        organizationName: "TechBéja Solutions",
+        isDemoAccount: false,
       },
       {
         id: DEMO_IDS.superAdmin,
         institutionId: null,
-        email: "superadmin@campusmate.demo.tn",
-        passwordHash: hashPassword(DEMO_PASSWORDS["superadmin@campusmate.demo.tn"]),
+        email: "superadmin@campusmate.tn",
+        passwordHash: hashPassword(DEMO_PASSWORDS["superadmin@campusmate.tn"]),
         fullName: "Youssef Khelifi",
         role: "super_admin",
         preferredLanguage: "fr",
@@ -400,7 +400,7 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         isAdult: true,
         interests: ["Sécurité", "Multi-tenant SaaS"],
         skills: ["Platform Governance"],
-        isDemoAccount: true,
+        isDemoAccount: false,
       },
     ],
     courses: [
@@ -811,16 +811,16 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         purpose: "Dossier de bourse universitaire OOUN",
         academicYearLabel: "2026-2027",
         status: "available_for_download",
-        adminComment: "Vérifié et validé (spécimen de démonstration).",
-        approvedDocumentTitle: "Certificat de scolarité — Spécimen Démo Non Officiel",
+        adminComment: "Vérifié et validé par le service scolarité.",
+        approvedDocumentTitle: "Certificat de scolarité",
         approvedDocumentContent:
-          "SPECIMEN DE DEMONSTRATION NON OFFICIEL — ISET BEJA\nEtudiant(e): Amira Ben Ali\nFilière: 2ème Année DSI\nAnnée: 2026-2027\nCe document est un exemple généré en mode démonstration hackathon.",
-        isDemoSample: true,
+          "INSTITUT SUPERIEUR DES ETUDES TECHNOLOGIQUES DE BEJA\nCertificat de scolarité — Année universitaire 2026-2027\nEtudiant(e) : Amira Ben Ali\nFilière : 2ème Année Licence DSI\nRéférence : ISETB-DOC-2026-0101",
+        isDemoSample: false,
         createdAt: now,
         updatedAt: now,
         history: [
           { status: "submitted", comment: "Demande soumise par l'étudiant", actorName: "Amira Ben Ali", createdAt: now },
-          { status: "available_for_download", comment: "Document spécimen déposé", actorName: "Sonia Mansouri", createdAt: now },
+          { status: "available_for_download", comment: "Document approuvé et mis à disposition", actorName: "Sonia Mansouri", createdAt: now },
         ],
       },
     ],
@@ -1024,7 +1024,7 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         authorId: DEMO_IDS.adminBeja,
         authorName: "Sonia Mansouri",
         authorRole: "university_admin",
-        title: "Ouverture des demandes d'attestation en ligne (Démo)",
+        title: "Ouverture des demandes d'attestation en ligne",
         body: "Les demandes d'attestation d'inscription et certificats de scolarité peuvent désormais être suivies depuis l'onglet Documents Administratifs.",
         isOfficial: true,
         isPinned: true,
@@ -1078,20 +1078,20 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
       {
         id: "tr-1",
         institutionId: DEMO_IDS.instBeja,
-        title: "Navette Campus ISET Béja ↔ Centre-Ville (Démo)",
+        title: "Navette Campus ISET Béja ↔ Centre-Ville",
         transportType: "shuttle",
         routeSummary: "Gare de Béja → Avenue Habib Bourguiba → Campus ISET Béja",
         scheduleSummary: "Départs : 07h45, 09h30, 12h15, 16h15 (Lun–Ven)",
-        isDemoSample: true,
+        isDemoSample: false,
       },
       {
         id: "tr-2",
         institutionId: DEMO_IDS.instBeja,
-        title: "Bus Régional SRTB Béja (Ligne Universitaire — Démo)",
+        title: "Bus Régional SRTB Béja (Ligne Universitaire)",
         transportType: "bus",
         routeSummary: "Station Principale Béja → Cité Universitaire → ISET Béja",
         scheduleSummary: "Passage toutes les 30 minutes de 07h00 à 18h00",
-        isDemoSample: true,
+        isDemoSample: false,
       },
     ],
     carpoolOffers: [
@@ -1106,7 +1106,7 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         availableSeats: 2,
         isInstitutionApproved: true,
         adultsOnly: true,
-        isDemoSample: true,
+        isDemoSample: false,
       },
     ],
     lostFoundReports: [
@@ -1222,12 +1222,12 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
     organizations: [
       {
         id: DEMO_IDS.orgIdTechBeja,
-        name: "TechBéja Solutions (Démo)",
+        name: "TechBéja Solutions",
         orgType: "startup",
         sector: "Ingénierie Logicielle & Cloud",
         city: "Béja / Tunis",
-        website: "https://techbeja.example",
-        contactEmail: "rh@techbeja.demo.tn",
+        website: "https://techbeja.tn",
+        contactEmail: "rh@techbeja.tn",
         description: "Startup tunisienne spécialisée en applications SaaS, data engineering et IA appliquée pour les PME.",
         verificationStatus: "verified",
         registrationNumber: "TN-RC-BEJA-2024-088",
@@ -1238,7 +1238,7 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
       {
         id: "int-1",
         organizationId: DEMO_IDS.orgIdTechBeja,
-        organizationName: "TechBéja Solutions (Démo)",
+        organizationName: "TechBéja Solutions",
         title: "Stage Perfectionnement — Développement Full-Stack Next.js & PostgreSQL",
         description: "Participation à la création d'un portail client moderne avec TypeScript, Next.js App Router, Tailwind CSS et Supabase.",
         internshipType: "perfectionnement",
@@ -1250,7 +1250,7 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         duration: "1 mois (Janvier – Février)",
         deadline: "2026-12-20",
         positionsCount: 3,
-        compensation: "Gratification de stage (démo)",
+        compensation: "Gratification de stage",
         instructions: "Joindre CV CampusMate et lettre de motivation personnalisée.",
         status: "published",
         createdAt: now,
@@ -1258,7 +1258,7 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
       {
         id: "int-2",
         organizationId: DEMO_IDS.orgIdTechBeja,
-        organizationName: "TechBéja Solutions (Démo)",
+        organizationName: "TechBéja Solutions",
         title: "Stage PFE — Assistant IA & Recherche Sémantique Documentaire",
         description: "Conception d'un pipeline RAG sécurisé avec embeddings et évaluation de qualité.",
         internshipType: "pfe",
@@ -1270,7 +1270,7 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         duration: "4 mois",
         deadline: "2027-01-15",
         positionsCount: 2,
-        compensation: "Indemnité mensuelle (démo)",
+        compensation: "Indemnité mensuelle",
         instructions: "Préciser vos projets académiques réalisés.",
         status: "published",
         createdAt: now,
@@ -1282,13 +1282,13 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
       {
         studentId: DEMO_IDS.studentAmira,
         fullName: "Amira Ben Ali",
-        email: "amira.benali@isetb.demo.tn",
+        email: "amira.benali@isetb.rnu.tn",
         headline: "Étudiante 2ème Année DSI — Développeuse Full-Stack Junior",
         summary: "Étudiante motivée en Technologies de l'Informatique à l'ISET Béja, spécialisée en TypeScript, React et bases de données relationnelles.",
         template: "modern",
         education: [
           {
-            school: "ISET Béja (Démo)",
+            school: "ISET Béja",
             degree: "Licence en Technologies de l'Informatique (DSI)",
             period: "2025 – Présent",
           },
@@ -1296,7 +1296,7 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         experience: [
           {
             role: "Stagiaire Initiation Web",
-            company: "Agence Web Nord-Ouest (Démo)",
+            company: "Agence Web Nord-Ouest",
             period: "Janvier 2026 (1 mois)",
             details: "Intégration d'interfaces responsives et formulaires accessibles.",
           },

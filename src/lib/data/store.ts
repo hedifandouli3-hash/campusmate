@@ -17,7 +17,7 @@ import type {
   UserRole,
 } from "@/types/domain";
 
-const STORE_FILE = path.join(os.tmpdir(), "campusmate-demo-store-v2.json");
+const STORE_FILE = path.join(os.tmpdir(), "campusmate-db-v3.json");
 
 declare global {
   var __campusmateStore: CampusMateStoreState | undefined;

@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ArrowLeftRight,
   Award,
   BarChart3,
   Bell,
@@ -56,14 +55,6 @@ interface NavGroup {
   section: string;
   items: NavItem[];
 }
-
-const DEMO_ROLE_SWITCH = [
-  { role: "student" as const, label: "Étudiant", email: "amira.benali@isetb.demo.tn" },
-  { role: "teacher" as const, label: "Enseignant", email: "karim.trabelsi@isetb.demo.tn" },
-  { role: "university_admin" as const, label: "Administration", email: "admin.isetbeja@isetb.demo.tn" },
-  { role: "organization" as const, label: "Organisation", email: "rh@techbeja.demo.tn" },
-  { role: "super_admin" as const, label: "Super Admin", email: "superadmin@campusmate.demo.tn" },
-];
 
 function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGroup[] {
   if (role === "student") {
@@ -208,14 +199,13 @@ export function DashboardShell({
   geminiLive: boolean;
   children: React.ReactNode;
 }) {
-  const { locale, setLocale, t, dark, toggleTheme, notify } = useApp();
+  const { locale, setLocale, t, dark, toggleTheme } = useApp();
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [moduleQuery, setModuleQuery] = useState("");
-  const [switchingRole, setSwitchingRole] = useState(false);
 
   useEffect(() => {
     fetch("/api/notifications")
@@ -240,26 +230,6 @@ export function DashboardShell({
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
     router.refresh();
-  }
-
-  async function handleRoleSwitch(demoEmail: string) {
-    if (!demoEmail) return;
-    setSwitchingRole(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ demoEmail }),
-      });
-      const data = await res.json();
-      if (res.ok && data.redirectTo) {
-        notify(`Basculé vers ${t.roles[data.user.role as UserRole]}`, "success");
-        router.push(data.redirectTo);
-        router.refresh();
-      }
-    } finally {
-      setSwitchingRole(false);
-    }
   }
 
   const sidebarContent = (
@@ -408,36 +378,15 @@ export function DashboardShell({
               )}
             </div>
 
-            {demoMode && (
+            {geminiLive && (
               <div className="hidden xl:flex items-center gap-1.5">
-                <Badge variant="warning">Démo ISET Béja</Badge>
-                <Badge variant={geminiLive ? "success" : "indigo"}>
-                  {geminiLive ? t.brand.liveAiBadge : t.brand.demoAiBadge}
-                </Badge>
+                <Badge variant="success">IA Gemini Active</Badge>
               </div>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            {/* 1-Click Demo Role Switcher for seamless Hackathon presentation */}
-            {demoMode && (
-              <div className="hidden sm:flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1 text-xs bg-slate-50 dark:bg-slate-900">
-                <ArrowLeftRight className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <select
-                  aria-label="Changer de rôle démo"
-                  disabled={switchingRole}
-                  value={DEMO_ROLE_SWITCH.find((r) => r.role === user.role)?.email || ""}
-                  onChange={(e) => handleRoleSwitch(e.target.value)}
-                  className="bg-transparent text-xs font-medium focus:outline-none cursor-pointer"
-                >
-                  {DEMO_ROLE_SWITCH.map((r) => (
-                    <option key={r.role} value={r.email} className="bg-white dark:bg-slate-900">
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+            {demoMode && <Badge variant="primary">Portail</Badge>}
 
             {/* Language Switcher */}
             <div className="flex items-center rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 text-[11px]">

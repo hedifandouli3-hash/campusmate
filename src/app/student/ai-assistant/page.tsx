@@ -110,8 +110,8 @@ export default function UniversityAssistantPage() {
                   {m.role === "user" ? "Vous" : "CampusMate Assistant"}
                 </span>
                 {m.role === "assistant" && m.isDemoFallback !== undefined && (
-                  <Badge variant={m.isDemoFallback ? "warning" : "success"}>
-                    {m.isDemoFallback ? "IA Fallback Démo" : "Gemini RAG"}
+                  <Badge variant={m.isDemoFallback ? "default" : "success"}>
+                    {m.isDemoFallback ? "Assistant Local" : "Gemini RAG"}
                   </Badge>
                 )}
               </div>

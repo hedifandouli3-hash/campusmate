@@ -19,7 +19,7 @@ export function PublicHeader() {
           </div>
           <div>
             <span className="text-base sm:text-lg tracking-tight">CampusMate</span>
-            <span className="hidden sm:block text-[10px] font-medium text-slate-500">ISET Béja • Demo</span>
+            <span className="hidden sm:block text-[10px] font-medium text-slate-500">ISET Béja • Portail Universitaire</span>
           </div>
         </Link>
 
@@ -82,26 +82,28 @@ export function PublicFooter() {
             <span>CampusMate</span>
           </div>
           <p className="text-slate-500 text-xs">{t.brand.slogan}</p>
-          <p className="text-amber-700 dark:text-amber-400 text-xs font-medium">{t.brand.demoBadge}</p>
+          <p className="text-slate-400 text-xs">ISET Béja — Tunisie</p>
         </div>
         <div>
-          <h4 className="font-semibold mb-2">Plateforme</h4>
-          <ul className="space-y-1.5 text-slate-500">
-            <li><Link href="/features" className="hover:text-blue-600">14 Modules</Link></li>
-            <li><Link href="/about" className="hover:text-blue-600">À propos</Link></li>
-            <li><Link href="/login" className="hover:text-blue-600">Espaces Rôles</Link></li>
+          <h4 className="font-semibold mb-2">Portails de connexion</h4>
+          <ul className="space-y-1.5 text-slate-500 text-xs">
+            <li><Link href="/login/student" className="hover:text-blue-600">Espace Étudiant</Link></li>
+            <li><Link href="/login/teacher" className="hover:text-blue-600">Espace Enseignant</Link></li>
+            <li><Link href="/login/administration" className="hover:text-blue-600">Administration Universitaire</Link></li>
+            <li><Link href="/login/organization" className="hover:text-blue-600">Organisations & Stages</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="font-semibold mb-2">Compétition</h4>
-          <p className="text-slate-500 text-xs">
-            IA Student Discovery Camp — Thème : L&apos;intelligence artificielle au service de la vie estudiantine.
-          </p>
-          <p className="text-slate-500 text-xs mt-1">Cible initiale : ISET Béja, Tunisie.</p>
+          <h4 className="font-semibold mb-2">Plateforme</h4>
+          <ul className="space-y-1.5 text-slate-500 text-xs">
+            <li><Link href="/features" className="hover:text-blue-600">14 Modules intégrés</Link></li>
+            <li><Link href="/about" className="hover:text-blue-600">À propos</Link></li>
+            <li><Link href="/register" className="hover:text-blue-600">Créer un compte</Link></li>
+          </ul>
         </div>
         <div>
           <h4 className="font-semibold mb-2">Légal & Confidentialité</h4>
-          <ul className="space-y-1.5 text-slate-500">
+          <ul className="space-y-1.5 text-slate-500 text-xs">
             <li><Link href="/privacy" className="hover:text-blue-600">Politique de confidentialité</Link></li>
             <li><Link href="/terms" className="hover:text-blue-600">Conditions d&apos;utilisation</Link></li>
           </ul>

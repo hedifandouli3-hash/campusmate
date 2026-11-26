@@ -8,6 +8,14 @@ import { isDemoMode, isGeminiConfigured } from "@/lib/env";
 import { getDashboardPathForRole } from "@/lib/security/session";
 import type { UserRole } from "@/types/domain";
 
+const ROLE_LOGIN_PATH: Record<UserRole, string> = {
+  student: "/login/student",
+  teacher: "/login/teacher",
+  university_admin: "/login/administration",
+  organization: "/login/organization",
+  super_admin: "/login/admin",
+};
+
 async function RoleGuardInner({
   requiredRole,
   children,
@@ -18,7 +26,7 @@ async function RoleGuardInner({
   await connection();
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login");
+    redirect(ROLE_LOGIN_PATH[requiredRole]);
   }
   if (user.role !== requiredRole) {
     redirect(getDashboardPathForRole(user.role));

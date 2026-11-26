@@ -8,12 +8,22 @@ import { getDashboardPathForRole, setServerSessionCookie } from "@/lib/security/
 const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(4),
-  demoRole: z.enum(["student", "teacher", "university_admin", "organization", "super_admin"]).optional(),
+  expectedRole: z
+    .enum(["student", "teacher", "university_admin", "organization", "super_admin"])
+    .optional(),
 });
 
 const DemoQuickSchema = z.object({
   demoEmail: z.string().email(),
 });
+
+const ROLE_LABELS: Record<string, string> = {
+  student: "Étudiant",
+  teacher: "Enseignant",
+  university_admin: "Administration Universitaire",
+  organization: "Organisation Partenaire",
+  super_admin: "Super Administrateur",
+};
 
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") || "local";
@@ -29,32 +39,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Requête JSON invalide." }, { status: 400 });
   }
 
-  // Optional Demo Quick-Login (only when DEMO_MODE & ALLOW_DEMO_LOGIN are enabled)
   const quick = DemoQuickSchema.safeParse(body);
   if (quick.success) {
     if (!isDemoMode() || !isDemoLoginAllowed()) {
-      return NextResponse.json({ error: "La connexion démo rapide est désactivée." }, { status: 403 });
+      return NextResponse.json(
+        { error: "Veuillez vous connecter avec votre adresse e-mail et votre mot de passe." },
+        { status: 403 }
+      );
     }
     const store = getStore();
     const demoUser = store.users.find(
       (u) => u.email.toLowerCase() === quick.data.demoEmail.toLowerCase() && u.isDemoAccount
     );
     if (!demoUser || demoUser.isSuspended) {
-      return NextResponse.json({ error: "Compte démo introuvable." }, { status: 404 });
+      return NextResponse.json({ error: "Compte introuvable." }, { status: 404 });
     }
     await setServerSessionCookie({
       userId: demoUser.id,
       email: demoUser.email,
       role: demoUser.role,
       institutionId: demoUser.institutionId,
-    });
-    addAuditLog({
-      institutionId: demoUser.institutionId,
-      actorId: demoUser.id,
-      actorName: demoUser.fullName,
-      action: "DEMO_QUICK_LOGIN",
-      resourceType: "session",
-      details: `Connexion rapide démo (${demoUser.role}).`,
     });
     return NextResponse.json({
       user: { id: demoUser.id, fullName: demoUser.fullName, role: demoUser.role, email: demoUser.email },
@@ -70,6 +74,15 @@ export async function POST(request: Request) {
   const user = authenticateUser(parsed.data.email, parsed.data.password);
   if (!user) {
     return NextResponse.json({ error: "Identifiants incorrects ou compte suspendu." }, { status: 401 });
+  }
+
+  if (parsed.data.expectedRole && user.role !== parsed.data.expectedRole) {
+    return NextResponse.json(
+      {
+        error: `Ce portail est réservé aux comptes « ${ROLE_LABELS[parsed.data.expectedRole]} ». Votre compte appartient à l'espace « ${ROLE_LABELS[user.role]} ».`,
+      },
+      { status: 403 }
+    );
   }
 
   await setServerSessionCookie({
