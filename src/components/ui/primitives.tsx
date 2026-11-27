@@ -51,14 +51,14 @@ export function PageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="cm-card p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="cm-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="space-y-1 min-w-0">
         {badge && <div className="flex flex-wrap items-center gap-2 mb-1">{badge}</div>}
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-[#171A21] dark:text-[#F2F4F8]">
           {title}
         </h1>
         {description && (
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+          <p className="text-sm text-[#515C6D] dark:text-[#BCC4D0] max-w-2xl leading-relaxed">
             {description}
           </p>
         )}
@@ -202,24 +202,24 @@ export function Button({
   size?: "sm" | "md" | "lg";
 }) {
   const variants: Record<string, string> = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-xs disabled:opacity-50",
-    secondary: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-xs disabled:opacity-50",
+    primary: "bg-[#2457D6] text-white hover:bg-[#1D46B8] disabled:opacity-50",
+    secondary: "bg-[#20232B] dark:bg-[#292D36] text-white hover:bg-[#171A21] dark:hover:bg-[#343946] disabled:opacity-50",
     outline:
-      "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 disabled:opacity-50",
-    ghost: "bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200",
+      "border border-[#E2E6EC] dark:border-[#303540] bg-white dark:bg-[#181A20] hover:bg-[#F1F3F5] dark:hover:bg-[#20232B] text-[#171A21] dark:text-[#F2F4F8] disabled:opacity-50",
+    ghost: "bg-transparent hover:bg-[#F1F3F5] dark:hover:bg-[#20232B] text-[#515C6D] dark:text-[#BCC4D0] hover:text-[#171A21] dark:hover:text-[#F2F4F8]",
     danger: "bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50",
   };
   const sizes: Record<string, string> = {
-    sm: "px-3 py-1.5 text-xs min-h-[34px]",
-    md: "px-4 py-2 text-sm min-h-[38px]",
-    lg: "px-5 py-2.5 text-base min-h-[44px]",
+    sm: "px-3 py-1.5 text-xs min-h-[32px]",
+    md: "px-4 py-2 text-sm min-h-[40px]",
+    lg: "px-5 py-2.5 text-sm sm:text-base min-h-[48px]",
   };
 
   return (
     <button
       {...props}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:cursor-not-allowed",
+        "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-150 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2457D6] dark:focus-visible:ring-[#739BFF] cursor-pointer disabled:cursor-not-allowed",
         variants[variant],
         sizes[size],
         className
@@ -236,7 +236,7 @@ export function Input({
     <input
       {...props}
       className={cn(
-        "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition min-h-[38px]",
+        "w-full rounded-lg border border-[#E2E6EC] dark:border-[#303540] bg-white dark:bg-[#181A20] px-3 py-2 text-sm text-[#171A21] dark:text-[#F2F4F8] placeholder:text-[#697586] dark:placeholder:text-[#929DAD] focus:border-[#2457D6] dark:focus:border-[#739BFF] focus:outline-none focus:ring-2 focus:ring-[#2457D6]/15 dark:focus:ring-[#739BFF]/20 transition-colors duration-150 min-h-[40px]",
         className
       )}
     />
@@ -251,7 +251,7 @@ export function Textarea({
     <textarea
       {...props}
       className={cn(
-        "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition",
+        "w-full rounded-lg border border-[#E2E6EC] dark:border-[#303540] bg-white dark:bg-[#181A20] px-3 py-2 text-sm text-[#171A21] dark:text-[#F2F4F8] placeholder:text-[#697586] dark:placeholder:text-[#929DAD] focus:border-[#2457D6] dark:focus:border-[#739BFF] focus:outline-none focus:ring-2 focus:ring-[#2457D6]/15 dark:focus:ring-[#739BFF]/20 transition-colors duration-150",
         className
       )}
     />
@@ -266,7 +266,7 @@ export function Select({
     <select
       {...props}
       className={cn(
-        "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition min-h-[38px]",
+        "w-full rounded-lg border border-[#E2E6EC] dark:border-[#303540] bg-white dark:bg-[#181A20] px-3 py-2 text-sm text-[#171A21] dark:text-[#F2F4F8] focus:border-[#2457D6] dark:focus:border-[#739BFF] focus:outline-none focus:ring-2 focus:ring-[#2457D6]/15 dark:focus:ring-[#739BFF]/20 transition-colors duration-150 min-h-[40px]",
         className
       )}
     />
@@ -326,7 +326,7 @@ export function Tabs<T extends string>({
     <div
       role="tablist"
       className={cn(
-        "inline-flex flex-wrap items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-900/70 p-1",
+        "inline-flex flex-wrap items-center gap-1 rounded-lg border border-[#E2E6EC] dark:border-[#303540] bg-[#F1F3F5] dark:bg-[#20232B] p-1",
         className
       )}
     >
@@ -340,10 +340,10 @@ export function Tabs<T extends string>({
             aria-selected={selected}
             onClick={() => onChange(item.id)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition cursor-pointer",
+              "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors duration-150 cursor-pointer",
               selected
-                ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-white dark:bg-[#292D36] text-[#171A21] dark:text-[#F2F4F8] shadow-xs"
+                : "text-[#515C6D] dark:text-[#929DAD] hover:text-[#171A21] dark:hover:text-[#F2F4F8]"
             )}
           >
             {item.icon}

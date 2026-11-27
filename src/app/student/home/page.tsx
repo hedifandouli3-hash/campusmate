@@ -189,12 +189,17 @@ export default function StudentSocialHomePage() {
         {/* Post Composer */}
         <Card className="p-4 sm:p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <h1 className="text-base font-bold text-slate-900 dark:text-white">
-              {ui.feedTitle}
-            </h1>
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-full bg-[#2457D6]/10 dark:bg-[#739BFF]/15 text-[#2457D6] dark:text-[#739BFF] flex items-center justify-center text-xs font-semibold">
+                CM
+              </div>
+              <h1 className="text-base font-semibold tracking-tight text-[#171A21] dark:text-[#F2F4F8]">
+                {ui.feedTitle}
+              </h1>
+            </div>
             <Link href="/student/agent">
-              <Button size="sm" variant="secondary">
-                <Sparkles className="w-3.5 h-3.5 me-1.5 text-blue-600" />
+              <Button size="sm" variant="outline">
+                <Sparkles className="w-3.5 h-3.5 text-[#2457D6] dark:text-[#739BFF]" />
                 CampusMate Agent
               </Button>
             </Link>
@@ -218,19 +223,19 @@ export default function StudentSocialHomePage() {
               onChange={(e) => setPostContent(e.target.value)}
               rows={2}
               placeholder={ui.placeholder}
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm"
+              className="w-full rounded-lg border border-[#E2E6EC] dark:border-[#303540] bg-white dark:bg-[#181A20] p-3 text-sm text-[#171A21] dark:text-[#F2F4F8] placeholder:text-[#697586] dark:placeholder:text-[#929DAD] focus:border-[#2457D6] dark:focus:border-[#739BFF] focus:outline-none"
             />
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap gap-2 text-xs">
-                <Link href="/student/marketplace" className="text-blue-600 hover:underline">
+              <div className="flex flex-wrap gap-3 text-xs font-medium">
+                <Link href="/student/marketplace" className="text-[#2457D6] dark:text-[#739BFF] hover:underline">
                   {ui.sellItem}
                 </Link>
-                <Link href="/student/lost-found" className="text-blue-600 hover:underline">
+                <Link href="/student/lost-found" className="text-[#2457D6] dark:text-[#739BFF] hover:underline">
                   {ui.lostItem}
                 </Link>
               </div>
               <Button type="submit" size="sm" disabled={!postContent.trim()}>
-                <Send className="w-3.5 h-3.5 me-1.5" /> {ui.publish}
+                <Send className="w-3.5 h-3.5" /> {ui.publish}
               </Button>
             </div>
           </form>
@@ -243,10 +248,10 @@ export default function StudentSocialHomePage() {
               key={f.id}
               type="button"
               onClick={() => setFilter(f.id)}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition cursor-pointer ${
+              className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors duration-150 cursor-pointer ${
                 filter === f.id
-                  ? "bg-blue-600 text-white"
-                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  ? "bg-[#171A21] text-white dark:bg-[#F2F4F8] dark:text-[#171A21]"
+                  : "bg-white dark:bg-[#181A20] border border-[#E2E6EC] dark:border-[#303540] text-[#515C6D] dark:text-[#BCC4D0] hover:bg-[#F1F3F5] dark:hover:bg-[#20232B]"
               }`}
             >
               {locale === "ar" ? f.labelAr : locale === "en" ? f.labelEn : f.labelFr}
@@ -266,23 +271,30 @@ export default function StudentSocialHomePage() {
         ) : (
           <div className="space-y-4">
             {items.map((item) => (
-              <Card key={item.id} className="p-5 space-y-3">
+              <Card key={item.id} className="p-4 sm:p-5 space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-sm text-slate-900 dark:text-white">
-                        {item.authorName}
-                      </span>
-                      <Badge>{item.postType}</Badge>
-                      {item.isPinned && (
-                        <Badge variant="primary">
-                          <Pin className="w-3 h-3 me-1" /> Épinglé
-                        </Badge>
-                      )}
+                  <div className="flex items-start gap-2.5">
+                    <div className="h-9 w-9 rounded-full bg-[#F1F3F5] dark:bg-[#20232B] border border-[#E2E6EC] dark:border-[#303540] text-[#171A21] dark:text-[#F2F4F8] flex items-center justify-center text-xs font-semibold shrink-0">
+                      {item.authorName.slice(0, 2).toUpperCase()}
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      {formatDate(item.createdAt)}
-                      {item.sourceAttribution && ` • ${item.sourceAttribution}`}
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-sm text-[#171A21] dark:text-[#F2F4F8]">
+                          {item.authorName}
+                        </span>
+                        <Badge variant={item.postType === "official" ? "primary" : "default"}>
+                          {item.postType}
+                        </Badge>
+                        {item.isPinned && (
+                          <Badge variant="primary">
+                            <Pin className="w-3 h-3 me-1" /> Épinglé
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-[#697586] dark:text-[#929DAD] mt-0.5">
+                        {formatDate(item.createdAt)}
+                        {item.sourceAttribution && ` • ${item.sourceAttribution}`}
+                      </div>
                     </div>
                   </div>
                   {item.sourceKind === "social_post" && (
@@ -308,15 +320,15 @@ export default function StudentSocialHomePage() {
                 </div>
 
                 <div>
-                  <Link href={item.href} className="font-semibold text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                  <Link href={item.href} className="font-semibold text-[15px] text-[#171A21] dark:text-[#F2F4F8] hover:text-[#2457D6] dark:hover:text-[#739BFF] transition-colors">
                     {item.title}
                   </Link>
-                  <p className="text-sm text-slate-700 dark:text-slate-200 mt-1 whitespace-pre-wrap">
+                  <p className="text-sm text-[#515C6D] dark:text-[#BCC4D0] mt-1 whitespace-pre-wrap leading-relaxed">
                     {item.content}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[#E2E6EC] dark:border-[#303540] text-xs">
                   <div className="flex items-center gap-3">
                     {item.sourceKind === "social_post" && (
                       <>

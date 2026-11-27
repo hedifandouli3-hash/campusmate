@@ -186,26 +186,26 @@ export default function StudentAgentPage() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={() => {
                 setActiveConvId("__new__");
                 setGoal("");
               }}
             >
-              <Plus className="w-4 h-4 me-1.5" />
+              <Plus className="w-4 h-4" />
               {copy.newConversation}
             </Button>
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={handleTogglePersonalization}
             >
-              <ShieldCheck className="w-4 h-4 me-1.5" />
+              <ShieldCheck className="w-4 h-4 text-[#2457D6] dark:text-[#739BFF]" />
               {preferences.enablePersonalization ? copy.memoryActive : copy.memoryDisabled}
             </Button>
             <Button variant="ghost" size="sm" onClick={handleClearHistory}>
-              <Trash2 className="w-4 h-4 me-1.5" />
+              <Trash2 className="w-4 h-4" />
               {copy.clearHistory}
             </Button>
           </div>
@@ -213,9 +213,9 @@ export default function StudentAgentPage() {
       />
 
       {/* Command bar */}
-      <Card className="p-5 border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-br from-blue-50/60 via-white to-indigo-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/30">
+      <Card className="p-4 sm:p-5 border-[#E2E6EC] dark:border-[#303540]">
         <form onSubmit={(e) => void handleRun(e)} className="space-y-3">
-          <label className="block text-sm font-semibold text-slate-900 dark:text-white">
+          <label className="block text-sm font-semibold text-[#171A21] dark:text-[#F2F4F8]">
             {copy.promptLabel}
           </label>
           <div className="flex flex-col sm:flex-row gap-2.5">
@@ -226,7 +226,7 @@ export default function StudentAgentPage() {
               className="flex-1"
             />
             <Button type="submit" disabled={running || !goal.trim()}>
-              <Send className="w-4 h-4 me-1.5" />
+              <Send className="w-4 h-4" />
               {running ? copy.runningButton : copy.runButton}
             </Button>
           </div>
@@ -237,9 +237,9 @@ export default function StudentAgentPage() {
                 type="button"
                 onClick={() => void handleRun(undefined, q.goal)}
                 disabled={running}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-blue-400 hover:text-blue-600 transition"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#E2E6EC] dark:border-[#303540] bg-[#F7F8FA] dark:bg-[#20232B] px-3 py-1.5 text-xs font-medium text-[#515C6D] dark:text-[#BCC4D0] hover:border-[#2457D6] dark:hover:border-[#739BFF] hover:text-[#171A21] dark:hover:text-[#F2F4F8] transition-colors cursor-pointer"
               >
-                <Sparkles className="w-3 h-3 text-blue-500" />
+                <Sparkles className="w-3 h-3 text-[#2457D6] dark:text-[#739BFF]" />
                 {q.label}
               </button>
             ))}

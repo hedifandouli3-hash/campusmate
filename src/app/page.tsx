@@ -110,41 +110,46 @@ export default function LandingPage() {
       <PublicHeader />
 
       {/* Hero Section */}
-      <section className="border-b border-slate-200 dark:border-slate-800 bg-[var(--bg-surface)]">
+      <section className="border-b border-[#E2E6EC] dark:border-[#303540] bg-[var(--bg-surface)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-20 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="primary">ISET Béja • Écosystème Universitaire IA</Badge>
-              <Badge variant="success">Multi-Tenant • 20 Modules</Badge>
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-[#2457D6] dark:text-[#739BFF] bg-[#2457D6]/8 dark:bg-[#739BFF]/10 px-3 py-1 rounded-full">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#2457D6] dark:bg-[#739BFF]" />
+              <span>ISET Béja • Plateforme Universitaire Unifiée</span>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#171A21] dark:text-[#F2F4F8] leading-[1.12]">
               {t.landing.heroTitle}
             </h1>
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="text-base sm:text-lg text-[#515C6D] dark:text-[#BCC4D0] leading-relaxed max-w-xl">
               {t.landing.heroSubtitle}
             </p>
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm transition"
-              >
-                {t.landing.ctaPrimary}
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/demo"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-3 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-              >
-                Explorer la démo interactive
-              </Link>
-              <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-3 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-              >
-                {t.landing.ctaSecondary}
-              </Link>
+            <div className="space-y-3 pt-1">
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#2457D6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1D46B8] transition-colors"
+                >
+                  {t.landing.ctaPrimary}
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/demo"
+                  className="inline-flex items-center gap-2 rounded-lg border border-[#E2E6EC] dark:border-[#303540] bg-white dark:bg-[#181A20] px-5 py-3 text-sm font-semibold text-[#171A21] dark:text-[#F2F4F8] hover:bg-[#F1F3F5] dark:hover:bg-[#20232B] transition-colors"
+                >
+                  Explorer la démo interactive
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#515C6D] dark:text-[#929DAD] hover:text-[#2457D6] dark:hover:text-[#739BFF] transition-colors"
+                >
+                  {t.landing.ctaSecondary}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500 pt-1">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[#697586] dark:text-[#929DAD] pt-1">
               <span>✓ Français, English, العربية (RTL)</span>
               <span>✓ Mode Clair & Sombre</span>
               <span>✓ 5 Rôles • 20 Modules</span>
@@ -152,24 +157,24 @@ export default function LandingPage() {
           </div>
 
           {/* Interactive SaaS Role Preview */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/70 p-4 sm:p-6 shadow-sm space-y-4">
+          <div className="rounded-2xl border border-[#E2E6EC] dark:border-[#303540] bg-[#F7F8FA] dark:bg-[#20232B] p-4 sm:p-6 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <GraduationCap className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center gap-2 text-sm font-semibold text-[#171A21] dark:text-[#F2F4F8]">
+                <GraduationCap className="w-4 h-4 text-[#2457D6] dark:text-[#739BFF]" />
                 <span>Aperçu Interactif — ISET Béja</span>
               </div>
-              <Badge variant="success">{activePreview.badge}</Badge>
+              <Badge variant="primary">{activePreview.badge}</Badge>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 rounded-xl bg-white dark:bg-slate-950 p-1 border border-slate-200 dark:border-slate-800">
+            <div className="flex flex-wrap gap-1 rounded-lg bg-white dark:bg-[#181A20] p-1 border border-[#E2E6EC] dark:border-[#303540]">
               {ROLE_PREVIEWS.map((r) => (
                 <button
                   key={r.id}
                   onClick={() => setPreviewRole(r.id)}
-                  className={`flex-1 min-w-[85px] rounded-lg px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                  className={`flex-1 min-w-[85px] rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
                     previewRole === r.id
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                      ? "bg-[#2457D6] text-white"
+                      : "text-[#515C6D] dark:text-[#BCC4D0] hover:bg-[#F1F3F5] dark:hover:bg-[#292D36]"
                   }`}
                 >
                   {r.label}
