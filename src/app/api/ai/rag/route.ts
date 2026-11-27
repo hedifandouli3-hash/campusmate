@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { answerWithRag } from "@/lib/ai/service";
-import { getAuthorizedChunksForUser, requireUser } from "@/lib/data/store";
+import { ensureStoreHydrated, getAuthorizedChunksForUser, requireUser } from "@/lib/data/store";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 
 const RagSchema = z.object({
@@ -26,6 +26,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Question invalide." }, { status: 400 });
     }
 
+    await ensureStoreHydrated();
     const authorizedChunks = getAuthorizedChunksForUser({
       user,
       scope: parsed.data.scope,

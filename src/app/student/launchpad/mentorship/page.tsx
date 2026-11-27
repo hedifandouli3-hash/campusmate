@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Handshake, Send } from "lucide-react";
+import { BookOpen, Handshake, Send } from "lucide-react";
 import { LaunchpadNav } from "@/components/launchpad/launchpad-nav";
 import { useApp } from "@/components/providers/app-provider";
 import { Badge, Button, Card, Input, PageHeader } from "@/components/ui/primitives";
@@ -90,6 +90,27 @@ export default function LaunchpadMentorshipPage() {
           </Card>
         ))}
       </div>
+
+      {/* Entrepreneurship Academy */}
+      <Card className="space-y-3">
+        <h2 className="text-sm font-semibold flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-emerald-600" /> Académie Entrepreneuriat & Freelance
+        </h2>
+        <div className="grid md:grid-cols-3 gap-3 text-xs">
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-1">
+            <p className="font-semibold">1. Validation terrain avant code</p>
+            <p className="text-slate-500">Interrogez 5 utilisateurs potentiels sur leurs problèmes actuels avant de développer toutes les fonctionnalités.</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-1">
+            <p className="font-semibold">2. Cadrage & Périmètre Freelance</p>
+            <p className="text-slate-500">Définissez toujours les livrables exacts, le nombre de révisions et les délais par écrit avant de démarrer.</p>
+          </div>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-1">
+            <p className="font-semibold">3. Transparence devant un Jury</p>
+            <p className="text-slate-500">Séparez clairement ce qui est déjà réalisé (prototype, tests) de ce qui reste une hypothèse à valider.</p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

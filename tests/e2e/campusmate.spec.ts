@@ -200,12 +200,14 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await expect(page.getByText(/Mode Démo Anonyme Isolé/i)).toBeVisible();
     await expect(page.getByText(/Simulation Assistant RAG Étudiant/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /Expérience Enseignant/i }).click();
-    await expect(page.getByText(/Isolation Corrigés/i)).toBeVisible();
-
-    await page.getByRole("button", { name: /Expérience Launchpad/i }).click();
     await page.getByRole("button", { name: /Simuler : Transformer ce cours en opportunités/i }).click();
     await expect(page.getByText(/StockPulse TN/i)).toBeVisible();
+
+    await page.getByRole("button", { name: /Démo Enseignant/i }).click();
+    await expect(page.getByText(/Isolation Corrigés/i)).toBeVisible();
+
+    await page.getByRole("button", { name: /Démo Administration/i }).click();
+    await expect(page.getByText(/Ticket en cours/i)).toBeVisible();
 
     const cookies = await page.context().cookies();
     expect(cookies.some((c) => c.name === "campusmate_session")).toBe(false);

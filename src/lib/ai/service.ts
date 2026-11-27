@@ -1,6 +1,9 @@
+import crypto from "node:crypto";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { env, getGeminiApiKeys } from "@/lib/env";
+import { buildValidatedCitations } from "@/lib/knowledge/citations";
+import { hybridRetrieveAndRerank } from "@/lib/knowledge/retriever";
 import type {
   AICitation,
   AISuggestedAction,
@@ -275,19 +278,31 @@ export async function answerWithRag(params: {
   scope: "learning" | "university_assistant";
   authorizedChunks: DocumentChunk[];
 }): Promise<RagAnswerResult> {
-  const cacheKey = `rag:${params.scope}:${params.locale}:${params.authorizedChunks.length}:${normalizeSearchText(params.question.trim())}`;
+  // Scope cache strictly by institution + authorized document IDs + locale + normalized query
+  const docSignature = crypto
+    .createHash("sha256")
+    .update(
+      [...new Set(params.authorizedChunks.map((c) => `${c.institutionId}:${c.documentId}`))]
+        .sort()
+        .join("|")
+    )
+    .digest("hex")
+    .slice(0, 16);
+  const cacheKey = `rag:${params.scope}:${params.locale}:${docSignature}:${normalizeSearchText(params.question.trim())}`;
   const cached = readCache<RagAnswerResult>(cacheKey);
   if (cached) return cached;
 
-  // Retrieve top 3 compact chunks (saves tokens while preserving exact grounding)
-  const topChunks = retrieveTopChunks(params.question, params.authorizedChunks, 3);
-  const citations: AICitation[] = topChunks.map((c) => ({
-    documentId: c.documentId,
-    documentTitle: c.documentTitle,
-    pageNumber: c.pageNumber,
-    excerpt: c.content.slice(0, 180) + (c.content.length > 180 ? "..." : ""),
-    sourceScope: c.sourceScope,
-  }));
+  // Hybrid multilingual retrieval + reranking (supports FR, EN, AR queries over FR docs)
+  const queryEmbedding = params.authorizedChunks.some((c) => Array.isArray(c.embedding) && c.embedding.length > 0)
+    ? await generateEmbedding(params.question)
+    : null;
+  const topChunks = hybridRetrieveAndRerank({
+    query: params.question,
+    authorizedChunks: params.authorizedChunks,
+    queryEmbedding,
+    limit: 3,
+  });
+  const citations = buildValidatedCitations(topChunks);
 
   const suggestedActions: AISuggestedAction[] = [];
   const qLower = params.question.toLowerCase();

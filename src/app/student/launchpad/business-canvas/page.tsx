@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Copy, Download, LayoutGrid, Plus, Save, Trash2 } from "lucide-react";
+import { Calculator, Copy, Download, LayoutGrid, Plus, Save, Trash2 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { LaunchpadNav } from "@/components/launchpad/launchpad-nav";
 import { useApp } from "@/components/providers/app-provider";
-import { Badge, Button, Card, EmptyState, PageHeader, Select, Textarea } from "@/components/ui/primitives";
+import { Badge, Button, Card, EmptyState, Input, PageHeader, Select, Textarea } from "@/components/ui/primitives";
 import type { LaunchpadBusinessCanvas, LaunchpadStartupIdea, LaunchpadTeam } from "@/types/domain";
 
 export default function LaunchpadBusinessCanvasPage() {
@@ -15,6 +15,10 @@ export default function LaunchpadBusinessCanvasPage() {
   const [ideas, setIdeas] = useState<LaunchpadStartupIdea[]>([]);
   const [teams, setTeams] = useState<LaunchpadTeam[]>([]);
   const [saving, setSaving] = useState(false);
+  const [fixedCosts, setFixedCosts] = useState(300);
+  const [unitPrice, setUnitPrice] = useState(40);
+  const [variableCost, setVariableCost] = useState(10);
+  const [targetUnits, setTargetUnits] = useState(25);
 
   async function load(selectId?: string) {
     const res = await fetch("/api/launchpad");
@@ -261,6 +265,47 @@ export default function LaunchpadBusinessCanvasPage() {
               </ul>
             </Card>
           </div>
+
+          {/* Deterministic Financial Planning Simulator */}
+          <Card className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold flex items-center gap-2">
+                <Calculator className="w-4 h-4 text-blue-600" /> Simulateur Financier Déterministe (Seuil de rentabilité)
+              </h2>
+              <Badge variant="warning">Hypothèses à valider</Badge>
+            </div>
+            <div className="grid sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <label className="block text-[11px] text-slate-500 mb-1">Charges fixes / mois (TND)</label>
+                <Input type="number" min={0} value={fixedCosts} onChange={(e) => setFixedCosts(Math.max(0, Number(e.target.value)))} />
+              </div>
+              <div>
+                <label className="block text-[11px] text-slate-500 mb-1">Prix unitaire (TND)</label>
+                <Input type="number" min={1} value={unitPrice} onChange={(e) => setUnitPrice(Math.max(1, Number(e.target.value)))} />
+              </div>
+              <div>
+                <label className="block text-[11px] text-slate-500 mb-1">Coût variable / unité (TND)</label>
+                <Input type="number" min={0} value={variableCost} onChange={(e) => setVariableCost(Math.max(0, Number(e.target.value)))} />
+              </div>
+              <div>
+                <label className="block text-[11px] text-slate-500 mb-1">Volume cible / mois</label>
+                <Input type="number" min={0} value={targetUnits} onChange={(e) => setTargetUnits(Math.max(0, Number(e.target.value)))} />
+              </div>
+            </div>
+            {(() => {
+              const margin = unitPrice - variableCost;
+              const breakEven = margin > 0 ? Math.ceil(fixedCosts / margin) : null;
+              const revenue = unitPrice * targetUnits;
+              const net = revenue - (fixedCosts + variableCost * targetUnits);
+              return (
+                <div className="grid sm:grid-cols-3 gap-3 text-xs rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3">
+                  <div>Marge sur coût variable : <strong>{margin} TND / unité</strong></div>
+                  <div>Point mort : <strong>{breakEven !== null ? `${breakEven} unités / mois` : "Non rentable (marge ≤ 0)"}</strong></div>
+                  <div>Résultat mensuel estimé : <strong>{net} TND</strong> (CA : {revenue} TND)</div>
+                </div>
+              );
+            })()}
+          </Card>
         </div>
       )}
     </div>

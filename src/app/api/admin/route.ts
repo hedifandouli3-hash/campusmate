@@ -3,9 +3,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { chunkPages, neutralizePromptInjection } from "@/lib/ai/document-processor";
 import { fetchOfficialIsetBejaPages } from "@/lib/ai/isetb-sync";
+import { answerWithRag } from "@/lib/ai/service";
+import { runControlledIsetbSync } from "@/lib/knowledge/crawler";
+import { hybridRetrieveAndRerank } from "@/lib/knowledge/retriever";
 import {
   addAuditLog,
   ensureStoreHydrated,
+  getAuthorizedChunksForUser,
   persistStore,
   persistToDisk,
   requireUser,
@@ -144,8 +148,64 @@ export async function POST(request: Request) {
         resourceId: id,
         details: title,
       });
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ knowledgeDoc: doc }, { status: 201 });
+    }
+
+    if (body.action === "test_rag_retrieval") {
+      const query = String(body.query || "").trim();
+      if (!query) return NextResponse.json({ error: "Question de test requise." }, { status: 400 });
+      const authorizedChunks = getAuthorizedChunksForUser({
+        user,
+        scope: "university_assistant",
+      });
+      const ranked = hybridRetrieveAndRerank({ query, authorizedChunks, limit: 4 });
+      const rag = await answerWithRag({
+        question: query,
+        locale: body.locale === "en" || body.locale === "ar" ? body.locale : "fr",
+        scope: "university_assistant",
+        authorizedChunks,
+      });
+      return NextResponse.json({
+        scope: "university_assistant",
+        retrievedCount: ranked.length,
+        chunks: ranked.map((c) => ({
+          id: c.id,
+          documentTitle: c.documentTitle,
+          score: c.score,
+          excerpt: c.content.slice(0, 220),
+        })),
+        answer: rag.answer,
+        citations: rag.citations,
+        isDemoFallback: rag.isDemoFallback,
+      });
+    }
+
+    if (body.action === "sync_isetb_crawl") {
+      const crawled = await runControlledIsetbSync({
+        institutionId: instId,
+        actorId: user.id,
+        maxPages: 7,
+      });
+      for (const doc of crawled.documents) {
+        const idx = store.knowledgeDocuments.findIndex((d) => d.id === doc.id);
+        if (idx >= 0) store.knowledgeDocuments[idx] = doc;
+        else store.knowledgeDocuments.unshift(doc);
+      }
+      const newIds = new Set(crawled.documents.map((d) => d.id));
+      store.documentChunks = [
+        ...store.documentChunks.filter((c) => !newIds.has(c.documentId)),
+        ...crawled.chunks,
+      ];
+      await persistStore(store);
+      return NextResponse.json({
+        syncedCount: crawled.documents.length,
+        chunksCount: crawled.chunks.length,
+        rejectedCount: crawled.rejectedCount,
+        historicalCount: crawled.historicalCount,
+        failedCount: crawled.failedCount,
+        inventory: crawled.inventory,
+      });
     }
 
     if (body.action === "sync_isetb_website") {
