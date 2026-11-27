@@ -7,6 +7,7 @@ import {
   isSupabaseConfigured,
   isSupabaseSecretConfigured,
 } from "@/lib/env";
+import { isSessionSecretConfigured } from "@/lib/security/session";
 
 export async function GET() {
   const persistence = getPersistenceDiagnostics();
@@ -14,6 +15,7 @@ export async function GET() {
     status: "ok",
     app: "CampusMate",
     demoMode: isDemoMode(),
+    sessionSecretConfigured: isSessionSecretConfigured(),
     supabaseConfigured: isSupabaseConfigured(),
     supabaseSecretConfigured: isSupabaseSecretConfigured(),
     persistence: {

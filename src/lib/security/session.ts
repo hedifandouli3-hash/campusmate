@@ -14,15 +14,22 @@ export interface SessionPayload {
   exp: number;
 }
 
+export function isSessionSecretConfigured(): boolean {
+  const secret = env.sessionSecret;
+  return !(
+    secret === "campusmate-local-dev-secret-change-in-prod" ||
+    secret === "replace-with-secure-random-32-char-secret" ||
+    secret.length < 24
+  );
+}
+
 function getSecret(): string {
   const secret = env.sessionSecret;
   if (
     process.env.NODE_ENV === "production" &&
     !process.env.VITEST &&
     env.demoModeFlag !== "true" &&
-    (secret === "campusmate-local-dev-secret-change-in-prod" ||
-      secret === "replace-with-secure-random-32-char-secret" ||
-      secret.length < 24)
+    !isSessionSecretConfigured()
   ) {
     throw new Error("SESSION_SECRET_MISCONFIGURED");
   }

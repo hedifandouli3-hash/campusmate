@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { authenticateUser, addAuditLog, getStore } from "@/lib/data/store";
+import { authenticateUser, addAuditLog, ensureStoreHydrated } from "@/lib/data/store";
 import { isDemoLoginAllowed, isDemoMode } from "@/lib/env";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { getDashboardPathForRole, setServerSessionCookie } from "@/lib/security/session";
@@ -47,20 +47,28 @@ export async function POST(request: Request) {
         { status: 403 }
       );
     }
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const demoUser = store.users.find(
       (u) => u.email.toLowerCase() === quick.data.demoEmail.toLowerCase() && u.isDemoAccount
     );
     if (!demoUser || demoUser.isSuspended) {
       return NextResponse.json({ error: "Compte introuvable." }, { status: 404 });
     }
-    await setServerSessionCookie({
-      userId: demoUser.id,
-      email: demoUser.email,
-      role: demoUser.role,
-      institutionId: demoUser.institutionId,
-      sessionVersion: demoUser.sessionVersion ?? 1,
-    });
+    try {
+      await setServerSessionCookie({
+        userId: demoUser.id,
+        email: demoUser.email,
+        role: demoUser.role,
+        institutionId: demoUser.institutionId,
+        sessionVersion: demoUser.sessionVersion ?? 1,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error && err.message === "SESSION_SECRET_MISCONFIGURED"
+          ? "Configuration serveur incomplète : SESSION_SECRET doit être défini en production."
+          : "Erreur serveur lors de la création de la session.";
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
     return NextResponse.json({
       user: { id: demoUser.id, fullName: demoUser.fullName, role: demoUser.role, email: demoUser.email },
       redirectTo: getDashboardPathForRole(demoUser.role),
@@ -72,6 +80,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email ou mot de passe invalide." }, { status: 400 });
   }
 
+  await ensureStoreHydrated();
   const user = authenticateUser(parsed.data.email, parsed.data.password);
   if (!user) {
     return NextResponse.json({ error: "Identifiants incorrects ou compte suspendu." }, { status: 401 });
@@ -86,13 +95,21 @@ export async function POST(request: Request) {
     );
   }
 
-  await setServerSessionCookie({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-    institutionId: user.institutionId,
-    sessionVersion: user.sessionVersion ?? 1,
-  });
+  try {
+    await setServerSessionCookie({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      institutionId: user.institutionId,
+      sessionVersion: user.sessionVersion ?? 1,
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error && err.message === "SESSION_SECRET_MISCONFIGURED"
+        ? "Configuration serveur incomplète : SESSION_SECRET doit être défini en production."
+        : "Erreur serveur lors de la création de la session.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   addAuditLog({
     institutionId: user.institutionId,

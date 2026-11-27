@@ -43,9 +43,13 @@ export function RoleLoginForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, expectedRole: role }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setError(data.error || "Identifiants incorrects.");
+        setError(data?.error || (res.status >= 500 ? `Erreur serveur (${res.status}). Veuillez réessayer.` : "Identifiants incorrects."));
+        return;
+      }
+      if (!data?.user || !data?.redirectTo) {
+        setError("Réponse invalide du serveur.");
         return;
       }
       notify(`Bienvenue, ${data.user.fullName}`, "success");

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { registerStudentOrOrg } from "@/lib/data/store";
+import { ensureStoreHydrated, registerStudentOrOrg } from "@/lib/data/store";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { getDashboardPathForRole, setServerSessionCookie } from "@/lib/security/session";
 
@@ -37,17 +37,26 @@ export async function POST(request: Request) {
     );
   }
 
+  await ensureStoreHydrated();
   const result = registerStudentOrOrg(parsed.data);
   if (result.error || !result.user) {
     return NextResponse.json({ error: result.error || "Erreur d'inscription." }, { status: 400 });
   }
 
-  await setServerSessionCookie({
-    userId: result.user.id,
-    email: result.user.email,
-    role: result.user.role,
-    institutionId: result.user.institutionId,
-  });
+  try {
+    await setServerSessionCookie({
+      userId: result.user.id,
+      email: result.user.email,
+      role: result.user.role,
+      institutionId: result.user.institutionId,
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error && err.message === "SESSION_SECRET_MISCONFIGURED"
+        ? "Configuration serveur incomplète : SESSION_SECRET doit être défini en production."
+        : "Erreur serveur lors de la création de la session.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   return NextResponse.json(
     {

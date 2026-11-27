@@ -34,9 +34,13 @@ export default function RegisterPage() {
           organizationName: role === "organization" ? organizationName : undefined,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setError(data.error || "Erreur d'inscription.");
+        setError(data?.error || (res.status >= 500 ? `Erreur serveur (${res.status}).` : "Erreur d'inscription."));
+        return;
+      }
+      if (!data?.redirectTo) {
+        setError("Réponse invalide du serveur.");
         return;
       }
       notify("Compte créé avec succès !", "success");
