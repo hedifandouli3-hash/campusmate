@@ -31,14 +31,17 @@ describe("CampusMate V8 Institution-Funded SaaS, Entitlements & Seat Licensing",
     const bejaStudent = store.users.find((u) => u.email === "amira.benali@isetb.rnu.tn")!;
     const radesStudent = store.users.find((u) => u.institutionId === "11111111-1111-1111-1111-111111111102")!;
 
-    // ISET Béja is University Pro
+    // ISET Béja defaults to University Ultra for full jury demonstration
     const bejaEnt = getInstitutionEntitlements(store, bejaStudent);
-    expect(bejaEnt.planCode).toBe("university_pro");
+    expect(bejaEnt.planCode).toBe("university_ultra");
     expect(bejaEnt.hasAgent).toBe(true);
     expect(bejaEnt.hasStudio).toBe(true);
-    expect(bejaEnt.hasAutomations).toBe(false); // Ultra only
+    expect(bejaEnt.hasAutomations).toBe(true);
 
-    // ISET Radès is University Plus
+    // Simulate an institution on University Plus to verify server-side gating
+    const radesLic = store.institutionLicenses!.find((l) => l.institutionId === "11111111-1111-1111-1111-111111111102")!;
+    radesLic.planCode = "university_plus";
+
     const radesEnt = getInstitutionEntitlements(store, radesStudent);
     expect(radesEnt.planCode).toBe("university_plus");
     expect(radesEnt.hasAgent).toBe(false);
