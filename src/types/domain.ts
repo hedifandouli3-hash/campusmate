@@ -429,6 +429,7 @@ export interface MarketplaceListing {
   category: "textbooks" | "calculators" | "study_materials" | "electronics" | "supplies" | "other_approved";
   priceTnd: number;
   condition: string;
+  imageUrl?: string;
   status: "available" | "sold" | "removed";
   favoriteUserIds: string[];
   createdAt: string;
@@ -469,6 +470,7 @@ export interface LostFoundReport {
   description: string;
   generalLocation: string;
   eventDate: string;
+  imageUrl?: string;
   status: "open" | "claim_pending" | "recovered";
   createdAt: string;
 }

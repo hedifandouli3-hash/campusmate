@@ -1,16 +1,31 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import { addNotification, getStore, persistToDisk, requireUser } from "@/lib/data/store";
+import { addNotification, ensureStoreHydrated, persistToDisk, requireUser } from "@/lib/data/store";
 import { sanitizeText } from "@/lib/utils";
 
 function timesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
   return aStart < bEnd && bStart < aEnd;
 }
 
+function sanitizeCommunityImageUrl(raw: unknown): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  // Allow safe static local images under /images/
+  if (/^\/images\/[a-zA-Z0-9_./-]+$/.test(trimmed) && !trimmed.includes("..")) {
+    return trimmed;
+  }
+  // Allow safe raster data URLs (PNG/JPEG/WebP/GIF) up to ~1.5 MB
+  if (/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(trimmed) && trimmed.length <= 2_000_000) {
+    return trimmed;
+  }
+  return undefined;
+}
+
 export async function GET() {
   try {
     const user = await requireUser();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const instId = user.institutionId;
 
     const marketplace = store.marketplaceListings.filter(
@@ -72,7 +87,7 @@ export async function POST(request: Request) {
     }
     const instId = user.institutionId;
     const body = await request.json();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const now = new Date().toISOString();
 
     switch (body.module) {
@@ -146,6 +161,7 @@ export async function POST(request: Request) {
             : "study_materials") as "textbooks" | "calculators" | "study_materials" | "electronics" | "supplies" | "other_approved",
           priceTnd: safePrice,
           condition: sanitizeText(String(body.condition || "Bon état"), 40),
+          imageUrl: sanitizeCommunityImageUrl(body.imageUrl),
           status: "available" as const,
           favoriteUserIds: [],
           createdAt: now,
@@ -180,6 +196,7 @@ export async function POST(request: Request) {
           description: sanitizeText(String(body.description || ""), 600),
           generalLocation: sanitizeText(String(body.generalLocation || ""), 120),
           eventDate: String(body.eventDate || now.slice(0, 10)),
+          imageUrl: sanitizeCommunityImageUrl(body.imageUrl),
           status: "open" as const,
           createdAt: now,
         };

@@ -89,6 +89,39 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await expect(page.getByRole("heading", { name: /Super Administration CampusMate/i })).toBeVisible();
   });
 
+  test("Marketplace and Lost & Found display seeded photos and allow posting new items", async ({ page }) => {
+    await page.goto("/login/student");
+    await page.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
+    await page.getByLabel("Mot de passe").fill("Student@2026!");
+    await page.getByRole("button", { name: /Se connecter/i }).click();
+    await page.waitForURL("**/student/dashboard");
+
+    // Marketplace: seeded photo items + post new listing
+    await page.goto("/student/marketplace");
+    await expect(page.getByText(/Calculatrice de Bureau Rose/i)).toBeVisible();
+    await expect(page.locator('img[src="/images/community/hp-laptop.png"]')).toBeVisible();
+    const mktTitle = `Cahier TP Réseaux ${Date.now()}`;
+    await page.getByPlaceholder("Titre de l'article...").fill(mktTitle);
+    await page.getByPlaceholder("État, édition et point de remise sur le campus...").fill("Neuf, remise Bloc TI.");
+    await page.getByRole("button", { name: /Publier l'annonce/i }).click();
+    await expect(page.getByText(mktTitle)).toBeVisible();
+    await page.reload();
+    await expect(page.getByText(mktTitle)).toBeVisible();
+
+    // Lost & Found: seeded photo reports + post new report
+    await page.goto("/student/lost-found");
+    await expect(page.getByText(/Trousseau de 2 clés/i)).toBeVisible();
+    await expect(page.locator('img[src="/images/community/keys-keychain.png"]')).toBeVisible();
+    const lfTitle = `Chargeur USB-C ${Date.now()}`;
+    await page.getByPlaceholder("Nom de l'objet...").fill(lfTitle);
+    await page.getByPlaceholder("Lieu général (ex: Bloc TI)").fill("Bibliothèque");
+    await page.getByPlaceholder("Description générale sans données personnelles...").fill("Trouvé sur la table 4.");
+    await page.getByRole("button", { name: /Publier le signalement/i }).click();
+    await expect(page.getByText(lfTitle)).toBeVisible();
+    await page.reload();
+    await expect(page.getByText(lfTitle)).toBeVisible();
+  });
+
   test("Responsive breakpoints 360px, 768px, and 1440px have zero horizontal overflow", async ({ page }) => {
     for (const width of [360, 768, 1440]) {
       await page.setViewportSize({ width, height: 844 });

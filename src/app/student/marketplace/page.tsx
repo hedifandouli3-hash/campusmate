@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Flag, Heart, ShoppingBag, Trash2 } from "lucide-react";
+import { Flag, Heart, ImagePlus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
 import {
   Badge,
@@ -28,6 +28,8 @@ export default function StudentMarketplacePage() {
   const [priceTnd, setPriceTnd] = useState(20);
   const [newCat, setNewCat] = useState("textbooks");
   const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   async function load() {
@@ -47,24 +49,52 @@ export default function StudentMarketplacePage() {
     return () => clearTimeout(id);
   }, []);
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      notify("Format accepté : PNG, JPG ou WebP.", "error");
+      return;
+    }
+    if (file.size > 1_000_000) {
+      notify("Image trop volumineuse (max 1 Mo).", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") setImageUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch("/api/community", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        module: "marketplace",
-        title,
-        priceTnd: Number(priceTnd),
-        category: newCat,
-        description,
-      }),
-    });
-    if (res.ok) {
-      notify("Annonce publiée sur le Marketplace !", "success");
-      setTitle("");
-      setDescription("");
-      await load();
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          module: "marketplace",
+          title,
+          priceTnd: Number(priceTnd),
+          category: newCat,
+          description,
+          imageUrl: imageUrl || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok) {
+        notify("Annonce publiée sur le Marketplace !", "success");
+        setTitle("");
+        setDescription("");
+        setImageUrl("");
+        await load();
+      } else {
+        notify(data?.error || "Impossible de publier l'annonce.", "error");
+      }
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -109,7 +139,24 @@ export default function StudentMarketplacePage() {
           </Select>
           <Input type="number" min="0" value={priceTnd} onChange={(e) => setPriceTnd(Number(e.target.value))} placeholder="Prix (TND)" />
           <Textarea className="sm:col-span-3" rows={2} required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="État, édition et point de remise sur le campus..." />
-          <div><Button type="submit">Publier l&apos;annonce</Button></div>
+          <div className="sm:col-span-3 flex flex-wrap items-center gap-3">
+            <label className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+              <ImagePlus className="w-4 h-4 text-blue-600" />
+              <span>Ajouter une photo (optionnel)</span>
+              <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleImageSelect} />
+            </label>
+            {imageUrl && (
+              <div className="relative inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 p-1 pe-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imageUrl} alt="Aperçu" className="h-10 w-10 rounded object-cover" />
+                <span className="text-xs text-slate-500">Photo prête</span>
+                <button type="button" onClick={() => setImageUrl("")} aria-label="Retirer la photo" className="text-slate-400 hover:text-rose-600 cursor-pointer">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+          <div><Button type="submit" disabled={submitting}>{submitting ? "Publication..." : "Publier l'annonce"}</Button></div>
         </form>
       </Card>
 
@@ -121,6 +168,7 @@ export default function StudentMarketplacePage() {
           <option value="calculators">Calculatrices</option>
           <option value="study_materials">Supports d&apos;étude</option>
           <option value="electronics">Électronique</option>
+          <option value="supplies">Fournitures</option>
         </Select>
       </div>
 
@@ -131,8 +179,14 @@ export default function StudentMarketplacePage() {
           {filtered.map((item) => {
             const isOwner = item.sellerId === currentUserId;
             return (
-              <Card key={item.id} className="space-y-3 flex flex-col justify-between">
-                <div className="space-y-1.5">
+              <Card key={item.id} className="space-y-3 flex flex-col justify-between overflow-hidden">
+                <div className="space-y-2.5">
+                  {item.imageUrl && (
+                    <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800/70 border border-slate-100 dark:border-slate-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <Badge variant="indigo">{item.category}</Badge>
                     <span className="font-bold text-blue-600">{item.priceTnd} TND</span>
