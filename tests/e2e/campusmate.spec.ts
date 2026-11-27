@@ -138,6 +138,45 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await expect(page.getByText(promoTitle)).toBeVisible();
   });
 
+  test("CampusMate Launchpad: Course-to-Opportunity, Skills, Startups, Canvas, Roadmaps, Portfolio & CV integration", async ({ page }) => {
+    await page.goto("/login/student");
+    await page.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
+    await page.getByLabel("Mot de passe").fill("Student@2026!");
+    await page.getByRole("button", { name: /Se connecter/i }).click();
+    await page.waitForURL("**/student/dashboard");
+
+    // Step 2: Course-to-Opportunity from course detail
+    await page.goto("/student/courses");
+    await page.locator('a[href^="/student/courses/"]').first().click();
+    await page.getByRole("button", { name: /Transformer ce cours en opportunités/i }).click();
+    await expect(page.getByText(/Opportunités issues de ce cours/i)).toBeVisible({ timeout: 15_000 });
+
+    // Launchpad main hub
+    await page.goto("/student/launchpad");
+    await expect(page.getByRole("heading", { name: /Transformez vos connaissances en opportunités/i })).toBeVisible();
+
+    // Skills & Startups
+    await page.goto("/student/launchpad/skills");
+    await expect(page.getByRole("heading", { name: /Cartographie des Compétences/i })).toBeVisible();
+
+    await page.goto("/student/launchpad/startups");
+    await expect(page.getByText(/StockPulse TN/i)).toBeVisible();
+
+    // Business Model Canvas persistence
+    await page.goto("/student/launchpad/business-canvas");
+    await expect(page.getByText(/Propositions de valeur/i)).toBeVisible();
+    await page.getByRole("button", { name: /Enregistrer/i }).click();
+
+    // Roadmaps & Pitch Generator
+    await page.goto("/student/launchpad/roadmaps");
+    await page.getByRole("button", { name: /Générer le Pitch/i }).click();
+    await expect(page.getByText(/Elevator Pitch/i)).toBeVisible();
+
+    // Portfolio -> Import to CV
+    await page.goto("/student/launchpad/portfolio");
+    await expect(page.getByText(/Application de Gestion de Stock/i)).toBeVisible();
+  });
+
   test("Responsive breakpoints 360px, 768px, and 1440px have zero horizontal overflow", async ({ page }) => {
     for (const width of [360, 768, 1440]) {
       await page.setViewportSize({ width, height: 844 });

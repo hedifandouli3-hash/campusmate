@@ -1,7 +1,7 @@
 # CampusMate — Project Status
 
 **Last Verified:** 2026-11-27  
-**Overall Status:** Production-Ready University Portal (Dedicated Role Portals + Live Gemini 3-Key Failover + Official `isetb.rnu.tn` RAG + AES-256-GCM Chat Encryption + CV Studio + Supabase Schema/Config).
+**Overall Status:** V3 Production-Ready University & Entrepreneurship Ecosystem (15 Modules including **CampusMate Launchpad**, Student Promotions & Housing, Dedicated Role Portals, Live Gemini 3-Key Failover, Official `isetb.rnu.tn` RAG, AES-256-GCM Chat Encryption, CV Studio & Supabase Schema/Migrations).
 
 ---
 
@@ -33,13 +33,14 @@
 | :--- | :--- | :--- |
 | TypeScript | `npm.cmd run typecheck` | Passed (0 errors) |
 | ESLint | `npm.cmd run lint` | Passed (0 errors, 0 warnings) |
-| Unit & Security Tests | `npm.cmd run test` (`vitest run`) | Passed (14/14 tests) |
-| Production Build | `npm.cmd run build` (`next build`) | Passed (100 routes) |
-| Browser E2E Tests | `npm.cmd run test:e2e` (`playwright test`) | Passed (5/5 tests) |
+| Unit & Security Tests | `npm.cmd run test` (`vitest run`) | Passed (15/15 tests) |
+| Production Build | `npm.cmd run build` (`next build`) | Passed (113 routes) |
+| Browser E2E Tests | `npm.cmd run test:e2e` (`playwright test`) | Passed (7/7 tests) |
 
 ---
 
 ## 3. Remaining External Steps
 
-1. Paste the unmasked `SUPABASE_SECRET_KEY` (`sb_secret_...`) in `.env.local` and run `supabase/migrations/001_schema.sql` through `005_v2_enhancements.sql` in Supabase project `dudbmtujtjquotigrlcu` (or via the configured Supabase MCP after OAuth).
-2. Review GitHub repository visibility (`hedifandouli3-hash/campusmate` is currently **PUBLIC**; switch to **Private** in GitHub settings if intended to remain private).
+1. Run `supabase/migrations/001_schema.sql` through `006_launchpad.sql` in Supabase project `dudbmtujtjquotigrlcu` (or via the configured Supabase MCP after OAuth) and ensure `SUPABASE_SECRET_KEY` is set in `.env.local` for local Supabase persistence.
+2. Add `GEMINI_API_KEYS` (and optionally explicit `SESSION_SECRET` / `CHAT_ENCRYPTION_KEY`) in Vercel Environment Variables if you want live Gemini AI on the Vercel deployment.
+3. Review GitHub repository visibility (`hedifandouli3-hash/campusmate` was observed as **PUBLIC**; switch to **Private** in GitHub settings if intended to remain private).

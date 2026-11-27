@@ -2,6 +2,12 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { chunkPages, extractDocumentContent, neutralizePromptInjection } from "@/lib/ai/document-processor";
 import { stripHtmlToCleanText } from "@/lib/ai/isetb-sync";
 import {
+  computeHeuristicFeasibility,
+  courseToOpportunitiesWithAI,
+  extractAcademicSkillsWithAI,
+  generatePitchWithAI,
+} from "@/lib/ai/launchpad";
+import {
   answerWithRag,
   evaluateCvHeuristically,
   generateDocumentSummary,
@@ -302,5 +308,53 @@ describe("CampusMate Core Security, Multi-Tenancy, RAG & Workflows", () => {
     expect(evalRes.matchedKeywords).toEqual(["React", "PostgreSQL"]);
     expect(evalRes.missingKeywords).toEqual(["Docker"]);
     expect(evalRes.disclaimer).toContain("heuristique");
+  });
+
+  it("extracts Launchpad skills and transforms authorized course docs into grounded opportunities", async () => {
+    const store = getStore();
+    const amira = store.users.find((u) => u.id === DEMO_IDS.studentAmira)!;
+    const visibleDocs = getVisibleCourseDocuments(amira);
+    expect(visibleDocs.length).toBeGreaterThan(0);
+
+    const skillRes = await extractAcademicSkillsWithAI({
+      institutionId: DEMO_IDS.instBeja,
+      studentId: amira.id,
+      specialization: "DSI",
+      authorizedDocs: visibleDocs,
+      personalDocTitles: [],
+      quizTopics: ["SQL"],
+      locale: "fr",
+    });
+    expect(skillRes.skills.length).toBeGreaterThan(0);
+    expect(skillRes.skills.every((s) => s.institutionId === DEMO_IDS.instBeja && s.studentId === amira.id)).toBe(true);
+
+    const pack = await courseToOpportunitiesWithAI({
+      institutionId: DEMO_IDS.instBeja,
+      studentId: amira.id,
+      doc: visibleDocs[0],
+      locale: "fr",
+    });
+    expect(pack.practicalProjects.length).toBeGreaterThanOrEqual(3);
+    expect(pack.freelanceIdeas.length).toBeGreaterThanOrEqual(3);
+    expect(pack.startupIdeas.length).toBeGreaterThanOrEqual(3);
+    expect(pack.practicalProjects[0].connectionToCourse.length).toBeGreaterThan(10);
+
+    const feasibility = computeHeuristicFeasibility({ existingCount: 3, missingCount: 1, mvpFeatureCount: 3 });
+    expect(feasibility.overallScore).toBeGreaterThan(50);
+    expect(feasibility.methodologyNote).toContain("heuristique");
+
+    const pitchRes = await generatePitchWithAI({
+      institutionId: DEMO_IDS.instBeja,
+      studentId: amira.id,
+      title: "StockPulse TN",
+      problem: "Gestion manuelle des stocks",
+      solution: "Suivi web simple",
+      targetCustomers: "PME locales",
+      completedMilestones: ["Schéma BDD"],
+      plannedMilestones: ["Test pilote"],
+      locale: "fr",
+    });
+    expect(pitchRes.pitch.completedVsPlannedNote).toContain("Réalisé");
+    expect(pitchRes.pitch.pitch3m).toContain("StockPulse TN");
   });
 });

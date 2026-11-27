@@ -662,3 +662,296 @@ export interface AuditLog {
   details: string;
   createdAt: string;
 }
+
+// ============================================================================
+// CampusMate V3 — Launchpad (Knowledge-to-Opportunity & Entrepreneurship Hub)
+// ============================================================================
+
+export type LaunchpadSkillStatus = "studied" | "practiced" | "self_confirmed" | "demonstrated";
+export type LaunchpadSkillCategory = "technical" | "data" | "design" | "business" | "engineering" | "communication";
+
+export interface LaunchpadSkill {
+  id: string;
+  institutionId: string;
+  studentId: string;
+  name: string;
+  category: LaunchpadSkillCategory;
+  subjectName: string;
+  sourceCourseId?: string;
+  sourceDocumentTitle: string;
+  evidenceSummary: string;
+  practicalApplications: string[];
+  status: LaunchpadSkillStatus;
+  proficiency: number;
+  nextSkills: string[];
+  createdAt: string;
+}
+
+export interface LaunchpadOpportunityPack {
+  id: string;
+  institutionId: string;
+  studentId: string;
+  courseDocumentId: string;
+  courseTitle: string;
+  subjectName: string;
+  reasoningSummary: string;
+  practicalProjects: Array<{
+    title: string;
+    summary: string;
+    connectionToCourse: string;
+    skills: string[];
+  }>;
+  freelanceIdeas: Array<{
+    title: string;
+    summary: string;
+    connectionToCourse: string;
+    targetClients: string;
+  }>;
+  startupIdeas: Array<{
+    title: string;
+    pitch: string;
+    connectionToCourse: string;
+    mvpScope: string;
+  }>;
+  roadmapSteps: string[];
+  isDemoFallback: boolean;
+  createdAt: string;
+}
+
+export interface LaunchpadFreelanceIdea {
+  id: string;
+  institutionId: string;
+  studentId: string;
+  serviceTitle: string;
+  description: string;
+  relatedSubjects: string[];
+  requiredSkills: string[];
+  possessedSkills: string[];
+  missingSkills: string[];
+  difficulty: "beginner" | "intermediate" | "advanced";
+  targetClients: string[];
+  deliverables: string[];
+  portfolioProjectIdea: string;
+  toolsToLearn: string[];
+  nextSteps: string[];
+  illustrativeQuoteNote: string;
+  prepKit?: {
+    serviceDescription?: string;
+    proposalTemplate?: string;
+    deliveryChecklist?: string[];
+    mockInterviewQuestions?: string[];
+  };
+  saved: boolean;
+  createdAt: string;
+}
+
+export interface LaunchpadStartupIdea {
+  id: string;
+  institutionId: string;
+  studentId: string;
+  mode: "knowledge" | "course" | "custom";
+  sourceCourseTitle?: string;
+  name: string;
+  shortPitch: string;
+  problemStatement: string;
+  proposedSolution: string;
+  targetCustomers: string[];
+  academicKnowledgeUsed: string[];
+  requiredTechnicalSkills: string[];
+  requiredBusinessSkills: string[];
+  existingCapabilities: string[];
+  missingCapabilities: string[];
+  valueProposition: string;
+  businessModel: string;
+  revenueStreams: string[];
+  mvpFeatures: string[];
+  technicalRequirements: string[];
+  effortEstimate: string;
+  resourceRequirements: string[];
+  validationPlan: string[];
+  risksAndAssumptions: string[];
+  suggestedTeam: string[];
+  initialRoadmap: string[];
+  hypothesisDisclaimer: string;
+  feasibility?: {
+    overallScore: number;
+    factors: Array<{ name: string; score: number; explanation: string }>;
+    recommendedNextStep: string;
+    methodologyNote: string;
+  };
+  saved: boolean;
+  createdAt: string;
+}
+
+export interface LaunchpadBusinessCanvas {
+  id: string;
+  institutionId: string;
+  studentId: string;
+  startupIdeaId?: string;
+  title: string;
+  version: number;
+  sharedWithTeamId?: string;
+  customerSegments: string;
+  valuePropositions: string;
+  channels: string;
+  customerRelationships: string;
+  revenueStreams: string;
+  keyResources: string;
+  keyActivities: string;
+  keyPartnerships: string;
+  costStructure: string;
+  validatedFacts: string[];
+  assumptions: string[];
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface LaunchpadRoadmapTask {
+  id: string;
+  title: string;
+  phase: "validation" | "design" | "development" | "testing" | "pitch";
+  priority: "high" | "medium" | "low";
+  dueDate: string;
+  completed: boolean;
+  notes?: string;
+  syncedToPlanner?: boolean;
+}
+
+export interface LaunchpadRoadmap {
+  id: string;
+  institutionId: string;
+  studentId: string;
+  projectId?: string;
+  startupIdeaId?: string;
+  title: string;
+  horizon: "7d" | "14d" | "30d" | "90d" | "custom";
+  objectives: string[];
+  requiredSkills: string[];
+  mvpScope: string;
+  tasks: LaunchpadRoadmapTask[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LaunchpadProject {
+  id: string;
+  institutionId: string;
+  ownerId: string;
+  ownerName: string;
+  title: string;
+  problemSolved: string;
+  subjectName?: string;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  objectives: string[];
+  requirements: string[];
+  technologies: string[];
+  deliverables: string[];
+  evaluationCriteria: string[];
+  courseReferences: string[];
+  skillsDeveloped: string[];
+  status: "planning" | "in_progress" | "completed";
+  progress: number;
+  repoUrl?: string;
+  demoUrl?: string;
+  reflections?: string;
+  attachments: Array<{ id: string; name: string; kind: "document" | "screenshot"; urlOrNote: string }>;
+  tasks: Array<{ id: string; title: string; completed: boolean }>;
+  isPrivate: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LaunchpadTeam {
+  id: string;
+  institutionId: string;
+  leaderId: string;
+  leaderName: string;
+  projectTitle: string;
+  description: string;
+  requiredRoles: string[];
+  requiredSkills: string[];
+  members: Array<{ userId: string; fullName: string; role: string; joinedAt: string }>;
+  joinRequests: Array<{
+    id: string;
+    userId: string;
+    fullName: string;
+    role: string;
+    message: string;
+    status: "pending" | "accepted" | "rejected";
+    createdAt: string;
+  }>;
+  milestones: Array<{ id: string; title: string; completed: boolean }>;
+  chatGroupId?: string;
+  announcements: string[];
+  createdAt: string;
+}
+
+export interface LaunchpadPortfolio {
+  studentId: string;
+  institutionId: string;
+  headline: string;
+  bio: string;
+  template: "minimal" | "engineering" | "product";
+  isPublicShared: boolean;
+  shareToken?: string;
+  items: Array<{
+    id: string;
+    projectId?: string;
+    title: string;
+    description: string;
+    problemSolved: string;
+    technologies: string[];
+    skillsDemonstrated: string[];
+    contribution: string;
+    repoUrl?: string;
+    demoUrl?: string;
+    completionDate: string;
+    importedToCv?: boolean;
+  }>;
+  certifications: string[];
+  achievements: string[];
+  updatedAt: string;
+}
+
+export interface LaunchpadMentorshipItem {
+  id: string;
+  institutionId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: "teacher" | "university_admin" | "organization";
+  kind: "challenge" | "mentorship" | "incubator" | "funding_info" | "course_application";
+  title: string;
+  description: string;
+  relatedDiscipline: string;
+  eligibilityNote: string;
+  isDemoSample: boolean;
+  applicants: Array<{
+    userId: string;
+    fullName: string;
+    projectTitle: string;
+    message: string;
+    feedback?: string;
+    createdAt: string;
+  }>;
+  createdAt: string;
+}
+
+export interface LaunchpadPitch {
+  id: string;
+  institutionId: string;
+  studentId: string;
+  startupOrProjectTitle: string;
+  locale: Locale;
+  elevatorPitch: string;
+  pitch30s: string;
+  pitch1m: string;
+  pitch3m: string;
+  executiveSummary: string;
+  problemSolution: string;
+  valueProposition: string;
+  deckOutline: string[];
+  juryQuestions: Array<{ question: string; suggestedAnswer: string }>;
+  completedVsPlannedNote: string;
+  createdAt: string;
+  updatedAt: string;
+}

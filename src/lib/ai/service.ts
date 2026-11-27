@@ -147,7 +147,7 @@ export async function runWithKeyPool<T>(
   return null;
 }
 
-async function generateCompactText(params: {
+export async function generateCompactText(params: {
   prompt: string;
   systemInstruction: string;
   maxOutputTokens: number;

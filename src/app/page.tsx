@@ -18,6 +18,7 @@ import {
   GraduationCap,
   MessageCircleWarning,
   MessageSquare,
+  Rocket,
   Search,
   ShieldCheck,
   ShoppingBag,
@@ -44,6 +45,7 @@ const MODULES = [
   { num: "12", title: "Événements Campus", desc: "Hackathons, ateliers, clubs et inscriptions avec capacité.", icon: <Calendar className="w-5 h-5 text-indigo-600" /> },
   { num: "13", title: "Groupes Académiques", desc: "Discussions temps réel par promo, département, section et matière.", icon: <MessageSquare className="w-5 h-5 text-emerald-600" /> },
   { num: "14", title: "Organisations & Stages", desc: "Offres PFE/Perfectionnement vérifiées et matching IA explicable.", icon: <Briefcase className="w-5 h-5 text-blue-600" /> },
+  { num: "15", title: "CampusMate Launchpad", desc: "Transformez vos cours en compétences, projets pratiques, freelance, Business Canvas et startups.", icon: <Rocket className="w-5 h-5 text-indigo-600" /> },
 ];
 
 const ROLE_PREVIEWS = [
@@ -104,7 +106,7 @@ export default function LandingPage() {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="primary">ISET Béja • Écosystème Universitaire IA</Badge>
-              <Badge variant="success">Multi-Tenant • 14 Modules</Badge>
+              <Badge variant="success">Multi-Tenant • 15 Modules</Badge>
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
               {t.landing.heroTitle}
@@ -232,7 +234,7 @@ export default function LandingPage() {
               </p>
             </div>
             <Link href="/features" className="text-sm font-semibold text-blue-600 hover:underline">
-              Explorer les 14 modules →
+              Explorer les 15 modules →
             </Link>
           </div>
 
@@ -249,6 +251,45 @@ export default function LandingPage() {
                 <p className="text-xs text-slate-600 dark:text-slate-300">{m.desc}</p>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* De l'université au monde professionnel — Launchpad Flagship */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 space-y-6">
+        <div className="rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-6 sm:p-10 space-y-6">
+          <div className="max-w-3xl space-y-2">
+            <Badge variant="indigo">Nouveauté V3 • CampusMate Launchpad</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold">
+              De l&apos;université au monde professionnel.
+            </h2>
+            <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              De l&apos;apprentissage à l&apos;emploi, du savoir à l&apos;entrepreneuriat.
+            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              CampusMate Launchpad relie directement vos cours universitaires à des compétences vérifiées, des projets pratiques, des services freelance, des Business Model Canvas et des startups étudiantes.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            {[
+              { step: "Apprendre & Connecter", desc: "Extrayez les compétences réelles de vos cours autorisés et quiz." },
+              { step: "Appliquer & Construire", desc: "Transformez un cours en 3 projets pratiques, 3 services freelance et 3 idées startup." },
+              { step: "Structurer & Collaborer", desc: "Éditez votre Business Model Canvas, roadmap MVP et équipe académique." },
+              { step: "Valoriser & Lancer", desc: "Exportez vos réalisations vers votre Portfolio, Studio CV et Pitch Jury." },
+            ].map((item) => (
+              <Card key={item.step} className="p-4 space-y-1.5">
+                <p className="font-semibold text-sm">{item.step}</p>
+                <p className="text-slate-600 dark:text-slate-300">{item.desc}</p>
+              </Card>
+            ))}
+          </div>
+          <div>
+            <Link
+              href="/login/student"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition"
+            >
+              Découvrir CampusMate Launchpad <Rocket className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>

@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Bot, CheckCircle2, Download, FileText, HelpCircle, Layers, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Bot, CheckCircle2, Download, FileText, HelpCircle, Layers, Rocket, Send, Sparkles } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
 import { Badge, Button, Card, Input, Select } from "@/components/ui/primitives";
-import type { AICitation, CourseDocument, Quiz } from "@/types/domain";
+import type { AICitation, CourseDocument, LaunchpadOpportunityPack, Quiz } from "@/types/domain";
 
 type SummaryMode = "short" | "detailed" | "key_concepts" | "exam_prep" | "beginner";
 
@@ -47,6 +47,8 @@ export default function CourseDetailPage() {
   const [pastAttempts, setPastAttempts] = useState<Array<{ id: string; score: number; maxScore: number; createdAt: string }>>([]);
   const [flippedCard, setFlippedCard] = useState<number | null>(null);
   const [generatingQuiz, setGeneratingQuiz] = useState(false);
+  const [opportunityPack, setOpportunityPack] = useState<LaunchpadOpportunityPack | null>(null);
+  const [generatingOpportunities, setGeneratingOpportunities] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -72,6 +74,27 @@ export default function CourseDetailPage() {
     if (res.ok) {
       setMarkedRead(true);
       notify("Progression enregistrée.", "success");
+    }
+  }
+
+  async function turnCourseIntoOpportunities() {
+    if (!doc) return;
+    setGeneratingOpportunities(true);
+    try {
+      const res = await fetch("/api/ai/launchpad", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "course_to_opportunities", courseDocumentId: doc.id, locale }),
+      });
+      const data = await res.json();
+      if (res.ok && data.pack) {
+        setOpportunityPack(data.pack);
+        notify("Opportunités générées dans Launchpad !", "success");
+      } else {
+        notify(data.error || "Impossible d'analyser ce cours.", "error");
+      }
+    } finally {
+      setGeneratingOpportunities(false);
     }
   }
 
@@ -184,6 +207,9 @@ export default function CourseDetailPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" size="sm" onClick={turnCourseIntoOpportunities} disabled={generatingOpportunities}>
+            <Rocket className="w-3.5 h-3.5" /> {generatingOpportunities ? "Analyse..." : "Transformer ce cours en opportunités"}
+          </Button>
           <Button type="button" size="sm" variant={markedRead ? "outline" : "primary"} onClick={markAsRead} disabled={markedRead}>
             <CheckCircle2 className="w-3.5 h-3.5" /> {markedRead ? "Document lu" : "Marquer comme lu"}
           </Button>
@@ -198,6 +224,50 @@ export default function CourseDetailPage() {
       </div>
 
       {/* Document Content Preview */}
+      {opportunityPack && (
+        <Card className="space-y-4 border-blue-200 dark:border-blue-800">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <Badge variant="indigo">CampusMate Launchpad</Badge>
+              <h2 className="font-semibold text-base mt-1">Opportunités issues de ce cours</h2>
+            </div>
+            <Link href="/student/launchpad" className="text-xs font-semibold text-blue-600 hover:underline">
+              Ouvrir dans Launchpad →
+            </Link>
+          </div>
+          <p className="text-xs text-slate-600 dark:text-slate-300">{opportunityPack.reasoningSummary}</p>
+          <div className="grid md:grid-cols-3 gap-3 text-xs">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-1.5">
+              <p className="font-bold text-emerald-700 dark:text-emerald-400">Projets pratiques</p>
+              {opportunityPack.practicalProjects.map((p) => (
+                <div key={p.title}>
+                  <p className="font-semibold">{p.title}</p>
+                  <p className="text-slate-500">{p.connectionToCourse}</p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-1.5">
+              <p className="font-bold text-blue-700 dark:text-blue-400">Services freelance</p>
+              {opportunityPack.freelanceIdeas.map((f) => (
+                <div key={f.title}>
+                  <p className="font-semibold">{f.title}</p>
+                  <p className="text-slate-500">{f.connectionToCourse}</p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-1.5">
+              <p className="font-bold text-amber-700 dark:text-amber-400">Idées startup</p>
+              {opportunityPack.startupIdeas.map((s) => (
+                <div key={s.title}>
+                  <p className="font-semibold">{s.title}</p>
+                  <p className="text-slate-500">{s.connectionToCourse}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="space-y-2">
         <div className="flex items-center gap-2 text-sm font-semibold">
           <FileText className="w-4 h-4 text-blue-600" />
