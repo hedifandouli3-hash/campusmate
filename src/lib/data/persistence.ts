@@ -91,6 +91,32 @@ export async function uploadPrivateFileToStorage(params: {
   }
 }
 
+export async function checkSupabaseHealth(): Promise<{
+  connected: boolean;
+  snapshotTableReady: boolean;
+  error?: string;
+}> {
+  const client = createSupabaseServiceClient();
+  if (!client) {
+    return { connected: false, snapshotTableReady: false, error: "SUPABASE_SECRET_KEY missing" };
+  }
+  try {
+    const { error } = await client
+      .from("campusmate_state_snapshots")
+      .select("snapshot_key", { count: "exact", head: true });
+    if (error) {
+      return { connected: true, snapshotTableReady: false, error: error.message };
+    }
+    return { connected: true, snapshotTableReady: true };
+  } catch (err) {
+    return {
+      connected: false,
+      snapshotTableReady: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
 export async function createPrivateSignedDownloadUrl(
   bucket: "course-materials" | "personal-study-docs" | "knowledge-base" | "admin-documents" | "community-media" | "cv-documents",
   objectPath: string,

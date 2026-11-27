@@ -1,10 +1,21 @@
 import crypto from "node:crypto";
-import { env } from "@/lib/env";
+import { env, isSupabaseSecretConfigured } from "@/lib/env";
 
 const ENCRYPTION_PREFIX = "cmv1";
 
 function deriveChatKey(): Buffer {
-  const material = env.chatEncryptionKey || env.sessionSecret;
+  const explicitSecret =
+    env.sessionSecret !== "campusmate-local-dev-secret-change-in-prod" &&
+    env.sessionSecret !== "replace-with-secure-random-32-char-secret" &&
+    env.sessionSecret.length >= 24
+      ? env.sessionSecret
+      : "";
+  const material =
+    env.chatEncryptionKey ||
+    explicitSecret ||
+    (isSupabaseSecretConfigured()
+      ? crypto.createHmac("sha256", env.supabaseServiceRoleKey).update("campusmate-chat-v1").digest("hex")
+      : env.sessionSecret);
   return Buffer.from(
     crypto.hkdfSync(
       "sha256",

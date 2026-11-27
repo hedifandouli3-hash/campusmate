@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
-import { env } from "@/lib/env";
+import { env, isSupabaseSecretConfigured } from "@/lib/env";
 import type { UserRole } from "@/types/domain";
 
 export const SESSION_COOKIE_NAME = "campusmate_session";
@@ -14,7 +14,7 @@ export interface SessionPayload {
   exp: number;
 }
 
-export function isSessionSecretConfigured(): boolean {
+function hasExplicitSessionSecret(): boolean {
   const secret = env.sessionSecret;
   return !(
     secret === "campusmate-local-dev-secret-change-in-prod" ||
@@ -23,17 +23,30 @@ export function isSessionSecretConfigured(): boolean {
   );
 }
 
-function getSecret(): string {
-  const secret = env.sessionSecret;
+export function isSessionSecretConfigured(): boolean {
+  return hasExplicitSessionSecret() || isSupabaseSecretConfigured();
+}
+
+export function getSecret(): string {
+  if (hasExplicitSessionSecret()) {
+    return env.sessionSecret;
+  }
+  // If SESSION_SECRET wasn't explicitly set in production, derive a strong domain-separated
+  // key from the server-only SUPABASE_SECRET_KEY so sessions remain cryptographically unique.
+  if (isSupabaseSecretConfigured()) {
+    return crypto
+      .createHmac("sha256", env.supabaseServiceRoleKey)
+      .update("campusmate-session-v1")
+      .digest("hex");
+  }
   if (
     process.env.NODE_ENV === "production" &&
     !process.env.VITEST &&
-    env.demoModeFlag !== "true" &&
-    !isSessionSecretConfigured()
+    env.demoModeFlag !== "true"
   ) {
     throw new Error("SESSION_SECRET_MISCONFIGURED");
   }
-  return secret;
+  return env.sessionSecret;
 }
 
 export function signSessionToken(payload: Omit<SessionPayload, "exp">, ttlSeconds = 60 * 60 * 24 * 7): string {
