@@ -23,11 +23,14 @@ export function PublicHeader() {
           </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <nav className="hidden md:flex items-center gap-5 text-sm font-medium text-slate-600 dark:text-slate-300">
           <Link href="/features" className="hover:text-blue-600 transition">{t.nav.features}</Link>
+          <Link href="/pricing" className="hover:text-blue-600 transition">Tarifs</Link>
+          <Link href="/universities" className="hover:text-blue-600 transition">Universités</Link>
+          <Link href="/housing" className="hover:text-blue-600 transition">Logement</Link>
+          <Link href="/companies" className="hover:text-blue-600 transition">Entreprises</Link>
+          <Link href="/partners" className="hover:text-blue-600 transition">Partenaires</Link>
           <Link href="/demo" className="hover:text-blue-600 transition font-semibold text-blue-600 dark:text-blue-400">Démo</Link>
-          <Link href="/#how-it-works" className="hover:text-blue-600 transition">{t.nav.howItWorks}</Link>
-          <Link href="/about" className="hover:text-blue-600 transition">{t.nav.about}</Link>
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">

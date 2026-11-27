@@ -6,6 +6,7 @@ import { fetchOfficialIsetBejaPages } from "@/lib/ai/isetb-sync";
 import { answerWithRag } from "@/lib/ai/service";
 import { runControlledIsetbSync } from "@/lib/knowledge/crawler";
 import { hybridRetrieveAndRerank } from "@/lib/knowledge/retriever";
+import { assignInstitutionSeat, releaseInstitutionSeat } from "@/lib/licensing/engine";
 import {
   addAuditLog,
   ensureStoreHydrated,
@@ -354,6 +355,20 @@ export async function PATCH(request: Request) {
         );
       }
       const nextVerified = Boolean(body.isVerified);
+      if ((target.role === "student" || target.role === "teacher") && target.institutionId) {
+        if (nextVerified && body.approvalStatus !== "rejected") {
+          const seatRes = assignInstitutionSeat(store, {
+            institutionId: target.institutionId,
+            userId: target.id,
+            seatType: target.role,
+          });
+          if (!seatRes.ok) {
+            return NextResponse.json({ error: seatRes.error }, { status: 409 });
+          }
+        } else {
+          releaseInstitutionSeat(store, { institutionId: target.institutionId, userId: target.id });
+        }
+      }
       target.isVerified = nextVerified;
       target.approvalStatus =
         body.approvalStatus === "rejected" ? "rejected" : nextVerified ? "approved" : "pending";

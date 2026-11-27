@@ -26,11 +26,11 @@ export const en = {
     super_admin: "Super Admin",
   },
   landing: {
-    heroTitle: "Your entire student life. Powered by one intelligent agent.",
+    heroTitle: "One intelligent platform for the entire university.",
     heroSubtitle:
-      "Learn. Create. Automate. Build. Innovate. One agentic platform connecting students, teachers, universities and organizations — starting with ISET Béja.",
-    ctaPrimary: "Get started",
-    ctaSecondary: "Explore features",
+      "CampusMate is licensed by educational institutions and provided free of charge to their students and professors — starting with ISET Béja.",
+    ctaPrimary: "Access your university",
+    ctaSecondary: "Equip your institution",
     problemsTitle: "Real campus problems CampusMate solves",
     featuresTitle: "20 integrated modules in one unified ecosystem",
     howTitle: "How CampusMate connects your university",

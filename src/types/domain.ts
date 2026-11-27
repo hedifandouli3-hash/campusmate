@@ -1163,3 +1163,176 @@ export interface StudentWorkspaceProject {
   createdAt: string;
   updatedAt: string;
 }
+
+
+// ============================================================================
+// CampusMate V8 — Institution-Funded EdTech SaaS, Housing & Sponsorships
+// ============================================================================
+
+export type InstitutionalPlanCode = "university_plus" | "university_pro" | "university_ultra";
+
+export type InstitutionLicenseStatus =
+  | "requested"
+  | "under_review"
+  | "quotation_issued"
+  | "contract_pending"
+  | "active"
+  | "renewal_pending"
+  | "expired"
+  | "suspended";
+
+export interface InstitutionalPlanConfig {
+  code: InstitutionalPlanCode;
+  name: string;
+  tagline: string;
+  studentSeatPriceTnd: number;
+  professorSeatPriceTnd: number;
+  aiMonthlyAllowancePerSeat: number;
+  storageLimitGb: number;
+  automationLimit: number;
+  minContractTnd: number;
+  features: string[];
+  isActive: boolean;
+}
+
+export interface InstitutionLicense {
+  id: string;
+  institutionId: string;
+  planCode: InstitutionalPlanCode;
+  status: InstitutionLicenseStatus;
+  startDate: string;
+  expirationDate: string;
+  maxStudentSeats: number;
+  maxProfessorSeats: number;
+  assignedStudentSeats: number;
+  assignedProfessorSeats: number;
+  aiMonthlyAllowance: number;
+  aiUsedThisPeriod: number;
+  storageLimitGb: number;
+  storageUsedGb: number;
+  annualContractTnd: number;
+  sponsorshipsEnabled: boolean;
+  isSimulated: boolean;
+  notes?: string;
+  updatedAt: string;
+}
+
+export interface LicenseSeatAllocation {
+  id: string;
+  licenseId: string;
+  institutionId: string;
+  userId: string;
+  seatType: "student" | "teacher";
+  status: "assigned" | "released";
+  assignedAt: string;
+  releasedAt?: string;
+}
+
+export interface InstitutionalQuote {
+  id: string;
+  institutionName: string;
+  institutionType: "public_university" | "private_university" | "iset" | "training_center" | "incubator";
+  officialWebsite: string;
+  contactName: string;
+  contactEmail: string;
+  planCode: InstitutionalPlanCode;
+  studentSeats: number;
+  professorSeats: number;
+  onboardingServiceTnd: number;
+  discountPercent: number;
+  annualTotalTnd: number;
+  monthlyEquivalentTnd: number;
+  status: "requested" | "under_review" | "quotation_issued" | "approved" | "rejected";
+  isSimulated: boolean;
+  createdAt: string;
+}
+
+export interface InstitutionUsageEvent {
+  id: string;
+  institutionId: string;
+  userId: string;
+  feature: string;
+  tokensUsed: number;
+  estimatedCostUsd: number;
+  isActualProviderUsage: boolean;
+  createdAt: string;
+}
+
+export type CompanyPlanCode = "basic" | "professional" | "enterprise";
+
+export interface CompanySubscription {
+  id: string;
+  organizationId: string;
+  organizationName: string;
+  planCode: CompanyPlanCode;
+  annualPriceTnd: number;
+  maxActiveInternships: number;
+  status: "active" | "pending" | "expired";
+  isSimulated: boolean;
+  createdAt: string;
+}
+
+export interface HousingProvider {
+  id: string;
+  userId?: string;
+  name: string;
+  contactEmail: string;
+  verificationStatus: "pending" | "verified" | "rejected";
+  planCode: "single_listing" | "pro_annual";
+  planPriceTnd: number;
+  isSimulated: boolean;
+  createdAt: string;
+}
+
+export type HousingCategory = "residence" | "studio" | "apartment" | "room" | "shared" | "university_info";
+
+export interface HousingListing {
+  id: string;
+  providerId: string;
+  providerName: string;
+  institutionId: string;
+  title: string;
+  description: string;
+  category: HousingCategory;
+  generalLocation: string;
+  monthlyRentTnd: number;
+  distanceKm: number;
+  available: boolean;
+  amenities: string[];
+  leaseDuration: string;
+  includedExpenses: string;
+  photos: string[];
+  isVerifiedProvider: boolean;
+  isSponsored: boolean;
+  moderationStatus: "pending" | "approved" | "rejected";
+  createdAt: string;
+}
+
+export interface EducationalPartner {
+  id: string;
+  userId?: string;
+  name: string;
+  website: string;
+  verificationStatus: "pending" | "verified" | "rejected";
+  createdAt: string;
+}
+
+export interface SponsorshipCampaign {
+  id: string;
+  partnerId: string;
+  partnerName: string;
+  institutionId?: string | null;
+  title: string;
+  description: string;
+  category: string;
+  certificationInfo: string;
+  destinationUrl: string;
+  startDate: string;
+  endDate: string;
+  status: "draft" | "pending_review" | "approved" | "rejected";
+  impressions: number;
+  clicks: number;
+  annualPackageTnd: number;
+  isSimulated: boolean;
+  createdAt: string;
+}

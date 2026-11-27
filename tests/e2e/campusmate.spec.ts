@@ -279,5 +279,27 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await page.goto("/student/launchpad/startup-builder");
     await expect(page.getByRole("heading", { name: /Startup Builder Unifié/i })).toBeVisible();
     await expect(page.getByText(/Seuil de rentabilité :/i)).toBeVisible();
+
+    // 6. V8 Student Housing (free for students)
+    await page.goto("/student/housing");
+    await expect(page.getByRole("heading", { name: /CampusMate Housing/i })).toBeVisible();
+  });
+
+  test("CampusMate V8 Public Pricing Calculator, Universities, Companies, Housing & Partners", async ({ page }) => {
+    await page.goto("/pricing");
+    await expect(page.getByRole("heading", { name: /Licences Institutionnelles Annuelles/i })).toBeVisible();
+    await expect(page.getByText(/17[\s\u202f]500 TND \/ an/i)).toBeVisible();
+
+    await page.goto("/universities");
+    await expect(page.getByRole("heading", { name: /Équipez votre établissement/i })).toBeVisible();
+
+    await page.goto("/companies");
+    await expect(page.getByRole("heading", { name: /Recrutez des stagiaires/i })).toBeVisible();
+
+    await page.goto("/housing");
+    await expect(page.getByRole("heading", { name: /CampusMate Housing/i })).toBeVisible();
+
+    await page.goto("/partners");
+    await expect(page.getByRole("heading", { name: /Opportunités de formation sponsorisées/i })).toBeVisible();
   });
 });

@@ -25,6 +25,7 @@ import {
   Globe,
   GraduationCap,
   Handshake,
+  Home,
   Layers,
   LayoutDashboard,
   LayoutGrid,
@@ -115,6 +116,7 @@ function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGr
           { label: t.sidebar.chats, href: "/student/chats", icon: <MessageSquare className="w-4 h-4" /> },
           { label: t.sidebar.events, href: "/student/events", icon: <Calendar className="w-4 h-4" /> },
           { label: t.sidebar.marketplace, href: "/student/marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
+          { label: "Logement Étudiant", href: "/student/housing", icon: <Home className="w-4 h-4" /> },
           { label: t.sidebar.lostFound, href: "/student/lost-found", icon: <Search className="w-4 h-4" /> },
           { label: t.sidebar.promotions, href: "/student/promotions", icon: <Tag className="w-4 h-4" /> },
           { label: t.sidebar.transport, href: "/student/transport", icon: <Bus className="w-4 h-4" /> },
@@ -162,6 +164,7 @@ function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGr
         section: "Administration",
         items: [
           { label: "Vue d'ensemble", href: "/administration/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+          { label: "Licence & Sièges", href: "/administration/license", icon: <ShieldCheck className="w-4 h-4" /> },
           { label: "Demandes de Documents", href: "/administration/document-requests", icon: <FileText className="w-4 h-4" /> },
           { label: "Base de Connaissances IA", href: "/administration/knowledge-base", icon: <Bot className="w-4 h-4" /> },
           { label: "Files d'attente", href: "/administration/queues", icon: <Ticket className="w-4 h-4" /> },
@@ -210,6 +213,7 @@ function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGr
       section: "Super Administration",
       items: [
         { label: "Vue Plateforme", href: "/admin/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+        { label: "Business Control", href: "/admin/business", icon: <BarChart3 className="w-4 h-4" /> },
         { label: "Universités (Tenants)", href: "/admin/institutions", icon: <Building2 className="w-4 h-4" /> },
         { label: "Comptes & Rôles", href: "/admin/users", icon: <Users className="w-4 h-4" /> },
         { label: "Organisations", href: "/admin/organizations", icon: <Briefcase className="w-4 h-4" /> },

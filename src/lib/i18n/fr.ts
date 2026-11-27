@@ -24,11 +24,11 @@ export const fr = {
     super_admin: "Super Admin",
   },
   landing: {
-    heroTitle: "Toute votre vie étudiante, accompagnée par un agent intelligent.",
+    heroTitle: "Une seule plateforme intelligente pour toute l'université.",
     heroSubtitle:
-      "Apprendre. Créer. Automatiser. Construire. Innover. Une plateforme agentique qui connecte étudiants, enseignants, administrations universitaires et organisations — conçue pour l'ISET Béja.",
-    ctaPrimary: "Commencer maintenant",
-    ctaSecondary: "Découvrir les fonctionnalités",
+      "CampusMate est financé par les établissements d'enseignement supérieur et offert gratuitement à leurs étudiants et enseignants — conçu pour l'ISET Béja.",
+    ctaPrimary: "Accéder à votre université",
+    ctaSecondary: "Équiper votre établissement",
     problemsTitle: "Les défis réels de la vie estudiantine",
     featuresTitle: "20 modules intégrés dans un seul écosystème",
     howTitle: "Comment CampusMate connecte votre campus",

@@ -26,7 +26,7 @@ import { Badge, Button, Card, StatCard } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/types/domain";
 
-export type DemoRoleTab = "student" | "teacher" | "administration";
+export type DemoRoleTab = "student" | "teacher" | "administration" | "commercial";
 type DemoSubView = "overview" | "agent" | "courses" | "launchpad" | "marketplace" | "chats" | "cv" | "knowledge";
 
 const DEMO_QA = [
@@ -73,10 +73,14 @@ export function DemoSandbox({ initialTab = "student" }: { initialTab?: DemoRoleT
             { id: "courses", label: "Supports & Corrigés", icon: <FileText className="w-4 h-4" /> },
             { id: "chats", label: "Groupes Académiques", icon: <MessageSquare className="w-4 h-4" /> },
           ]
-        : [
-            { id: "overview", label: "Administration", icon: <LayoutDashboard className="w-4 h-4" /> },
-            { id: "knowledge", label: "Base IA (isetb.rnu.tn)", icon: <Bot className="w-4 h-4" /> },
-          ];
+        : role === "administration"
+          ? [
+              { id: "overview", label: "Administration", icon: <LayoutDashboard className="w-4 h-4" /> },
+              { id: "knowledge", label: "Base IA (isetb.rnu.tn)", icon: <Bot className="w-4 h-4" /> },
+            ]
+          : [
+              { id: "overview", label: "Modèle SaaS & Tarifs (Démo)", icon: <Rocket className="w-4 h-4" /> },
+            ];
 
   return (
     <div className="min-h-screen flex bg-[var(--bg-app)] text-[var(--text-primary)]">
@@ -144,6 +148,7 @@ export function DemoSandbox({ initialTab = "student" }: { initialTab?: DemoRoleT
                   { id: "student", label: "Étudiant" },
                   { id: "teacher", label: "Enseignant" },
                   { id: "administration", label: "Administration" },
+                  { id: "commercial", label: "Modèle Commercial" },
                 ] as const
               ).map((r) => (
                 <button
@@ -218,6 +223,43 @@ export function DemoSandbox({ initialTab = "student" }: { initialTab?: DemoRoleT
         </div>
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+          {/* COMMERCIAL DEMO VIEW */}
+          {role === "commercial" && (
+            <div className="space-y-4">
+              <Card className="p-5 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h1 className="text-xl font-bold">Modèle Commercial B2B2C — Démonstration Jury (Données Simulées)</h1>
+                  <Badge variant="warning">Simulation Jury uniquement</Badge>
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  Les étudiants et enseignants ne paient jamais. Exemple simulé pour ISET Béja (University Pro) : 1 500 étudiants × 10 TND + 100 enseignants × 25 TND = <strong>17 500 TND / an</strong>.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+                    <div className="font-semibold text-blue-600">1. Licences Universitaires</div>
+                    <p className="text-slate-500 mt-1">Plus (5/15 TND), Pro (10/25 TND), Ultra (20/40 TND). Héritage serveur automatique.</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+                    <div className="font-semibold text-indigo-600">2. Entreprises &amp; Logement</div>
+                    <p className="text-slate-500 mt-1">Company Pro (600 TND/an), Logement (20 TND / 30j ou 150 TND/an), gratuit pour les étudiants.</p>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+                    <div className="font-semibold text-emerald-600">3. Sponsoring Éducatif</div>
+                    <p className="text-slate-500 mt-1">Placements contextuels modérés sans ciblage ni partage de données étudiantes.</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Link href="/pricing">
+                    <Button size="sm">Ouvrir le Simulateur /pricing</Button>
+                  </Link>
+                  <Link href="/housing">
+                    <Button size="sm" variant="outline">Voir CampusMate Housing</Button>
+                  </Link>
+                </div>
+              </Card>
+            </div>
+          )}
+
           {/* STUDENT VIEWS */}
           {role === "student" && view === "agent" && (
             <Card className="p-5 space-y-4">

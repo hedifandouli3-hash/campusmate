@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { runCampusMateAgent } from "@/lib/agent/orchestrator";
 import { ensureStoreHydrated, persistStore, requireUser } from "@/lib/data/store";
 import { buildInitialDemoState, type CampusMateStoreState } from "@/lib/demo/seed";
+import { checkFeatureEntitlement, consumeAiAllowance } from "@/lib/licensing/engine";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { sanitizeText } from "@/lib/utils";
 
@@ -48,6 +49,21 @@ export async function POST(request: Request) {
     const body = await request.json();
     const store = await ensureStoreHydrated();
     ensureAgentArrays(store);
+    const entitlement = checkFeatureEntitlement(store, user, "university_pro");
+    if (!entitlement.allowed) {
+      return NextResponse.json({ error: entitlement.reason }, { status: 403 });
+    }
+
+    const allowance = consumeAiAllowance(store, {
+      institutionId: user.institutionId,
+      userId: user.id,
+      feature: "campusmate_agent",
+      estimatedTokens: 900,
+    });
+    if (!allowance.allowed) {
+      return NextResponse.json({ error: allowance.reason }, { status: 429 });
+    }
+
     const now = new Date().toISOString();
     const instId = user.institutionId || "11111111-1111-1111-1111-111111111101";
 

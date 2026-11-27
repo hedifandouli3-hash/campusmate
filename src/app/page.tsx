@@ -138,7 +138,7 @@ export default function LandingPage() {
                 Explorer la démo interactive
               </Link>
               <Link
-                href="/features"
+                href="/pricing"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-3 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
               >
                 {t.landing.ctaSecondary}

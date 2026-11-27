@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { ensureStoreHydrated, persistStore, requireUser } from "@/lib/data/store";
 import { buildInitialDemoState, type CampusMateStoreState } from "@/lib/demo/seed";
+import { checkFeatureEntitlement } from "@/lib/licensing/engine";
 import { sanitizeText } from "@/lib/utils";
 import type { CreationArtifact, StudentWorkspaceProject } from "@/types/domain";
 
@@ -16,6 +17,10 @@ export async function GET() {
     const user = await requireUser(["student"]);
     const store = await ensureStoreHydrated();
     ensureStudioArrays(store);
+    const entitlement = checkFeatureEntitlement(store, user, "university_pro");
+    if (!entitlement.allowed) {
+      return NextResponse.json({ error: entitlement.reason }, { status: 403 });
+    }
     const artifacts = store.creationArtifacts!.filter((a) => a.ownerId === user.id);
     const projects = store.workspaceProjects!.filter((p) => p.ownerId === user.id);
     return NextResponse.json({ artifacts, projects });
@@ -30,6 +35,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const store = await ensureStoreHydrated();
     ensureStudioArrays(store);
+    const entitlement = checkFeatureEntitlement(store, user, "university_pro");
+    if (!entitlement.allowed) {
+      return NextResponse.json({ error: entitlement.reason }, { status: 403 });
+    }
     const now = new Date().toISOString();
     const instId = user.institutionId || "11111111-1111-1111-1111-111111111101";
 
