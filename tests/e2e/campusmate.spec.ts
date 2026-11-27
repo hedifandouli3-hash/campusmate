@@ -170,7 +170,7 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     // Roadmaps & Pitch Generator
     await page.goto("/student/launchpad/roadmaps");
     await page.getByRole("button", { name: /Générer le Pitch/i }).click();
-    await expect(page.getByText(/Elevator Pitch/i)).toBeVisible();
+    await expect(page.getByText(/Elevator Pitch/i).first()).toBeVisible();
 
     // Portfolio -> Import to CV
     await page.goto("/student/launchpad/portfolio");
@@ -197,17 +197,14 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
   test("Isolated /demo works anonymously with all 3 experiences and zero production cookies", async ({ page }) => {
     await page.context().clearCookies();
     await page.goto("/demo");
-    await expect(page.getByText(/Mode Démo Anonyme Isolé/i)).toBeVisible();
-    await expect(page.getByText(/Simulation Assistant RAG Étudiant/i)).toBeVisible();
+    await expect(page.getByText(/Mode Démo Lecture Seule/i)).toBeVisible();
+    await expect(page.getByText(/Bonjour, Amira Ben Ali/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /Simuler : Transformer ce cours en opportunités/i }).click();
-    await expect(page.getByText(/StockPulse TN/i)).toBeVisible();
+    await page.getByRole("button", { name: "Enseignant", exact: true }).click();
+    await expect(page.getByText(/Prof\. Karim Trabelsi/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /Démo Enseignant/i }).click();
-    await expect(page.getByText(/Isolation Corrigés/i)).toBeVisible();
-
-    await page.getByRole("button", { name: /Démo Administration/i }).click();
-    await expect(page.getByText(/Ticket en cours/i)).toBeVisible();
+    await page.getByRole("button", { name: "Administration", exact: true }).click();
+    await expect(page.getByText(/SCO-014/i)).toBeVisible();
 
     const cookies = await page.context().cookies();
     expect(cookies.some((c) => c.name === "campusmate_session")).toBe(false);
