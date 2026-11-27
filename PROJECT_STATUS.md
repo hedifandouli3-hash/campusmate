@@ -1,47 +1,23 @@
-# CampusMate — Project Status
+# CampusMate V6 — Project Status
 
-**Last Verified:** 2026-11-27  
-**Overall Status:** V5 Production-Ready RAG-Powered University & Entrepreneurship Ecosystem (15 Modules, 18 Launchpad Capabilities, Hybrid Multilingual RAG + `isetb.rnu.tn` Crawl/Validator, 3 Isolated `/demo/*` Experiences, Dedicated Role Portals, Live Supabase Snapshot Persistence & Security Hardening).
+**Status:** V6 Agentic OS Implemented & Verified Locally  
+**Target Institution:** ISET Béja (`https://www.isetb.rnu.tn/`)  
+**Theme:** L'intelligence artificielle au service de la vie estudiantine
 
----
+## Implemented V6 Capabilities
+- **CampusMate Agent (`/student/agent` & `/api/agent`)**: Central agentic workspace with tool registry (`src/lib/agent/registry.ts`), max 4 tool calls per turn, Category D human-in-the-loop approval gating, Category E prohibited-pattern blocking, personalization toggle, history clearing, and hybrid RAG fallback.
+- **Creation Studio (`/student/studio`, `/student/artifacts` & `/api/studio`)**:
+  - Website Builder with live `<iframe sandbox="allow-scripts">` preview, strict CSP (`default-src 'none'`), HTML escaping, responsive viewport switcher, and HTML export.
+  - Presentation Builder, Document Markdown Builder, Brand Kit editor, and centralized Artifact Library.
+- **Unified Project Management (`/student/projects`)**: 4-column Kanban board (`todo`, `in_progress`, `under_review`, `completed`) with real task-based progress calculation.
+- **Automation Center (`/student/automations` & `/api/automations`)**: Visual Trigger → Conditions → Actions → Result builder, 7 ready-to-use templates, manual execution with run logs, `Africa/Tunis` scheduling metadata, and local-only email drafts.
+- **Unified Startup Builder (`/student/launchpad/startup-builder`)**: Connects course origin → problem → break-even TND calculator → Studio website + Kanban MVP generation.
+- **Database Migration**: `supabase/migrations/008_v6_agent_studio_automation.sql` with RLS policies.
+- **Preserved Ecosystem**: All 15 existing modules, 18 Launchpad capabilities, 5 role portals, hybrid ISET Béja RAG, FR/EN/AR RTL, light/dark modes, and isolated read-only `/demo` (including V6 Agent Demo tab).
 
-## 1. Completed Features
-
-- **Foundation & Multi-Tenant Architecture:** Next.js 16 App Router (`src/proxy.ts` + `<Suspense>` + `connection()`), TypeScript strict mode, Tailwind CSS v4 design system, light/dark mode, and French / English / Arabic (`dir="rtl"`) internationalization.
-- **Dedicated Role Portals & Production UX:**
-  - Separate authentication portals with server-side `expectedRole` enforcement: `/login/student`, `/login/teacher`, `/login/administration`, `/login/organization`, and `/login/admin` (plus directory at `/login`).
-  - Instant **Module Quick-Jump Search**, notification bell, interactive **4-Role Hero Preview** on the landing page, and KPI `StatCard`s + Quick Action tiles across dashboards without demo banners.
-- **5 Role-Based Dashboards & Server-Side RBAC:**
-  - Student (`/student/*` — 22 routes)
-  - Teacher (`/teacher/*` — 8 routes)
-  - University Administration (`/administration/*` — 17 routes, including Recharts analytics)
-  - Organization (`/organization/*` — 8 routes)
-  - Super Administrator (`/admin/*` — 7 routes)
-- **All 14 Integrated Modules & Official `isetb.rnu.tn` RAG:**
-  - Pre-indexed official ISET Béja website knowledge (`presentation-generale`, `technologies-de-linformatique`, `departements-electrique`, `licences`, `organigramme-2`, `mot-de-la-direction`, `reclmations`) plus live admin sync with spam/HTML filtering.
-  - 3-key Gemini API pool with automatic quota/auth/503 failover, cooldown tracking, `thinkingBudget: 0`, strict `maxOutputTokens`, and 10-minute response caching.
-- **Security Hardening:**
-  - Security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`) in `next.config.ts`.
-  - Cross-origin CSRF guard on mutating `/api/*` requests in `src/proxy.ts`.
-  - Strict tenant isolation, confidential feedback gating, allowlisted categories/statuses, and private enrollment reference stripping.
-
----
-
-## 2. Automated Verification Results
-
-| Check | Command | Result |
-| :--- | :--- | :--- |
-| TypeScript | `npm.cmd run typecheck` | Passed (0 errors) |
-| ESLint | `npm.cmd run lint` | Passed (0 errors, 0 warnings) |
-| Unit & Security & RAG Tests | `npm.cmd run test` (`vitest run`) | Passed (**20/20** tests across 2 files) |
-| Production Build | `npm.cmd run build` (`next build`) | Passed (**118** routes) |
-| Browser E2E Tests | `npm.cmd run test:e2e` (`playwright test`) | Passed (**9/9** tests) |
-| Independent QA & Security Audit | See [TEST_REPORT.md](./TEST_REPORT.md) | Verified & Remediated |
-
----
-
-## 3. Remaining External Steps
-
-1. Run `supabase/migrations/001_schema.sql` through `007_rag_v5.sql` in Supabase project `dudbmtujtjquotigrlcu` (note: `campusmate_state_snapshots` is already active on live Vercel).
-2. Add `GEMINI_API_KEYS` (and optionally explicit `SESSION_SECRET` / `CHAT_ENCRYPTION_KEY`) in Vercel Environment Variables if you want live Gemini AI on the Vercel deployment.
-3. Review GitHub repository visibility (`hedifandouli3-hash/campusmate` was observed as **PUBLIC**; switch to **Private** in GitHub settings if intended to remain private).
+## Verification Summary
+- `npm.cmd run lint`: 0 errors (3 `react-hooks/exhaustive-deps` warnings)
+- `npm.cmd run typecheck`: 0 errors
+- `npm.cmd run test`: 26/26 passed (`tests/unit/agent-studio-v6.test.ts`, `tests/unit/rag-v5.test.ts`, `tests/unit/security-rag-workflows.test.ts`)
+- `npm.cmd run build`: Compiled and generated 127 routes/pages cleanly
+- `npm.cmd run test:e2e`: 10/10 passed (`tests/e2e/campusmate.spec.ts`)

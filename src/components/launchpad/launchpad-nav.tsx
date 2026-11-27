@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/student/launchpad", label: "Vue d'ensemble", icon: <Rocket className="w-3.5 h-3.5" /> },
+  { href: "/student/launchpad/startup-builder", label: "Startup Builder", icon: <Rocket className="w-3.5 h-3.5" /> },
   { href: "/student/launchpad/skills", label: "Compétences IA", icon: <Sparkles className="w-3.5 h-3.5" /> },
   { href: "/student/launchpad/freelance", label: "Freelance", icon: <Briefcase className="w-3.5 h-3.5" /> },
   { href: "/student/launchpad/startups", label: "Idées Startup", icon: <Lightbulb className="w-3.5 h-3.5" /> },

@@ -36,6 +36,14 @@ import type {
   LaunchpadStartupIdea,
   LaunchpadTeam,
   LostFoundReport,
+  AgentApprovalRequest,
+  AgentConversation,
+  AgentPreferences,
+  AgentRun,
+  AutomationWorkflow,
+  CreationArtifact,
+  EmailDraft,
+  StudentWorkspaceProject,
   MarketplaceListing,
   NotificationItem,
   Organization,
@@ -130,6 +138,14 @@ export interface CampusMateStoreState {
   launchpadPortfolios?: LaunchpadPortfolio[];
   launchpadMentorships?: LaunchpadMentorshipItem[];
   launchpadPitches?: LaunchpadPitch[];
+  agentConversations?: AgentConversation[];
+  agentRuns?: AgentRun[];
+  agentApprovals?: AgentApprovalRequest[];
+  agentPreferences?: AgentPreferences[];
+  creationArtifacts?: CreationArtifact[];
+  automations?: AutomationWorkflow[];
+  emailDrafts?: EmailDraft[];
+  workspaceProjects?: StudentWorkspaceProject[];
   platformSettings: {
     allowStudentRegistration: boolean;
     requireOrgVerification: boolean;
@@ -1865,6 +1881,98 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
       },
     ],
     launchpadPitches: [],
+    agentConversations: [],
+    agentRuns: [],
+    agentApprovals: [],
+    agentPreferences: [
+      {
+        studentId: DEMO_IDS.studentAmira,
+        enablePersonalization: true,
+        preferredLanguage: "fr",
+        timezone: "Africa/Tunis",
+        updatedAt: now,
+      },
+    ],
+    creationArtifacts: [
+      {
+        id: "art-web-1",
+        institutionId: DEMO_IDS.instBeja,
+        ownerId: DEMO_IDS.studentAmira,
+        type: "website",
+        title: "StockPulse TN — Landing Page Startup",
+        description: "Site vitrine généré depuis votre concept Launchpad issu du cours Bases de Données.",
+        version: 1,
+        isPrivate: true,
+        websiteData: {
+          template: "saas",
+          brandName: "StockPulse TN",
+          primaryColor: "#2563EB",
+          fontFamily: "sans",
+          sections: [
+            {
+              id: "sec-hero",
+              kind: "hero",
+              heading: "Gérez votre stock sans tableurs complexes.",
+              subheading: "Solution web légère pour les commerces et ateliers de proximité.",
+              items: [],
+            },
+            {
+              id: "sec-feat",
+              kind: "features",
+              heading: "Fonctionnalités MVP",
+              subheading: "Conçu avec PostgreSQL et Next.js.",
+              items: [
+                { title: "Suivi en temps réel", description: "Entrées, sorties et historique auditable." },
+                { title: "Alertes de seuil", description: "Notification avant toute rupture de stock." },
+                { title: "Export mensuel", description: "Récapitulatifs clairs en un clic." },
+              ],
+            },
+          ],
+          contactPreviewNote: "Formulaire en mode aperçu (aucun backend externe connecté).",
+        },
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+    automations: [
+      {
+        id: "auto-1",
+        institutionId: DEMO_IDS.instBeja,
+        ownerId: DEMO_IDS.studentAmira,
+        title: "Briefing Académique Hebdomadaire",
+        description: "Chaque lundi matin, résume vos examens à venir, tâches personnelles et annonces non lues.",
+        triggerType: "weekly_schedule",
+        scheduleCronOrLabel: "Chaque lundi à 08:00 (Africa/Tunis)",
+        timezone: "Africa/Tunis",
+        conditions: ["Étudiant actif", "Cours & examens autorisés"],
+        actions: ["Récupérer examens & tâches", "Générer briefing", "Créer notification interne"],
+        isActive: true,
+        runs: [],
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+    emailDrafts: [],
+    workspaceProjects: [
+      {
+        id: "wpr-1",
+        institutionId: DEMO_IDS.instBeja,
+        ownerId: DEMO_IDS.studentAmira,
+        title: "Prototype StockPulse TN (Cours BDD)",
+        category: "startup",
+        description: "Application de gestion de stock multi-dépôts issue du cours PostgreSQL & Architectures Web.",
+        objectives: ["Valider le schéma 3NF", "Livrer l'interface CRUD", "Préparer la démo jury"],
+        tasks: [
+          { id: "wpt-1", title: "Modéliser les tables produits et mouvements", status: "completed", priority: "high" },
+          { id: "wpt-2", title: "Construire les alertes de stock faible", status: "in_progress", priority: "high" },
+          { id: "wpt-3", title: "Préparer les 5 entretiens commerçants", status: "todo", priority: "medium" },
+        ],
+        progress: 33,
+        isPrivate: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
     platformSettings: {
       allowStudentRegistration: true,
       requireOrgVerification: true,

@@ -959,3 +959,207 @@ export interface LaunchpadPitch {
   createdAt: string;
   updatedAt: string;
 }
+
+// ============================================================================
+// CampusMate V6 — Central AI Agent, Creation Studio, Projects & Automations
+// ============================================================================
+
+export type AgentPermissionCategory = "A_read" | "B_create_private" | "C_internal_state" | "D_external_approval";
+
+export interface AgentToolExecution {
+  id: string;
+  toolName: string;
+  category: AgentPermissionCategory;
+  status: "completed" | "waiting_approval" | "rejected" | "failed";
+  summary: string;
+  artifactId?: string;
+  error?: string;
+  executedAt: string;
+}
+
+export interface AgentApprovalRequest {
+  id: string;
+  runId: string;
+  studentId: string;
+  institutionId: string;
+  toolName: string;
+  description: string;
+  payload: Record<string, unknown>;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export interface AgentRun {
+  id: string;
+  conversationId: string;
+  studentId: string;
+  institutionId: string;
+  goal: string;
+  status: "planned" | "running" | "waiting_approval" | "completed" | "partially_completed" | "failed" | "cancelled";
+  toolExecutions: AgentToolExecution[];
+  finalAnswer: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface AgentConversation {
+  id: string;
+  studentId: string;
+  institutionId: string;
+  title: string;
+  messages: Array<{
+    id: string;
+    role: "user" | "assistant";
+    content: string;
+    runId?: string;
+    createdAt: string;
+  }>;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface AgentPreferences {
+  studentId: string;
+  enablePersonalization: boolean;
+  preferredLanguage: Locale;
+  timezone: string;
+  quietHours?: string;
+  customContextNote?: string;
+  updatedAt: string;
+}
+
+export type CreationArtifactType =
+  | "website"
+  | "portfolio_site"
+  | "presentation"
+  | "document"
+  | "brand_kit"
+  | "social_post";
+
+export interface WebsiteSection {
+  id: string;
+  kind: "hero" | "features" | "about" | "pricing" | "showcase" | "contact";
+  heading: string;
+  subheading: string;
+  items: Array<{ title: string; description: string }>;
+}
+
+export interface WebsiteProjectData {
+  template: "saas" | "portfolio" | "academic" | "startup" | "event";
+  brandName: string;
+  primaryColor: string;
+  fontFamily: "sans" | "serif" | "mono";
+  sections: WebsiteSection[];
+  contactPreviewNote: string;
+}
+
+export interface PresentationSlide {
+  id: string;
+  title: string;
+  bullets: string[];
+  speakerNotes: string;
+}
+
+export interface BrandKitData {
+  brandName: string;
+  slogan: string;
+  positioning: string;
+  palette: string[];
+  typography: string;
+  toneOfVoice: string;
+}
+
+export interface CreationArtifact {
+  id: string;
+  institutionId: string;
+  ownerId: string;
+  type: CreationArtifactType;
+  title: string;
+  description: string;
+  projectId?: string;
+  version: number;
+  isPrivate: boolean;
+  websiteData?: WebsiteProjectData;
+  slides?: PresentationSlide[];
+  documentMarkdown?: string;
+  brandKit?: BrandKitData;
+  socialDraft?: {
+    platform: "linkedin" | "instagram" | "facebook";
+    body: string;
+    hashtags: string[];
+    plannedDate?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AutomationTriggerType =
+  | "weekly_schedule"
+  | "daily_schedule"
+  | "deadline_approaching"
+  | "new_course_published"
+  | "unread_messages"
+  | "new_internship";
+
+export interface AutomationRunLog {
+  id: string;
+  automationId: string;
+  status: "completed" | "failed";
+  summary: string;
+  executedAt: string;
+}
+
+export interface AutomationWorkflow {
+  id: string;
+  institutionId: string;
+  ownerId: string;
+  title: string;
+  description: string;
+  triggerType: AutomationTriggerType;
+  scheduleCronOrLabel: string;
+  timezone: string;
+  conditions: string[];
+  actions: string[];
+  isActive: boolean;
+  lastRunAt?: string;
+  runs: AutomationRunLog[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmailDraft {
+  id: string;
+  institutionId: string;
+  ownerId: string;
+  recipient: string;
+  subject: string;
+  body: string;
+  scheduledAt?: string;
+  status: "draft" | "approved_local_pending_provider" | "cancelled";
+  createdAt: string;
+}
+
+export interface KanbanProjectTask {
+  id: string;
+  title: string;
+  status: "todo" | "in_progress" | "under_review" | "completed";
+  priority: "high" | "medium" | "low";
+  dueDate?: string;
+  notes?: string;
+}
+
+export interface StudentWorkspaceProject {
+  id: string;
+  institutionId: string;
+  ownerId: string;
+  title: string;
+  category: "academic" | "pfe" | "startup" | "portfolio" | "personal";
+  description: string;
+  objectives: string[];
+  tasks: KanbanProjectTask[];
+  progress: number;
+  isPrivate: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

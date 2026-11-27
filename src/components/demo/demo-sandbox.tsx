@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import type { Locale } from "@/types/domain";
 
 export type DemoRoleTab = "student" | "teacher" | "administration";
-type DemoSubView = "overview" | "courses" | "launchpad" | "marketplace" | "chats" | "cv" | "knowledge";
+type DemoSubView = "overview" | "agent" | "courses" | "launchpad" | "marketplace" | "chats" | "cv" | "knowledge";
 
 const DEMO_QA = [
   {
@@ -60,6 +60,7 @@ export function DemoSandbox({ initialTab = "student" }: { initialTab?: DemoRoleT
     role === "student"
       ? [
           { id: "overview", label: "Vue d'ensemble", icon: <LayoutDashboard className="w-4 h-4" /> },
+          { id: "agent", label: "Agent & Studio IA", icon: <Sparkles className="w-4 h-4" /> },
           { id: "courses", label: "Mes Cours & IA", icon: <BookOpen className="w-4 h-4" /> },
           { id: "launchpad", label: "Launchpad Hub", icon: <Rocket className="w-4 h-4" /> },
           { id: "marketplace", label: "Marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
@@ -218,6 +219,40 @@ export function DemoSandbox({ initialTab = "student" }: { initialTab?: DemoRoleT
 
         <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
           {/* STUDENT VIEWS */}
+          {role === "student" && view === "agent" && (
+            <Card className="p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-base flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-600" />
+                  Aperçu CampusMate Agent &amp; Studio (Lecture seule)
+                </h2>
+                <Badge variant="primary">V6 Agent OS</Badge>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Exemple de workflow agentique : l&apos;étudiant demande un site vitrine et un plan MVP pour son projet PFE à l&apos;ISET Béja. L&apos;agent exécute les outils autorisés (sans accès aux cookies ni envoi externe non approuvé) et génère les livrables dans le Studio.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5">
+                  <div className="text-xs font-semibold text-blue-600 mb-1">1. Outil Website Studio</div>
+                  <p className="text-xs text-slate-500">Génération HTML/CSS isolée dans un iframe sandbox avec CSP strict.</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5">
+                  <div className="text-xs font-semibold text-indigo-600 mb-1">2. Kanban &amp; Automatisations</div>
+                  <p className="text-xs text-slate-500">Création automatique de tâches MVP et briefing quotidien (Africa/Tunis).</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5">
+                  <div className="text-xs font-semibold text-emerald-600 mb-1">3. Contrôle Humain</div>
+                  <p className="text-xs text-slate-500">Tout brouillon d&apos;email ou action sensible requiert une approbation explicite.</p>
+                </div>
+              </div>
+              <div className="pt-2">
+                <Link href="/register">
+                  <Button size="sm">Créer un compte pour utiliser l&apos;Agent complet</Button>
+                </Link>
+              </div>
+            </Card>
+          )}
+
           {role === "student" && view === "overview" && (
             <>
               <Card className="p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">

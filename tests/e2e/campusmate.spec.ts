@@ -246,4 +246,38 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
       await teacherCtx.close();
     }
   });
+
+  test("CampusMate V6 Agent, Creation Studio (sandboxed iframe), Automations, Projects Kanban & Startup Builder", async ({ page }) => {
+    await page.goto("/login/student");
+    await page.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
+    await page.getByLabel("Mot de passe").fill("Student@2026!");
+    await page.getByRole("button", { name: /Se connecter/i }).click();
+    await page.waitForURL("**/student/dashboard");
+
+    // 1. Central AI Agent
+    await page.goto("/student/agent");
+    await expect(page.getByRole("heading", { name: /CampusMate Agent/i })).toBeVisible();
+    await page.getByPlaceholder(/Ex: Crée un site web/i).fill("Crée un site web pour mon projet PFE");
+    await page.getByRole("button", { name: /Lancer l'agent/i }).click();
+    await expect(page.getByText(/Journal d'exécution des outils/i)).toBeVisible();
+
+    // 2. Creation Studio + sandboxed iframe
+    await page.goto("/student/studio");
+    await expect(page.getByRole("heading", { name: /Studio de Création IA/i })).toBeVisible();
+    await expect(page.locator('iframe[sandbox="allow-scripts"]')).toBeVisible();
+
+    // 3. Automations
+    await page.goto("/student/automations");
+    await expect(page.getByRole("heading", { name: /Centre d'Automatisation/i })).toBeVisible();
+    await expect(page.getByText(/7 modèles prêts à l'emploi/i)).toBeVisible();
+
+    // 4. Projects Kanban
+    await page.goto("/student/projects");
+    await expect(page.getByRole("heading", { name: /Gestion de Projets & Kanban/i })).toBeVisible();
+
+    // 5. Startup Builder
+    await page.goto("/student/launchpad/startup-builder");
+    await expect(page.getByRole("heading", { name: /Startup Builder Unifié/i })).toBeVisible();
+    await expect(page.getByText(/Seuil de rentabilité :/i)).toBeVisible();
+  });
 });

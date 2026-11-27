@@ -180,11 +180,11 @@ export default function LandingPage() {
             <div className="grid sm:grid-cols-2 gap-3">
               <Card className="p-3.5 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-blue-600">Assistant RAG</span>
+                  <span className="text-xs font-semibold text-blue-600">Agent &amp; Studio V6</span>
                   <Bot className="w-4 h-4 text-indigo-500" />
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
-                  Indexé sur <strong>isetb.rnu.tn</strong> : départements TI/GE/GM, direction & réclamations.
+                  <strong>Apprendre. Créer. Automatiser. Construire. Innover.</strong> Sites sandboxés, slides, Kanban &amp; RAG <strong>isetb.rnu.tn</strong>.
                 </p>
               </Card>
 
