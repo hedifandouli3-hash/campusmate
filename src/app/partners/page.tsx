@@ -49,7 +49,7 @@ export default function PublicPartnersPage() {
               <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
                 <span className="text-slate-500">{c.partnerName}</span>
                 <a
-                  href={c.destinationUrl}
+                  href={/^https:\/\//i.test(c.destinationUrl) ? c.destinationUrl : "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-blue-600 font-medium hover:underline"

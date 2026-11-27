@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { ensureStoreHydrated, getCurrentUser, persistStore } from "@/lib/data/store";
 import { getInstitutionEntitlements } from "@/lib/licensing/engine";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { sanitizeText } from "@/lib/utils";
 import type { EducationalPartner, SponsorshipCampaign } from "@/types/domain";
 
@@ -57,6 +58,10 @@ export async function POST(request: Request) {
     }
 
     if (body.action === "register_partner") {
+      const ip = request.headers.get("x-forwarded-for") || "local";
+      if (!checkRateLimit(`partner-reg:${ip}`, 10, 60_000).allowed) {
+        return NextResponse.json({ error: "Trop de requêtes." }, { status: 429 });
+      }
       const name = sanitizeText(String(body.name || ""), 120);
       const website = sanitizeText(String(body.website || ""), 200);
       if (!name || !website.startsWith("https://")) {

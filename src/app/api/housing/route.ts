@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { ensureStoreHydrated, getCurrentUser, persistStore, requireUser } from "@/lib/data/store";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { sanitizeText } from "@/lib/utils";
 import type { HousingListing, HousingProvider } from "@/types/domain";
 
@@ -44,6 +45,10 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
 
     if (body.action === "register_provider") {
+      const ip = request.headers.get("x-forwarded-for") || "local";
+      if (!checkRateLimit(`housing-provider:${ip}`, 10, 60_000).allowed) {
+        return NextResponse.json({ error: "Trop de requêtes." }, { status: 429 });
+      }
       const user = await getCurrentUser();
       const name = sanitizeText(String(body.name || ""), 120);
       const contactEmail = sanitizeText(String(body.contactEmail || user?.email || ""), 120).toLowerCase();
