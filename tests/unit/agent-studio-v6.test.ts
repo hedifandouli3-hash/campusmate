@@ -3,6 +3,7 @@ import { AGENT_TOOL_REGISTRY, checkToolAuthorization } from "@/lib/agent/registr
 import { renderSandboxedWebsiteHtml } from "@/lib/agent/website-generator";
 import { runCampusMateAgent } from "@/lib/agent/orchestrator";
 import { getStore } from "@/lib/data/store";
+import { buildEmailComposeLinks } from "@/lib/integrations/exports";
 import type { KanbanProjectTask } from "@/types/domain";
 
 describe("CampusMate V6 Agentic OS, Tool Security & Sandboxed Studio", () => {
@@ -113,5 +114,16 @@ describe("CampusMate V6 Agentic OS, Tool Security & Sandboxed Studio", () => {
     const completed = tasks.filter((t) => t.status === "completed").length;
     const progress = Math.round((completed / tasks.length) * 100);
     expect(progress).toBe(50);
+  });
+
+  it("builds valid Gmail and mailto compose links for email drafts", () => {
+    const links = buildEmailComposeLinks({
+      recipient: "scolarite@isetb.rnu.tn",
+      subject: "Demande d'attestation",
+      body: "Bonjour,\nMerci d'avance.",
+    });
+    expect(links.gmailUrl).toContain("https://mail.google.com/mail/?view=cm");
+    expect(links.gmailUrl).toContain("scolarite%40isetb.rnu.tn");
+    expect(links.mailtoUrl).toContain("mailto:scolarite%40isetb.rnu.tn");
   });
 });

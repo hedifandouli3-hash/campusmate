@@ -4,10 +4,13 @@ import React, { useEffect, useState } from "react";
 import {
   BellRing,
   CalendarClock,
+  CalendarPlus,
+  ExternalLink,
   Mail,
   Play,
   Plus,
   Power,
+  Send,
   Sparkles,
   Trash2,
   Workflow,
@@ -22,6 +25,7 @@ import {
   PageHeader,
   Select,
 } from "@/components/ui/primitives";
+import { buildEmailComposeLinks, downloadIcsReminder } from "@/lib/integrations/exports";
 import { formatDate } from "@/lib/utils";
 import type { AutomationTriggerType, AutomationWorkflow, EmailDraft } from "@/types/domain";
 
@@ -88,6 +92,7 @@ export default function StudentAutomationsPage() {
   const { notify } = useApp();
   const [automations, setAutomations] = useState<AutomationWorkflow[]>([]);
   const [emailDrafts, setEmailDrafts] = useState<EmailDraft[]>([]);
+  const [integrations, setIntegrations] = useState({ resendConfigured: false, cronConfigured: false });
   const [title, setTitle] = useState("");
   const [triggerType, setTriggerType] = useState<AutomationTriggerType>("daily_schedule");
   const [scheduleLabel, setScheduleLabel] = useState("Chaque jour à 08:00 (Africa/Tunis)");
@@ -102,6 +107,7 @@ export default function StudentAutomationsPage() {
       const data = await res.json();
       setAutomations(data.automations || []);
       setEmailDrafts(data.emailDrafts || []);
+      if (data.integrations) setIntegrations(data.integrations);
     }
   }
 
@@ -311,9 +317,22 @@ export default function StudentAutomationsPage() {
                       {auto.scheduleCronOrLabel} · Actions : {auto.actions.join(" → ")}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Button size="sm" onClick={() => void handleRunNow(auto.id)}>
                       <Play className="w-3.5 h-3.5 me-1" /> Exécuter maintenant
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        downloadIcsReminder({
+                          title: auto.title,
+                          description: `${auto.description} (${auto.scheduleCronOrLabel})`,
+                        })
+                      }
+                      title="Exporter vers Google Calendar / Outlook / Apple Calendar"
+                    >
+                      <CalendarPlus className="w-3.5 h-3.5 me-1" /> .ics
                     </Button>
                     <Button
                       size="sm"
@@ -351,8 +370,18 @@ export default function StudentAutomationsPage() {
               Brouillons d&apos;emails (Validation requise)
             </h2>
           </div>
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="success">Google Calendar (.ics)</Badge>
+            <Badge variant="success">Gmail Compose</Badge>
+            <Badge variant={integrations.resendConfigured ? "success" : "default"}>
+              Resend {integrations.resendConfigured ? "Actif" : "Optionnel"}
+            </Badge>
+            <Badge variant={integrations.cronConfigured ? "success" : "default"}>
+              Vercel Cron {integrations.cronConfigured ? "Actif" : "Optionnel"}
+            </Badge>
+          </div>
           <p className="text-[11px] text-slate-500">
-            Aucun envoi SMTP/OAuth externe automatique : les brouillons restent locaux jusqu&apos;à copie ou approbation.
+            Ouvrez vos brouillons dans Gmail/Client mail gratuitement, ou envoyez via Resend si configuré.
           </p>
           <form onSubmit={(e) => void handleCreateDraft(e)} className="space-y-2">
             <Input
@@ -378,15 +407,58 @@ export default function StudentAutomationsPage() {
           </form>
 
           <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-            {emailDrafts.map((d) => (
-              <div key={d.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-2.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium truncate">{d.subject}</span>
-                  <Badge>{d.status}</Badge>
+            {emailDrafts.map((d) => {
+              const links = buildEmailComposeLinks({
+                recipient: d.recipient,
+                subject: d.subject,
+                body: d.body,
+              });
+              return (
+                <div key={d.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-2.5 text-xs space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium truncate">{d.subject}</span>
+                    <Badge>{d.status}</Badge>
+                  </div>
+                  <p className="text-[11px] text-slate-500 truncate">À : {d.recipient}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <a
+                      href={links.gmailUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded border border-slate-200 dark:border-slate-700 px-2 py-1 text-[11px] font-medium hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                      Gmail <ExternalLink className="w-3 h-3" />
+                    </a>
+                    <a
+                      href={links.mailtoUrl}
+                      className="inline-flex items-center gap-1 rounded border border-slate-200 dark:border-slate-700 px-2 py-1 text-[11px] font-medium hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                      Client Mail
+                    </a>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const res = await fetch("/api/automations", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ entity: "email_draft", action: "send_via_resend", id: d.id }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                          notify(data.error || "Erreur d'envoi", "error");
+                        } else {
+                          notify("Email envoyé via Resend !", "success");
+                          await load();
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 rounded bg-blue-600 text-white px-2 py-1 text-[11px] font-medium hover:bg-blue-700"
+                    >
+                      <Send className="w-3 h-3" /> Resend
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[11px] text-slate-500 truncate">À : {d.recipient}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       </div>

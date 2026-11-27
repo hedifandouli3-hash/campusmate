@@ -25,6 +25,11 @@ import {
   Select,
 } from "@/components/ui/primitives";
 import { renderSandboxedWebsiteHtml } from "@/lib/agent/website-generator";
+import {
+  exportDocumentPdf,
+  exportPresentationPdf,
+  exportWebsiteDeployZip,
+} from "@/lib/integrations/exports";
 import type { CreationArtifact, CreationArtifactType } from "@/types/domain";
 
 type StudioTab = "website" | "presentation" | "document" | "brand_kit";
@@ -250,10 +255,37 @@ export default function StudentStudioPage() {
                     className="font-semibold max-w-xs"
                   />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {current.websiteData && (
-                    <Button variant="secondary" size="sm" onClick={handleExportHtml}>
-                      <Download className="w-3.5 h-3.5 me-1" /> Exporter HTML
+                    <>
+                      <Button variant="secondary" size="sm" onClick={handleExportHtml}>
+                        <Download className="w-3.5 h-3.5 me-1" /> Exporter HTML
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => void exportWebsiteDeployZip(current)}
+                      >
+                        <Download className="w-3.5 h-3.5 me-1" /> ZIP Déploiement (Vercel / Netlify)
+                      </Button>
+                    </>
+                  )}
+                  {current.type === "presentation" && current.slides && current.slides.length > 0 && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => exportPresentationPdf(current.title, current.slides!)}
+                    >
+                      <Download className="w-3.5 h-3.5 me-1" /> Exporter PDF (Slides)
+                    </Button>
+                  )}
+                  {current.type === "document" && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => exportDocumentPdf(current.title, current.documentMarkdown || "")}
+                    >
+                      <Download className="w-3.5 h-3.5 me-1" /> Exporter PDF
                     </Button>
                   )}
                   <Button size="sm" onClick={() => void handleSave(current)} disabled={saving}>

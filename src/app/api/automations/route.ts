@@ -18,7 +18,14 @@ export async function GET() {
     ensureAutomationArrays(store);
     const automations = store.automations!.filter((a) => a.ownerId === user.id);
     const emailDrafts = store.emailDrafts!.filter((e) => e.ownerId === user.id);
-    return NextResponse.json({ automations, emailDrafts });
+    return NextResponse.json({
+      automations,
+      emailDrafts,
+      integrations: {
+        resendConfigured: Boolean(process.env.RESEND_API_KEY?.trim()),
+        cronConfigured: Boolean(process.env.CRON_SECRET?.trim()),
+      },
+    });
   } catch {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
@@ -62,6 +69,41 @@ export async function POST(request: Request) {
         draft.status = "cancelled";
         await persistStore(store);
         return NextResponse.json({ draft });
+      }
+      if (body.action === "send_via_resend") {
+        const draft = store.emailDrafts!.find((d) => d.id === body.id && d.ownerId === user.id);
+        if (!draft) return NextResponse.json({ error: "Brouillon introuvable." }, { status: 404 });
+        const apiKey = process.env.RESEND_API_KEY?.trim();
+        if (!apiKey) {
+          return NextResponse.json(
+            {
+              error:
+                "RESEND_API_KEY non configurée sur le serveur. Utilisez « Ouvrir dans Gmail » ou ajoutez RESEND_API_KEY dans Vercel (3 000 emails/mois gratuits).",
+            },
+            { status: 503 }
+          );
+        }
+        const fromAddress = process.env.RESEND_FROM_EMAIL?.trim() || "CampusMate <onboarding@resend.dev>";
+        const resendRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: fromAddress,
+            to: [draft.recipient],
+            subject: draft.subject,
+            text: draft.body,
+          }),
+        });
+        if (!resendRes.ok) {
+          const errText = await resendRes.text();
+          return NextResponse.json({ error: `Resend API error: ${errText}` }, { status: 502 });
+        }
+        draft.status = "approved_local_pending_provider";
+        await persistStore(store);
+        return NextResponse.json({ draft, sent: true });
       }
     }
 

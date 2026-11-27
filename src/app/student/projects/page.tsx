@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowRight, FolderKanban, Plus } from "lucide-react";
+import { ArrowRight, CalendarPlus, FolderKanban, Plus } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
 import {
   Badge,
@@ -12,6 +12,7 @@ import {
   PageHeader,
   Select,
 } from "@/components/ui/primitives";
+import { downloadIcsReminder } from "@/lib/integrations/exports";
 import type { KanbanProjectTask, StudentWorkspaceProject } from "@/types/domain";
 
 const COLUMNS: Array<{ status: KanbanProjectTask["status"]; label: string }> = [
@@ -170,6 +171,18 @@ export default function StudentProjectsPage() {
                 ))}
               </Select>
               <Badge>{current.category}</Badge>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() =>
+                  downloadIcsReminder({
+                    title: `Jalon Projet : ${current.title}`,
+                    description: `${current.description} — Progression actuelle : ${current.progress}%`,
+                  })
+                }
+              >
+                <CalendarPlus className="w-3.5 h-3.5 me-1" /> Calendrier (.ics)
+              </Button>
             </div>
             <div className="flex items-center gap-3 min-w-[200px]">
               <div className="flex-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
