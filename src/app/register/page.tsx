@@ -10,7 +10,7 @@ import { Button, Card, Input, Select } from "@/components/ui/primitives";
 export default function RegisterPage() {
   const router = useRouter();
   const { notify } = useApp();
-  const [role, setRole] = useState<"student" | "teacher" | "organization">("student");
+  const [role, setRole] = useState<"student" | "teacher" | "organization" | "university_admin">("student");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -90,10 +90,11 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium mb-1">Type de compte</label>
-              <Select value={role} onChange={(e) => setRole(e.target.value as "student" | "teacher" | "organization")}>
+              <Select value={role} onChange={(e) => setRole(e.target.value as "student" | "teacher" | "organization" | "university_admin")}>
                 <option value="student">Étudiant (Vérifié par l&apos;Administration)</option>
                 <option value="teacher">Enseignant (Vérifié par l&apos;Administration)</option>
                 <option value="organization">Organisation / Entreprise (Vérifiée par Super Admin)</option>
+                <option value="university_admin">Administration Universitaire (Vérifiée par Super Admin)</option>
               </Select>
             </div>
             <div>

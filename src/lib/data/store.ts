@@ -157,7 +157,7 @@ export function registerStudentOrOrg(input: {
   email: string;
   password: string;
   fullName: string;
-  role: "student" | "teacher" | "organization";
+  role: "student" | "teacher" | "organization" | "university_admin";
   institutionId?: string | null;
   sectionId?: string;
   organizationName?: string;
@@ -172,7 +172,7 @@ export function registerStudentOrOrg(input: {
   const inst = store.institutions.find((i) => i.id === input.institutionId) || store.institutions[0];
   const section = store.sections.find((s) => s.id === input.sectionId) || store.sections[0];
   const id = `usr-${crypto.randomUUID()}`;
-  const isCampusMember = input.role === "student" || input.role === "teacher";
+  const isCampusMember = input.role === "student" || input.role === "teacher" || input.role === "university_admin";
 
   let orgId: string | undefined;
   let orgName: string | undefined;

@@ -7,8 +7,9 @@ const RegisterSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Mot de passe : 8 caractères minimum."),
   fullName: z.string().min(2).max(120),
-  // Never allow self-registration as university_admin or super_admin!
-  role: z.enum(["student", "teacher", "organization"]).default("student"),
+  // Never allow self-registration as super_admin!
+  // university_admin & organization require super_admin approval; student & teacher require university_admin approval.
+  role: z.enum(["student", "teacher", "organization", "university_admin"]).default("student"),
   institutionId: z.string().optional(),
   sectionId: z.string().optional(),
   organizationName: z.string().optional(),
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
   await persistStore(store);
 
   const approverLabel =
-    result.user.role === "organization"
+    result.user.role === "organization" || result.user.role === "university_admin"
       ? "le Super Administrateur"
       : "l'Administration universitaire";
 
