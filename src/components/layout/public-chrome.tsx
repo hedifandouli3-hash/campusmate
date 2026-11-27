@@ -25,6 +25,7 @@ export function PublicHeader() {
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
           <Link href="/features" className="hover:text-blue-600 transition">{t.nav.features}</Link>
+          <Link href="/demo" className="hover:text-blue-600 transition font-semibold text-blue-600 dark:text-blue-400">Démo</Link>
           <Link href="/#how-it-works" className="hover:text-blue-600 transition">{t.nav.howItWorks}</Link>
           <Link href="/about" className="hover:text-blue-600 transition">{t.nav.about}</Link>
         </nav>

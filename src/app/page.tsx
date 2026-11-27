@@ -123,6 +123,12 @@ export default function LandingPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
+                href="/demo"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-3 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              >
+                Explorer la démo interactive
+              </Link>
+              <Link
                 href="/features"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-3 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
               >
