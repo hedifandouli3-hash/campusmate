@@ -106,7 +106,7 @@ export default function LaunchpadDashboardPage() {
       <PageHeader
         badge={<Badge variant="primary">CampusMate Launchpad • Module 15</Badge>}
         title="Transformez vos connaissances en opportunités."
-        description="Reliez vos cours universitaires à des compétences vérifiables, des projets pratiques, des services freelance et des idées de startup."
+        description="Utilisez ce que vous avez appris à l'université, vos stages et vos projets pratiques pour démarrer en freelance, lancer votre startup et rayonner sur vos réseaux."
       />
 
       <LaunchpadNav />

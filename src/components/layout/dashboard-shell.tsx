@@ -37,6 +37,7 @@ import {
   Rocket,
   Search,
   Settings,
+  Share2,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
@@ -88,6 +89,7 @@ function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGr
           { label: t.sidebar.launchpadPortfolio, href: "/student/launchpad/portfolio", icon: <Award className="w-4 h-4" /> },
           { label: t.sidebar.launchpadMentorship, href: "/student/launchpad/mentorship", icon: <Handshake className="w-4 h-4" /> },
           { label: t.sidebar.launchpadRoadmaps, href: "/student/launchpad/roadmaps", icon: <Map className="w-4 h-4" /> },
+          { label: t.sidebar.launchpadSocial, href: "/student/launchpad/social-post", icon: <Share2 className="w-4 h-4" /> },
         ],
       },
       {

@@ -1100,3 +1100,82 @@ export async function generatePitchWithAI(params: {
     },
   };
 }
+
+export interface GeneratedSocialPost {
+  platform: "linkedin" | "instagram" | "facebook";
+  headline: string;
+  body: string;
+  hashtags: string[];
+  callToAction: string;
+}
+
+const SocialPostSchema = z.object({
+  posts: z.array(
+    z.object({
+      platform: z.enum(["linkedin", "instagram", "facebook"]),
+      headline: z.string(),
+      body: z.string(),
+      hashtags: z.array(z.string()),
+      callToAction: z.string(),
+    })
+  ),
+});
+
+export async function generateSocialPostsWithAI(params: {
+  idea: string;
+  attachedTitle?: string;
+  attachedType?: "project" | "certificate" | "stage" | "upload";
+  platforms: Array<"linkedin" | "instagram" | "facebook">;
+  studentName: string;
+  specialization: string;
+  locale: Locale;
+}): Promise<{ posts: GeneratedSocialPost[]; isDemoFallback: boolean }> {
+  const attachmentContext = params.attachedTitle
+    ? `Attached ${params.attachedType || "item"}: ${params.attachedTitle}`
+    : "No attachment";
+
+  const raw = await generateCompactText({
+    systemInstruction:
+      "You are CampusMate AI Social Post Writer. Write authentic, engaging social media posts tailored to each selected platform (LinkedIn: professional storytelling; Instagram: concise visual caption; Facebook: warm community update). Ground the post strictly in the student's real idea, project, internship (stage), or certificate. Never invent metrics or fake achievements. Return valid JSON { posts: [...] }.",
+    prompt: `Locale: ${params.locale}\nStudent: ${params.studentName} (${params.specialization})\nPlatforms: ${params.platforms.join(", ")}\nIdea/Message: ${params.idea}\n${attachmentContext}`,
+    maxOutputTokens: 1000,
+    jsonMode: true,
+    temperature: 0.4,
+  });
+
+  const parsed = parseJsonSafe(raw, SocialPostSchema);
+  if (parsed && parsed.posts.length > 0) {
+    return { posts: parsed.posts, isDemoFallback: false };
+  }
+
+  const refLine = params.attachedTitle ? `\n\n📎 Référence jointe : ${params.attachedTitle}` : "";
+  const posts: GeneratedSocialPost[] = params.platforms.map((platform) => {
+    if (platform === "linkedin") {
+      return {
+        platform: "linkedin",
+        headline: "Post LinkedIn Professionnel",
+        body: `De l'université à l'action concrète 🚀\n\nEn tant qu'étudiant(e) en ${params.specialization}, j'ai transformé mes apprentissages, stages et projets pratiques en une nouvelle initiative :\n\n« ${params.idea} »${refLine}\n\nChaque cours, projet et stage est une opportunité de créer de la valeur réelle, de se lancer en freelance ou de bâtir une startup. Hâte d'échanger avec des professionnels et mentors sur cette démarche !`,
+        hashtags: ["#CampusMate", "#ISETBeja", "#EntrepreneuriatEtudiant", "#Freelance", "#Innovation"],
+        callToAction: "Vos retours et conseils sont les bienvenus en commentaire !",
+      };
+    }
+    if (platform === "instagram") {
+      return {
+        platform: "instagram",
+        headline: "Légende Instagram",
+        body: `✨ Du campus au monde réel !\n\n${params.idea}${refLine}\n\nCours + Stages + Projets = Opportunités infinies 💡🔥`,
+        hashtags: ["#CampusLife", "#StudentStartup", "#TechTunisia", "#ISETBeja", "#BuildInPublic"],
+        callToAction: "Dis-moi ce que tu en penses en DM ou en commentaire 👇",
+      };
+    }
+    return {
+      platform: "facebook",
+      headline: "Publication Facebook",
+      body: `Bonjour à tous 👋\n\nJe partage avec vous une nouvelle étape de mon parcours universitaire (${params.specialization}) : ${params.idea}.${refLine}\n\nMerci à mes enseignants, camarades et encadrants de stage pour leur soutien. N'hésitez pas à partager ou donner votre avis !`,
+      hashtags: ["#ISETBeja", "#VieEstudiantine", "#ProjetEtudiant", "#CampusMate"],
+      callToAction: "Partagez votre avis en commentaire !",
+    };
+  });
+
+  return { posts, isDemoFallback: true };
+}

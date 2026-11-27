@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import { addNotification, ensureStoreHydrated, persistToDisk, requireUser } from "@/lib/data/store";
+import { addNotification, ensureStoreHydrated, persistStore, persistToDisk, requireUser } from "@/lib/data/store";
 import { buildInitialDemoState } from "@/lib/demo/seed";
 import { sanitizeText } from "@/lib/utils";
 
@@ -29,8 +29,15 @@ export async function GET() {
     const store = await ensureStoreHydrated();
     const instId = user.institutionId;
 
+    const isMod = user.role === "university_admin" || user.role === "super_admin";
+    const canSeePost = (status: string | undefined, ownerId: string) =>
+      (status ?? "approved") === "approved" || ownerId === user.id || isMod;
+
     const marketplace = store.marketplaceListings.filter(
-      (m) => (user.role === "super_admin" || m.institutionId === instId) && m.status !== "removed"
+      (m) =>
+        (user.role === "super_admin" || m.institutionId === instId) &&
+        m.status !== "removed" &&
+        canSeePost(m.moderationStatus, m.sellerId)
     );
     const transportInfo = store.transportInfo.filter(
       (t) => user.role === "super_admin" || t.institutionId === instId
@@ -41,7 +48,9 @@ export async function GET() {
         )
       : [];
     const lostFound = store.lostFoundReports.filter(
-      (l) => user.role === "super_admin" || l.institutionId === instId
+      (l) =>
+        (user.role === "super_admin" || l.institutionId === instId) &&
+        canSeePost(l.moderationStatus, l.reporterId)
     );
     const rooms = store.rooms.filter(
       (r) => user.role === "super_admin" || r.institutionId === instId
@@ -65,7 +74,9 @@ export async function GET() {
     );
     const promotionPool = store.promotions ?? buildInitialDemoState().promotions ?? [];
     const promotions = promotionPool.filter(
-      (p) => user.role === "super_admin" || p.institutionId === instId
+      (p) =>
+        (user.role === "super_admin" || p.institutionId === instId) &&
+        canSeePost(p.moderationStatus, p.authorId)
     );
 
     return NextResponse.json({
@@ -169,13 +180,19 @@ export async function POST(request: Request) {
           condition: sanitizeText(String(body.condition || "Bon état"), 40),
           imageUrl: sanitizeCommunityImageUrl(body.imageUrl),
           status: "available" as const,
+          moderationStatus: (user.role === "university_admin" || user.role === "super_admin"
+            ? "approved"
+            : "pending") as "approved" | "pending",
           favoriteUserIds: [],
           createdAt: now,
         };
         if (!listing.title) return NextResponse.json({ error: "Titre requis." }, { status: 400 });
         store.marketplaceListings.unshift(listing);
-        persistToDisk(store);
-        return NextResponse.json({ listing }, { status: 201 });
+        await persistStore(store);
+        return NextResponse.json(
+          { listing, pendingModeration: listing.moderationStatus === "pending" },
+          { status: 201 }
+        );
       }
 
       case "lost_found": {
@@ -204,12 +221,18 @@ export async function POST(request: Request) {
           eventDate: String(body.eventDate || now.slice(0, 10)),
           imageUrl: sanitizeCommunityImageUrl(body.imageUrl),
           status: "open" as const,
+          moderationStatus: (user.role === "university_admin" || user.role === "super_admin"
+            ? "approved"
+            : "pending") as "approved" | "pending",
           createdAt: now,
         };
         if (!report.itemName) return NextResponse.json({ error: "Nom de l'objet requis." }, { status: 400 });
         store.lostFoundReports.unshift(report);
-        persistToDisk(store);
-        return NextResponse.json({ report }, { status: 201 });
+        await persistStore(store);
+        return NextResponse.json(
+          { report, pendingModeration: report.moderationStatus === "pending" },
+          { status: 201 }
+        );
       }
 
       case "promotions": {
@@ -259,6 +282,9 @@ export async function POST(request: Request) {
           contactHint: sanitizeText(String(body.contactHint || "Via messagerie CampusMate"), 160),
           validUntil: body.validUntil ? String(body.validUntil).slice(0, 10) : undefined,
           isVerifiedPartner: user.role === "university_admin" || user.role === "super_admin",
+          moderationStatus: (user.role === "university_admin" || user.role === "super_admin"
+            ? "approved"
+            : "pending") as "approved" | "pending",
           savedByUserIds: [],
           createdAt: now,
         };
@@ -266,8 +292,11 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: "Titre, lieu/partenaire et tarif/réduction requis." }, { status: 400 });
         }
         store.promotions.unshift(promo);
-        persistToDisk(store);
-        return NextResponse.json({ promotion: promo }, { status: 201 });
+        await persistStore(store);
+        return NextResponse.json(
+          { promotion: promo, pendingModeration: promo.moderationStatus === "pending" },
+          { status: 201 }
+        );
       }
 
       case "rooms": {

@@ -49,6 +49,7 @@ export const en = {
     launchpadPortfolio: "Portfolio & CV",
     launchpadMentorship: "Mentorship & Challenges",
     launchpadRoadmaps: "Roadmaps & Pitch",
+    launchpadSocial: "AI Social Posts",
     services: "University Services",
     community: "Community",
     career: "Career",

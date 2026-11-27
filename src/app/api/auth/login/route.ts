@@ -86,6 +86,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Identifiants incorrects ou compte suspendu." }, { status: 401 });
   }
 
+  if (user.approvalStatus === "rejected") {
+    return NextResponse.json(
+      { error: "Votre demande de compte a été refusée par l'administration." },
+      { status: 403 }
+    );
+  }
+  if (user.approvalStatus === "pending" || (!user.isDemoAccount && !user.isVerified)) {
+    const approver =
+      user.role === "university_admin" || user.role === "organization"
+        ? "le Super Administrateur"
+        : "l'Administration universitaire";
+    return NextResponse.json(
+      { error: `Compte en attente de vérification par ${approver}.` },
+      { status: 403 }
+    );
+  }
+
   if (parsed.data.expectedRole && user.role !== parsed.data.expectedRole) {
     return NextResponse.json(
       {

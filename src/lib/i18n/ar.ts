@@ -49,6 +49,7 @@ export const ar = {
     launchpadPortfolio: "ملف الأعمال والسيرة",
     launchpadMentorship: "الإرشاد والتحديات",
     launchpadRoadmaps: "خارطة الطريق والعرض",
+    launchpadSocial: "منشورات الذكاء الاصطناعي",
     services: "الخدمات الجامعية",
     community: "الحياة الطلابية",
     career: "المسار المهني",

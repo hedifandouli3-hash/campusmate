@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { ensureStoreHydrated, registerStudentOrOrg } from "@/lib/data/store";
+import { ensureStoreHydrated, persistStore, registerStudentOrOrg } from "@/lib/data/store";
 import { checkRateLimit } from "@/lib/security/rate-limit";
-import { getDashboardPathForRole, setServerSessionCookie } from "@/lib/security/session";
 
 const RegisterSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Mot de passe : 8 caractères minimum."),
   fullName: z.string().min(2).max(120),
-  // Never allow self-registration as teacher, university_admin, or super_admin!
-  role: z.enum(["student", "organization"]).default("student"),
+  // Never allow self-registration as university_admin or super_admin!
+  role: z.enum(["student", "teacher", "organization"]).default("student"),
   institutionId: z.string().optional(),
   sectionId: z.string().optional(),
   organizationName: z.string().optional(),
@@ -37,31 +36,24 @@ export async function POST(request: Request) {
     );
   }
 
-  await ensureStoreHydrated();
+  const store = await ensureStoreHydrated();
   const result = registerStudentOrOrg(parsed.data);
   if (result.error || !result.user) {
     return NextResponse.json({ error: result.error || "Erreur d'inscription." }, { status: 400 });
   }
 
-  try {
-    await setServerSessionCookie({
-      userId: result.user.id,
-      email: result.user.email,
-      role: result.user.role,
-      institutionId: result.user.institutionId,
-    });
-  } catch (err) {
-    const message =
-      err instanceof Error && err.message === "SESSION_SECRET_MISCONFIGURED"
-        ? "Configuration serveur incomplète : SESSION_SECRET doit être défini en production."
-        : "Erreur serveur lors de la création de la session.";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  await persistStore(store);
+
+  const approverLabel =
+    result.user.role === "organization"
+      ? "le Super Administrateur"
+      : "l'Administration universitaire";
 
   return NextResponse.json(
     {
       user: result.user,
-      redirectTo: getDashboardPathForRole(result.user.role),
+      pendingApproval: true,
+      message: `Compte créé avec succès. Il doit être vérifié par ${approverLabel} avant votre première connexion.`,
     },
     { status: 201 }
   );

@@ -76,6 +76,7 @@ export interface UserProfile {
   avatarUrl?: string;
   preferredLanguage: Locale;
   isVerified: boolean;
+  approvalStatus?: "pending" | "approved" | "rejected";
   isSuspended: boolean;
   isAdult: boolean;
   bio?: string;
@@ -431,6 +432,7 @@ export interface MarketplaceListing {
   condition: string;
   imageUrl?: string;
   status: "available" | "sold" | "removed";
+  moderationStatus?: "pending" | "approved" | "rejected";
   favoriteUserIds: string[];
   createdAt: string;
 }
@@ -472,6 +474,7 @@ export interface LostFoundReport {
   eventDate: string;
   imageUrl?: string;
   status: "open" | "claim_pending" | "recovered";
+  moderationStatus?: "pending" | "approved" | "rejected";
   createdAt: string;
 }
 
@@ -489,6 +492,7 @@ export interface StudentPromotion {
   contactHint: string;
   validUntil?: string;
   isVerifiedPartner: boolean;
+  moderationStatus?: "pending" | "approved" | "rejected";
   savedByUserIds: string[];
   createdAt: string;
 }

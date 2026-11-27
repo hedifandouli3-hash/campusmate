@@ -47,6 +47,7 @@ export const fr = {
     launchpadPortfolio: "Portfolio & CV",
     launchpadMentorship: "Mentorat & Défis",
     launchpadRoadmaps: "Roadmaps & Pitch",
+    launchpadSocial: "Posts IA (Réseaux)",
     services: "Services Universitaires",
     community: "Communauté",
     career: "Carrière",

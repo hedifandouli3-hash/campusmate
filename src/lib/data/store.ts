@@ -26,6 +26,7 @@ const STORE_FILE = path.join(os.tmpdir(), "campusmate-db-v3.json");
 
 declare global {
   var __campusmateStore: CampusMateStoreState | undefined;
+  var __campusmateLastCloudSyncAt: number | undefined;
 }
 
 function loadFromDisk(): CampusMateStoreState {
@@ -52,6 +53,7 @@ function loadFromDisk(): CampusMateStoreState {
 
 export function persistToDisk(state: CampusMateStoreState): void {
   globalThis.__campusmateStore = state;
+  globalThis.__campusmateLastCloudSyncAt = Date.now();
   try {
     fs.writeFileSync(STORE_FILE, JSON.stringify(state), "utf8");
   } catch {
@@ -62,12 +64,30 @@ export function persistToDisk(state: CampusMateStoreState): void {
   }
 }
 
+export async function persistStore(state: CampusMateStoreState): Promise<void> {
+  globalThis.__campusmateStore = state;
+  globalThis.__campusmateLastCloudSyncAt = Date.now();
+  try {
+    fs.writeFileSync(STORE_FILE, JSON.stringify(state), "utf8");
+  } catch {
+    // Ignore read-only fs environments
+  }
+  if (!process.env.VITEST) {
+    await syncSnapshotToSupabase(state);
+  }
+}
+
 export async function ensureStoreHydrated(): Promise<CampusMateStoreState> {
-  if (!globalThis.__campusmateStore && !process.env.VITEST) {
-    const cloud = await loadSnapshotFromSupabase();
-    if (cloud && Array.isArray(cloud.users) && Array.isArray(cloud.institutions)) {
-      globalThis.__campusmateStore = cloud;
-      return cloud;
+  if (!process.env.VITEST) {
+    const lastSync = globalThis.__campusmateLastCloudSyncAt || 0;
+    const shouldRefresh = !globalThis.__campusmateStore || Date.now() - lastSync > 2000;
+    if (shouldRefresh) {
+      const cloud = await loadSnapshotFromSupabase();
+      if (cloud && Array.isArray(cloud.users) && Array.isArray(cloud.institutions)) {
+        globalThis.__campusmateStore = cloud;
+        globalThis.__campusmateLastCloudSyncAt = Date.now();
+        return cloud;
+      }
     }
   }
   return loadFromDisk();
@@ -137,7 +157,7 @@ export function registerStudentOrOrg(input: {
   email: string;
   password: string;
   fullName: string;
-  role: "student" | "organization";
+  role: "student" | "teacher" | "organization";
   institutionId?: string | null;
   sectionId?: string;
   organizationName?: string;
@@ -152,6 +172,7 @@ export function registerStudentOrOrg(input: {
   const inst = store.institutions.find((i) => i.id === input.institutionId) || store.institutions[0];
   const section = store.sections.find((s) => s.id === input.sectionId) || store.sections[0];
   const id = `usr-${crypto.randomUUID()}`;
+  const isCampusMember = input.role === "student" || input.role === "teacher";
 
   let orgId: string | undefined;
   let orgName: string | undefined;
@@ -174,19 +195,21 @@ export function registerStudentOrOrg(input: {
 
   const newRecord: DemoAccountRecord = {
     id,
-    institutionId: input.role === "student" ? inst.id : null,
-    institutionName: input.role === "student" ? inst.name : undefined,
+    institutionId: isCampusMember ? inst.id : null,
+    institutionName: isCampusMember ? inst.name : undefined,
     email: normalizedEmail,
     passwordHash: hashPassword(input.password),
     fullName: input.fullName.trim(),
     role: input.role,
     preferredLanguage: input.locale ?? "fr",
-    isVerified: input.role === "student",
+    // Every newly created account must be verified by Administration (students/teachers) or Super Admin (organizations/admins)
+    isVerified: false,
+    approvalStatus: "pending",
     isSuspended: false,
     isAdult: true,
     interests: [],
     skills: [],
-    departmentId: input.role === "student" ? section?.departmentId : undefined,
+    departmentId: isCampusMember ? section?.departmentId : undefined,
     sectionId: input.role === "student" ? section?.id : undefined,
     sectionName: input.role === "student" ? section?.name : undefined,
     academicYearId: input.role === "student" ? section?.academicYearId : undefined,

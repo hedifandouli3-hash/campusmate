@@ -71,7 +71,12 @@ export default function LostFoundPage() {
       });
       const data = await res.json().catch(() => null);
       if (res.ok) {
-        notify("Signalement publié.", "success");
+        notify(
+          data?.pendingModeration
+            ? "Signalement soumis ! Visible à tous après validation."
+            : "Signalement publié.",
+          "success"
+        );
         setItemName("");
         setGeneralLocation("");
         setDescription("");
@@ -155,10 +160,13 @@ export default function LostFoundPage() {
                     <img src={rep.imageUrl} alt={rep.itemName} className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
                   </div>
                 )}
-                <div className="flex justify-between items-center">
-                  <Badge variant={rep.reportType === "found" ? "success" : "warning"}>
-                    {rep.reportType === "found" ? "Trouvé" : "Perdu"}
-                  </Badge>
+                <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant={rep.reportType === "found" ? "success" : "warning"}>
+                      {rep.reportType === "found" ? "Trouvé" : "Perdu"}
+                    </Badge>
+                    {rep.moderationStatus === "pending" && <Badge variant="warning">En attente</Badge>}
+                  </div>
                   <StatusBadge
                     status={rep.status === "recovered" ? "completed" : "open"}
                     label={rep.status === "recovered" ? "Restitué" : "Ouvert"}

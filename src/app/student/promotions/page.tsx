@@ -108,7 +108,12 @@ export default function StudentPromotionsPage() {
       });
       const data = await res.json().catch(() => null);
       if (res.ok) {
-        notify("Offre publiée avec succès !", "success");
+        notify(
+          data?.pendingModeration
+            ? "Offre soumise ! Visible à tous après validation par l'administration."
+            : "Offre publiée avec succès !",
+          "success"
+        );
         setTitle("");
         setPartnerOrArea("");
         setDiscountOrPrice("");
@@ -295,9 +300,12 @@ export default function StudentPromotionsPage() {
               <Card key={item.id} className="space-y-3 flex flex-col justify-between">
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
-                    <Badge variant={meta.badgeVariant} className="inline-flex items-center gap-1.5">
-                      {meta.icon} {meta.label}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant={meta.badgeVariant} className="inline-flex items-center gap-1.5">
+                        {meta.icon} {meta.label}
+                      </Badge>
+                      {item.moderationStatus === "pending" && <Badge variant="warning">En attente</Badge>}
+                    </div>
                     {item.isVerifiedPartner && (
                       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
                         <BadgeCheck className="w-3.5 h-3.5" /> Vérifié

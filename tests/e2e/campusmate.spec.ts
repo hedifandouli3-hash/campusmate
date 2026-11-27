@@ -175,6 +175,12 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     // Portfolio -> Import to CV
     await page.goto("/student/launchpad/portfolio");
     await expect(page.getByText(/Application de Gestion de Stock/i)).toBeVisible();
+
+    // AI Social Post Writer (LinkedIn / Instagram / Facebook)
+    await page.goto("/student/launchpad/social-post");
+    await page.getByPlaceholder(/Ex : J'ai utilisé mes cours/i).fill("Prototype StockPulse TN issu de mon cours BDD et stage");
+    await page.getByRole("button", { name: /Générer mes publications IA/i }).click();
+    await expect(page.getByText(/#CampusMate/i).first()).toBeVisible();
   });
 
   test("Responsive breakpoints 360px, 768px, and 1440px have zero horizontal overflow", async ({ page }) => {

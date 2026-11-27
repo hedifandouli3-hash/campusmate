@@ -6,6 +6,7 @@ import {
   courseToOpportunitiesWithAI,
   extractAcademicSkillsWithAI,
   generatePitchWithAI,
+  generateSocialPostsWithAI,
 } from "@/lib/ai/launchpad";
 import {
   answerWithRag,
@@ -356,5 +357,28 @@ describe("CampusMate Core Security, Multi-Tenancy, RAG & Workflows", () => {
     });
     expect(pitchRes.pitch.completedVsPlannedNote).toContain("Réalisé");
     expect(pitchRes.pitch.pitch3m).toContain("StockPulse TN");
+
+    // Newly registered student/teacher/org accounts start as pending verification
+    const reg = registerStudentOrOrg({
+      email: "new.student@isetb.rnu.tn",
+      password: "Password@2026!",
+      fullName: "Nouvel Étudiant",
+      role: "student",
+    });
+    expect(reg.user?.approvalStatus).toBe("pending");
+    expect(reg.user?.isVerified).toBe(false);
+
+    // AI Social Post Writer generates tailored posts for LinkedIn, Instagram & Facebook
+    const social = await generateSocialPostsWithAI({
+      idea: "Mon projet StockPulse TN basé sur mes cours et mon stage",
+      attachedTitle: "Certificat PostgreSQL",
+      attachedType: "certificate",
+      platforms: ["linkedin", "instagram", "facebook"],
+      studentName: "Amira Ben Ali",
+      specialization: "DSI",
+      locale: "fr",
+    });
+    expect(social.posts.map((p) => p.platform)).toEqual(["linkedin", "instagram", "facebook"]);
+    expect(social.posts[0].body).toContain("Certificat PostgreSQL");
   });
 });

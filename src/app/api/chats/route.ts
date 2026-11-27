@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { addNotification, getStore, persistToDisk, requireUser } from "@/lib/data/store";
+import { addNotification, ensureStoreHydrated, persistStore, requireUser } from "@/lib/data/store";
 import {
   decryptChatPayload,
   encryptChatPayload,
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const groupId = url.searchParams.get("groupId");
     const limitParam = Math.min(80, Math.max(10, Number(url.searchParams.get("limit") || 40)));
     const before = url.searchParams.get("before");
-    const store = getStore();
+    const store = await ensureStoreHydrated();
 
     if (!store.chatReadCursors) store.chatReadCursors = {};
 
@@ -51,7 +51,6 @@ export async function GET(request: Request) {
     if (targetGroup) {
       if (!store.chatReadCursors[targetGroup.id]) store.chatReadCursors[targetGroup.id] = {};
       store.chatReadCursors[targetGroup.id][user.id] = new Date().toISOString();
-      persistToDisk(store);
     }
 
     const groupsWithUnread = authorizedGroups.map((g) => {
@@ -121,7 +120,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
 
     if (body?.action === "report") {
       const targetMsg = store.chatMessages.find((m) => m.id === String(body.messageId || ""));
@@ -143,7 +142,7 @@ export async function POST(request: Request) {
         status: "open",
         createdAt: new Date().toISOString(),
       });
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ ok: true });
     }
 
@@ -219,7 +218,7 @@ export async function POST(request: Request) {
       }
     }
 
-    persistToDisk(store);
+    await persistStore(store);
     return NextResponse.json({ message: { ...msg, content: plainContent } }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Erreur d'envoi." }, { status: 500 });
@@ -230,7 +229,7 @@ export async function PATCH(request: Request) {
   try {
     const user = await requireUser(["student", "teacher", "university_admin"]);
     const body = await request.json();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
 
     if (body?.action === "mark_read" && body.groupId) {
       const grp = store.chatGroups.find(
@@ -240,7 +239,7 @@ export async function PATCH(request: Request) {
       if (!store.chatReadCursors) store.chatReadCursors = {};
       if (!store.chatReadCursors[grp.id]) store.chatReadCursors[grp.id] = {};
       store.chatReadCursors[grp.id][user.id] = new Date().toISOString();
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ ok: true });
     }
 
@@ -263,7 +262,7 @@ export async function PATCH(request: Request) {
       msg.content = encryptChatPayload(nextText);
       msg.editedAt = new Date().toISOString();
       msg.encryptionVersion = "cmv1-aead";
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ message: { ...msg, content: nextText } });
     }
 
@@ -273,7 +272,7 @@ export async function PATCH(request: Request) {
       }
       msg.isDeleted = true;
       msg.isPinned = false;
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ ok: true, id: msg.id });
     }
 

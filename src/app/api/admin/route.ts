@@ -5,7 +5,8 @@ import { chunkPages, neutralizePromptInjection } from "@/lib/ai/document-process
 import { fetchOfficialIsetBejaPages } from "@/lib/ai/isetb-sync";
 import {
   addAuditLog,
-  getStore,
+  ensureStoreHydrated,
+  persistStore,
   persistToDisk,
   requireUser,
   toSafeDirectoryProfile,
@@ -14,7 +15,7 @@ import {
 export async function GET() {
   try {
     const user = await requireUser(["university_admin", "super_admin"]);
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const isSuper = user.role === "super_admin";
 
     const institutions = isSuper
@@ -39,6 +40,38 @@ export async function GET() {
     const reports = store.contentReports.filter(
       (r) => isSuper || r.institutionId === user.institutionId
     );
+    const pendingPosts = [
+      ...store.marketplaceListings
+        .filter((m) => (isSuper || m.institutionId === user.institutionId) && m.moderationStatus === "pending")
+        .map((m) => ({
+          id: m.id,
+          module: "marketplace" as const,
+          title: m.title,
+          authorName: m.sellerName,
+          summary: `${m.priceTnd} TND — ${m.description}`,
+          createdAt: m.createdAt,
+        })),
+      ...store.lostFoundReports
+        .filter((l) => (isSuper || l.institutionId === user.institutionId) && l.moderationStatus === "pending")
+        .map((l) => ({
+          id: l.id,
+          module: "lost_found" as const,
+          title: l.itemName,
+          authorName: l.reporterName,
+          summary: `${l.reportType} (${l.generalLocation}) — ${l.description}`,
+          createdAt: l.createdAt,
+        })),
+      ...(store.promotions || [])
+        .filter((p) => (isSuper || p.institutionId === user.institutionId) && p.moderationStatus === "pending")
+        .map((p) => ({
+          id: p.id,
+          module: "promotions" as const,
+          title: p.title,
+          authorName: p.authorName,
+          summary: `${p.discountOrPrice} (${p.partnerOrArea}) — ${p.description}`,
+          createdAt: p.createdAt,
+        })),
+    ];
     const auditLogs = isSuper
       ? store.auditLogs
       : store.auditLogs.filter((l) => l.institutionId === user.institutionId);
@@ -52,6 +85,7 @@ export async function GET() {
       knowledgeDocs,
       organizations,
       reports,
+      pendingPosts,
       auditLogs,
       platformSettings: store.platformSettings,
     });
@@ -64,7 +98,7 @@ export async function POST(request: Request) {
   try {
     const user = await requireUser(["university_admin", "super_admin"]);
     const body = await request.json();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const instId = user.institutionId || "11111111-1111-1111-1111-111111111101";
 
     if (body.action === "add_knowledge") {
@@ -240,7 +274,7 @@ export async function PATCH(request: Request) {
   try {
     const user = await requireUser(["university_admin", "super_admin"]);
     const body = await request.json();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
 
     if (body.action === "verify_user") {
       const target = store.users.find(
@@ -249,7 +283,20 @@ export async function PATCH(request: Request) {
           (user.role === "super_admin" || u.institutionId === user.institutionId)
       );
       if (!target) return NextResponse.json({ error: "Utilisateur introuvable." }, { status: 404 });
-      target.isVerified = Boolean(body.isVerified);
+      // Hierarchy: university_admin verifies students & teachers; only super_admin verifies university_admin/organization
+      if (
+        user.role === "university_admin" &&
+        !["student", "teacher"].includes(target.role)
+      ) {
+        return NextResponse.json(
+          { error: "Seul le Super Administrateur peut valider les comptes Administration ou Organisation." },
+          { status: 403 }
+        );
+      }
+      const nextVerified = Boolean(body.isVerified);
+      target.isVerified = nextVerified;
+      target.approvalStatus =
+        body.approvalStatus === "rejected" ? "rejected" : nextVerified ? "approved" : "pending";
       addAuditLog({
         institutionId: target.institutionId,
         actorId: user.id,
@@ -257,10 +304,39 @@ export async function PATCH(request: Request) {
         action: "USER_VERIFICATION_UPDATED",
         resourceType: "profile",
         resourceId: target.id,
-        details: `${target.email} verified=${target.isVerified}`,
+        details: `${target.email} verified=${target.isVerified} status=${target.approvalStatus}`,
       });
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ ok: true });
+    }
+
+    if (body.action === "moderate_post") {
+      const decision = body.decision === "rejected" ? "rejected" : "approved";
+      const isSuper = user.role === "super_admin";
+      if (body.module === "marketplace") {
+        const item = store.marketplaceListings.find(
+          (m) => m.id === body.id && (isSuper || m.institutionId === user.institutionId)
+        );
+        if (!item) return NextResponse.json({ error: "Annonce introuvable." }, { status: 404 });
+        item.moderationStatus = decision;
+        if (decision === "rejected") item.status = "removed";
+      } else if (body.module === "lost_found") {
+        const rep = store.lostFoundReports.find(
+          (l) => l.id === body.id && (isSuper || l.institutionId === user.institutionId)
+        );
+        if (!rep) return NextResponse.json({ error: "Signalement introuvable." }, { status: 404 });
+        rep.moderationStatus = decision;
+      } else if (body.module === "promotions") {
+        const promo = (store.promotions || []).find(
+          (p) => p.id === body.id && (isSuper || p.institutionId === user.institutionId)
+        );
+        if (!promo) return NextResponse.json({ error: "Offre introuvable." }, { status: 404 });
+        promo.moderationStatus = decision;
+      } else {
+        return NextResponse.json({ error: "Module invalide." }, { status: 400 });
+      }
+      await persistStore(store);
+      return NextResponse.json({ ok: true, decision });
     }
 
     if (body.action === "suspend_user" && user.role === "super_admin") {

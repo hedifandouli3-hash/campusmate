@@ -10,17 +10,19 @@ import { Button, Card, Input, Select } from "@/components/ui/primitives";
 export default function RegisterPage() {
   const router = useRouter();
   const { notify } = useApp();
-  const [role, setRole] = useState<"student" | "organization">("student");
+  const [role, setRole] = useState<"student" | "teacher" | "organization">("student");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [organizationName, setOrganizationName] = useState("");
   const [error, setError] = useState("");
+  const [pendingMessage, setPendingMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setPendingMessage("");
     setLoading(true);
     try {
       const res = await fetch("/api/auth/register", {
@@ -37,6 +39,11 @@ export default function RegisterPage() {
       const data = await res.json().catch(() => null);
       if (!res.ok) {
         setError(data?.error || (res.status >= 500 ? `Erreur serveur (${res.status}).` : "Erreur d'inscription."));
+        return;
+      }
+      if (data?.pendingApproval) {
+        setPendingMessage(data.message || "Compte créé et en attente de validation.");
+        notify("Compte créé ! En attente de validation.", "success");
         return;
       }
       if (!data?.redirectTo) {
@@ -61,9 +68,18 @@ export default function RegisterPage() {
           <div>
             <h1 className="text-2xl font-bold">Créer un compte</h1>
             <p className="text-xs text-slate-500 mt-1">
-              Les rôles privilégiés (enseignant, administration) sont attribués uniquement par l&apos;institution.
+              Chaque nouveau compte est vérifié avant activation (étudiants & enseignants par l&apos;Administration, organisations & admins par le Super Admin).
             </p>
           </div>
+
+          {pendingMessage && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/40 dark:border-emerald-800 px-3 py-3 text-sm text-emerald-800 dark:text-emerald-200 space-y-2">
+              <p className="font-medium">{pendingMessage}</p>
+              <Link href="/login" className="inline-block text-xs font-semibold text-blue-600 hover:underline">
+                Aller aux portails de connexion →
+              </Link>
+            </div>
+          )}
 
           {error && (
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
@@ -74,9 +90,10 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium mb-1">Type de compte</label>
-              <Select value={role} onChange={(e) => setRole(e.target.value as "student" | "organization")}>
-                <option value="student">Étudiant (ISET Béja Démo)</option>
-                <option value="organization">Organisation / Entreprise (Stages)</option>
+              <Select value={role} onChange={(e) => setRole(e.target.value as "student" | "teacher" | "organization")}>
+                <option value="student">Étudiant (Vérifié par l&apos;Administration)</option>
+                <option value="teacher">Enseignant (Vérifié par l&apos;Administration)</option>
+                <option value="organization">Organisation / Entreprise (Vérifiée par Super Admin)</option>
               </Select>
             </div>
             <div>

@@ -12,6 +12,7 @@ import {
   Lightbulb,
   Map,
   Rocket,
+  Share2,
   Sparkles,
   Users,
   Handshake,
@@ -29,6 +30,7 @@ const LINKS = [
   { href: "/student/launchpad/teams", label: "Équipes", icon: <Users className="w-3.5 h-3.5" /> },
   { href: "/student/launchpad/portfolio", label: "Portfolio & CV", icon: <Award className="w-3.5 h-3.5" /> },
   { href: "/student/launchpad/mentorship", label: "Mentorat & Défis", icon: <Handshake className="w-3.5 h-3.5" /> },
+  { href: "/student/launchpad/social-post", label: "Posts IA (LinkedIn/IG/FB)", icon: <Share2 className="w-3.5 h-3.5" /> },
 ];
 
 export function LaunchpadNav() {

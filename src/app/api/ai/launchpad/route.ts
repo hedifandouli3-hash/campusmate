@@ -8,6 +8,7 @@ import {
   extractAcademicSkillsWithAI,
   generateFreelanceIdeasWithAI,
   generatePitchWithAI,
+  generateSocialPostsWithAI,
   generateStartupIdeasWithAI,
 } from "@/lib/ai/launchpad";
 import { ensureStoreHydrated, getVisibleCourseDocuments, persistToDisk, requireUser } from "@/lib/data/store";
@@ -23,8 +24,13 @@ const RequestSchema = z.object({
     "generate_roadmap",
     "generate_project",
     "generate_pitch",
+    "generate_social_posts",
   ]),
   locale: z.enum(["fr", "en", "ar"]).default("fr"),
+  idea: z.string().max(1200).optional(),
+  attachedTitle: z.string().max(200).optional(),
+  attachedType: z.enum(["project", "certificate", "stage", "upload"]).optional(),
+  platforms: z.array(z.enum(["linkedin", "instagram", "facebook"])).optional(),
   courseDocumentId: z.string().optional(),
   mode: z.enum(["knowledge", "course", "custom"]).optional(),
   customPrompt: z.string().max(600).optional(),
@@ -69,6 +75,13 @@ export async function POST(request: Request) {
 
     const authorizedDocs = getVisibleCourseDocuments(user);
     const studentSkills = store.launchpadSkills.filter((s) => s.studentId === user.id).map((s) => s.name);
+    const stageTitles = store.internshipApplications
+      .filter((a) => a.studentId === user.id)
+      .map((a) => `Stage: ${a.offerTitle}`);
+    const projectTitles = store.launchpadProjects
+      .filter((p) => p.ownerId === user.id)
+      .map((p) => `Projet: ${p.title}`);
+    const combinedSkills = [...new Set([...studentSkills, ...user.skills, ...stageTitles, ...projectTitles])];
     const spec = store.specializations.find((s) => s.id === user.specializationId)?.name || "Technologies de l'Informatique";
 
     switch (data.action) {
@@ -112,7 +125,7 @@ export async function POST(request: Request) {
           institutionId: instId,
           studentId: user.id,
           specialization: spec,
-          skills: studentSkills.length > 0 ? studentSkills : user.skills,
+          skills: combinedSkills,
           interests: user.interests,
           locale: data.locale,
         });
@@ -136,7 +149,7 @@ export async function POST(request: Request) {
           studentId: user.id,
           mode,
           specialization: spec,
-          skills: studentSkills.length > 0 ? studentSkills : user.skills,
+          skills: combinedSkills,
           courseTitle,
           customPrompt: data.customPrompt,
           industry: data.industry,
@@ -227,6 +240,22 @@ export async function POST(request: Request) {
         store.launchpadPitches.unshift(res.pitch);
         persistToDisk(store);
         return NextResponse.json({ pitch: res.pitch, isDemoFallback: res.isDemoFallback }, { status: 201 });
+      }
+
+      case "generate_social_posts": {
+        if (!data.idea?.trim() || !data.platforms || data.platforms.length === 0) {
+          return NextResponse.json({ error: "Idée et au moins une plateforme requises." }, { status: 400 });
+        }
+        const res = await generateSocialPostsWithAI({
+          idea: data.idea.trim(),
+          attachedTitle: data.attachedTitle,
+          attachedType: data.attachedType,
+          platforms: data.platforms,
+          studentName: user.fullName,
+          specialization: spec,
+          locale: data.locale,
+        });
+        return NextResponse.json(res);
       }
     }
   } catch (err) {

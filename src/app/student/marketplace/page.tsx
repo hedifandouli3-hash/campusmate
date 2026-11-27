@@ -85,7 +85,12 @@ export default function StudentMarketplacePage() {
       });
       const data = await res.json().catch(() => null);
       if (res.ok) {
-        notify("Annonce publiée sur le Marketplace !", "success");
+        notify(
+          data?.pendingModeration
+            ? "Annonce soumise ! Elle sera visible à tous après validation par l'administration."
+            : "Annonce publiée sur le Marketplace !",
+          "success"
+        );
         setTitle("");
         setDescription("");
         setImageUrl("");
@@ -187,8 +192,11 @@ export default function StudentMarketplacePage() {
                       <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
                     </div>
                   )}
-                  <div className="flex justify-between items-center">
-                    <Badge variant="indigo">{item.category}</Badge>
+                  <div className="flex justify-between items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="indigo">{item.category}</Badge>
+                      {item.moderationStatus === "pending" && <Badge variant="warning">En attente</Badge>}
+                    </div>
                     <span className="font-bold text-blue-600">{item.priceTnd} TND</span>
                   </div>
                   <h3 className="font-semibold">{item.title}</h3>
