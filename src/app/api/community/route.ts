@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { addNotification, ensureStoreHydrated, persistToDisk, requireUser } from "@/lib/data/store";
+import { buildInitialDemoState } from "@/lib/demo/seed";
 import { sanitizeText } from "@/lib/utils";
 
 function timesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
@@ -62,12 +63,17 @@ export async function GET() {
     const announcements = store.announcements.filter(
       (a) => user.role === "super_admin" || a.institutionId === instId
     );
+    const promotionPool = store.promotions ?? buildInitialDemoState().promotions ?? [];
+    const promotions = promotionPool.filter(
+      (p) => user.role === "super_admin" || p.institutionId === instId
+    );
 
     return NextResponse.json({
       marketplace,
       transportInfo,
       carpoolOffers,
       lostFound,
+      promotions,
       rooms,
       reservations,
       feedback,
@@ -204,6 +210,64 @@ export async function POST(request: Request) {
         store.lostFoundReports.unshift(report);
         persistToDisk(store);
         return NextResponse.json({ report }, { status: 201 });
+      }
+
+      case "promotions": {
+        if (!store.promotions) {
+          store.promotions = buildInitialDemoState().promotions ?? [];
+        }
+        if (body.action === "toggle_save") {
+          const promo = store.promotions.find((p) => p.id === body.id && p.institutionId === instId);
+          if (!promo) return NextResponse.json({ error: "Offre introuvable." }, { status: 404 });
+          if (promo.savedByUserIds.includes(user.id)) {
+            promo.savedByUserIds = promo.savedByUserIds.filter((id) => id !== user.id);
+          } else {
+            promo.savedByUserIds.push(user.id);
+          }
+          persistToDisk(store);
+          return NextResponse.json({ promotion: promo });
+        }
+        if (body.action === "delete") {
+          const idx = store.promotions.findIndex(
+            (p) =>
+              p.id === body.id &&
+              p.institutionId === instId &&
+              (p.authorId === user.id || user.role === "university_admin" || user.role === "super_admin")
+          );
+          if (idx === -1) return NextResponse.json({ error: "Non autorisé." }, { status: 403 });
+          store.promotions.splice(idx, 1);
+          persistToDisk(store);
+          return NextResponse.json({ ok: true });
+        }
+        const allowedPromoCats = new Set(["resto", "housing", "roommate", "services"]);
+        const category = (allowedPromoCats.has(body.category) ? body.category : "resto") as
+          | "resto"
+          | "housing"
+          | "roommate"
+          | "services";
+        const promo = {
+          id: `promo-${crypto.randomUUID()}`,
+          institutionId: instId,
+          authorId: user.id,
+          authorName: user.fullName,
+          category,
+          title: sanitizeText(String(body.title || ""), 120),
+          partnerOrArea: sanitizeText(String(body.partnerOrArea || ""), 120),
+          discountOrPrice: sanitizeText(String(body.discountOrPrice || ""), 80),
+          promoCode: body.promoCode ? sanitizeText(String(body.promoCode), 32) : undefined,
+          description: sanitizeText(String(body.description || ""), 700),
+          contactHint: sanitizeText(String(body.contactHint || "Via messagerie CampusMate"), 160),
+          validUntil: body.validUntil ? String(body.validUntil).slice(0, 10) : undefined,
+          isVerifiedPartner: user.role === "university_admin" || user.role === "super_admin",
+          savedByUserIds: [],
+          createdAt: now,
+        };
+        if (!promo.title || !promo.partnerOrArea || !promo.discountOrPrice) {
+          return NextResponse.json({ error: "Titre, lieu/partenaire et tarif/réduction requis." }, { status: 400 });
+        }
+        store.promotions.unshift(promo);
+        persistToDisk(store);
+        return NextResponse.json({ promotion: promo }, { status: 201 });
       }
 
       case "rooms": {

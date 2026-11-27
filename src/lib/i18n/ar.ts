@@ -54,6 +54,7 @@ export const ar = {
     events: "الفعاليات",
     marketplace: "السوق الطلابي",
     lostFound: "المفقودات",
+    promotions: "العروض والسكن",
     transport: "النقل الجامعي",
     internships: "عروض التربص",
     applications: "ترشحاتي",

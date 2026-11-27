@@ -475,6 +475,24 @@ export interface LostFoundReport {
   createdAt: string;
 }
 
+export interface StudentPromotion {
+  id: string;
+  institutionId: string;
+  authorId: string;
+  authorName: string;
+  category: "resto" | "housing" | "roommate" | "services";
+  title: string;
+  partnerOrArea: string;
+  discountOrPrice: string;
+  promoCode?: string;
+  description: string;
+  contactHint: string;
+  validUntil?: string;
+  isVerifiedPartner: boolean;
+  savedByUserIds: string[];
+  createdAt: string;
+}
+
 export interface CampusRoom {
   id: string;
   institutionId: string;

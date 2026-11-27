@@ -54,6 +54,7 @@ export const en = {
     events: "Events",
     marketplace: "Marketplace",
     lostFound: "Lost & Found",
+    promotions: "Promos & Housing",
     transport: "Transport",
     internships: "Internships",
     applications: "My Applications",

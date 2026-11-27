@@ -120,6 +120,22 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await expect(page.getByText(lfTitle)).toBeVisible();
     await page.reload();
     await expect(page.getByText(lfTitle)).toBeVisible();
+
+    // Promotions & Logement tab: resto promos, housing, roommate finder + posting
+    await page.goto("/student/promotions");
+    await expect(page.getByText(/Resto Le Campus Béja/i)).toBeVisible();
+    await expect(page.getByText(/Studio meublé S\+1/i)).toBeVisible();
+    await expect(page.getByText(/Recherche colocataire/i)).toBeVisible();
+    await page.getByRole("button", { name: /Publier une offre/i }).click();
+    const promoTitle = `Coloc S+2 Test ${Date.now()}`;
+    await page.getByPlaceholder(/Titre \(ex: Coloc/i).fill(promoTitle);
+    await page.getByPlaceholder(/Lieu ou quartier/i).fill("Cité Ennour");
+    await page.getByPlaceholder(/Tarif ou réduction/i).fill("200 TND / mois");
+    await page.getByPlaceholder(/Détails \(équipements/i).fill("Appartement calme proche ISET.");
+    await page.getByRole("button", { name: /Publier l'offre/i }).click();
+    await expect(page.getByText(promoTitle)).toBeVisible();
+    await page.reload();
+    await expect(page.getByText(promoTitle)).toBeVisible();
   });
 
   test("Responsive breakpoints 360px, 768px, and 1440px have zero horizontal overflow", async ({ page }) => {

@@ -52,6 +52,7 @@ export const fr = {
     events: "Événements",
     marketplace: "Marketplace",
     lostFound: "Objets Trouvés",
+    promotions: "Promos & Logement",
     transport: "Transport",
     internships: "Offres de Stage",
     applications: "Mes Candidatures",
