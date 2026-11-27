@@ -68,78 +68,120 @@ interface NavGroup {
   items: NavItem[];
 }
 
-function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGroup[] {
+function getStudentSocialLabels(locale: Locale) {
+  if (locale === "en") {
+    return {
+      primary: "Campus",
+      more: "More",
+      home: "Home",
+      university: "My University",
+      messages: "Messages",
+      communities: "Communities",
+      events: "Events",
+      marketplace: "Marketplace",
+      lostFound: "Lost & Found",
+      housing: "Housing",
+      learning: "Learning",
+      career: "Career",
+      agent: "AI Agent",
+      launchpad: "Launchpad",
+      studio: "Creation Studio",
+      projects: "Projects",
+      automations: "Automations",
+      studyPlanner: "Study Planner",
+      services: "University Services",
+      stats: "Personal Workspace",
+      artifacts: "Saved Artifacts",
+      settings: "Settings",
+      searchPlaceholder: "Search campus, courses, events... (Ctrl+K)",
+    };
+  }
+  if (locale === "ar") {
+    return {
+      primary: "الحرم الجامعي",
+      more: "المزيد",
+      home: "الرئيسية",
+      university: "جامعتي",
+      messages: "الرسائل",
+      communities: "المجتمعات",
+      events: "الفعاليات",
+      marketplace: "السوق",
+      lostFound: "المفقودات",
+      housing: "السكن",
+      learning: "التعلّم",
+      career: "المسار المهني",
+      agent: "الوكيل الذكي",
+      launchpad: "Launchpad",
+      studio: "استوديو الإبداع",
+      projects: "المشاريع",
+      automations: "الأتمتة",
+      studyPlanner: "مخطط المراجعة",
+      services: "الخدمات الجامعية",
+      stats: "مساحتي الشخصية",
+      artifacts: "المخرجات المحفوظة",
+      settings: "الإعدادات",
+      searchPlaceholder: "ابحث في الجامعة، الدروس، الفعاليات... (Ctrl+K)",
+    };
+  }
+  return {
+    primary: "Campus",
+    more: "Plus",
+    home: "Accueil",
+    university: "Mon Université",
+    messages: "Messages",
+    communities: "Communautés",
+    events: "Événements",
+    marketplace: "Marketplace",
+    lostFound: "Objets Trouvés",
+    housing: "Logement",
+    learning: "Apprentissage",
+    career: "Carrière",
+    agent: "Agent IA",
+    launchpad: "Launchpad",
+    studio: "Studio de Création",
+    projects: "Projets",
+    automations: "Automatisations",
+    studyPlanner: "Planificateur",
+    services: "Services Campus",
+    stats: "Espace Personnel",
+    artifacts: "Livrables",
+    settings: "Paramètres",
+    searchPlaceholder: "Rechercher campus, cours, offres... (Ctrl+K)",
+  };
+}
+
+function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"], locale: Locale): NavGroup[] {
   if (role === "student") {
+    const s = getStudentSocialLabels(locale);
     return [
       {
-        section: t.sidebar.main,
+        section: s.primary,
         items: [
-          { label: "Fil Campus", href: "/student/home", icon: <Home className="w-4 h-4" /> },
-          { label: t.sidebar.overview, href: "/student/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
-          { label: "Mon Université", href: "/student/university", icon: <Building2 className="w-4 h-4" /> },
-          { label: t.sidebar.agent, href: "/student/agent", icon: <Sparkles className="w-4 h-4" /> },
-          { label: t.sidebar.studio, href: "/student/studio", icon: <Globe className="w-4 h-4" /> },
-          { label: t.sidebar.projects, href: "/student/projects", icon: <FolderKanban className="w-4 h-4" /> },
-          { label: t.sidebar.automations, href: "/student/automations", icon: <Workflow className="w-4 h-4" /> },
-          { label: t.sidebar.artifacts, href: "/student/artifacts", icon: <Layers className="w-4 h-4" /> },
-          { label: t.sidebar.courses, href: "/student/courses", icon: <BookOpen className="w-4 h-4" /> },
-          { label: t.sidebar.aiAssistant, href: "/student/ai-assistant", icon: <Bot className="w-4 h-4" /> },
-          { label: t.sidebar.studyPlanner, href: "/student/study-planner", icon: <CalendarClock className="w-4 h-4" /> },
+          { label: s.home, href: "/student/home", icon: <Home className="w-4 h-4" /> },
+          { label: s.university, href: "/student/university", icon: <Building2 className="w-4 h-4" /> },
+          { label: s.messages, href: "/student/chats", icon: <MessageSquare className="w-4 h-4" /> },
+          { label: s.communities, href: "/student/clubs", icon: <Users className="w-4 h-4" /> },
+          { label: s.events, href: "/student/events", icon: <Calendar className="w-4 h-4" /> },
+          { label: s.marketplace, href: "/student/marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
+          { label: s.lostFound, href: "/student/lost-found", icon: <Search className="w-4 h-4" /> },
+          { label: s.housing, href: "/student/housing", icon: <Home className="w-4 h-4" /> },
+          { label: s.learning, href: "/student/courses", icon: <BookOpen className="w-4 h-4" /> },
+          { label: s.career, href: "/student/internships", icon: <Briefcase className="w-4 h-4" /> },
+          { label: s.agent, href: "/student/agent", icon: <Sparkles className="w-4 h-4" /> },
         ],
       },
       {
-        section: t.sidebar.launchpad,
+        section: s.more,
         items: [
-          { label: t.sidebar.launchpadHub, href: "/student/launchpad", icon: <Rocket className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadSkills, href: "/student/launchpad/skills", icon: <Sparkles className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadFreelance, href: "/student/launchpad/freelance", icon: <Briefcase className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadStartups, href: "/student/launchpad/startups", icon: <Lightbulb className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadProjects, href: "/student/launchpad/projects", icon: <FolderKanban className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadCanvas, href: "/student/launchpad/business-canvas", icon: <LayoutGrid className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadTeams, href: "/student/launchpad/teams", icon: <Users className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadPortfolio, href: "/student/launchpad/portfolio", icon: <Award className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadMentorship, href: "/student/launchpad/mentorship", icon: <Handshake className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadRoadmaps, href: "/student/launchpad/roadmaps", icon: <Map className="w-4 h-4" /> },
-          { label: t.sidebar.launchpadSocial, href: "/student/launchpad/social-post", icon: <Share2 className="w-4 h-4" /> },
-        ],
-      },
-      {
-        section: t.sidebar.services,
-        items: [
-          { label: t.sidebar.documents, href: "/student/documents", icon: <FileText className="w-4 h-4" /> },
-          { label: "Hub Services", href: "/student/services", icon: <Compass className="w-4 h-4" /> },
-          { label: t.sidebar.queue, href: "/student/queue", icon: <Ticket className="w-4 h-4" /> },
-          { label: t.sidebar.studyRooms, href: "/student/study-rooms", icon: <DoorOpen className="w-4 h-4" /> },
-          { label: t.sidebar.studentVoice, href: "/student/feedback", icon: <MessageCircleWarning className="w-4 h-4" /> },
-        ],
-      },
-      {
-        section: t.sidebar.community,
-        items: [
-          { label: t.sidebar.chats, href: "/student/chats", icon: <MessageSquare className="w-4 h-4" /> },
-          { label: "Clubs & Assoc.", href: "/student/clubs", icon: <Users className="w-4 h-4" /> },
-          { label: t.sidebar.events, href: "/student/events", icon: <Calendar className="w-4 h-4" /> },
-          { label: t.sidebar.marketplace, href: "/student/marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
-          { label: "Logement Étudiant", href: "/student/housing", icon: <Home className="w-4 h-4" /> },
-          { label: t.sidebar.lostFound, href: "/student/lost-found", icon: <Search className="w-4 h-4" /> },
-          { label: t.sidebar.promotions, href: "/student/promotions", icon: <Tag className="w-4 h-4" /> },
-          { label: t.sidebar.transport, href: "/student/transport", icon: <Bus className="w-4 h-4" /> },
-        ],
-      },
-      {
-        section: t.sidebar.career,
-        items: [
-          { label: t.sidebar.internships, href: "/student/internships", icon: <Briefcase className="w-4 h-4" /> },
-          { label: t.sidebar.applications, href: "/student/applications", icon: <ClipboardList className="w-4 h-4" /> },
-          { label: t.sidebar.cvBuilder, href: "/student/cv-builder", icon: <Award className="w-4 h-4" /> },
-        ],
-      },
-      {
-        section: t.sidebar.account,
-        items: [
-          { label: t.sidebar.notifications, href: "/student/notifications", icon: <Bell className="w-4 h-4" /> },
-          { label: t.sidebar.profile, href: "/student/profile", icon: <User className="w-4 h-4" /> },
-          { label: t.sidebar.settings, href: "/student/settings", icon: <Settings className="w-4 h-4" /> },
+          { label: s.launchpad, href: "/student/launchpad", icon: <Rocket className="w-4 h-4" /> },
+          { label: s.studio, href: "/student/studio", icon: <Globe className="w-4 h-4" /> },
+          { label: s.projects, href: "/student/projects", icon: <FolderKanban className="w-4 h-4" /> },
+          { label: s.automations, href: "/student/automations", icon: <Workflow className="w-4 h-4" /> },
+          { label: s.studyPlanner, href: "/student/study-planner", icon: <CalendarClock className="w-4 h-4" /> },
+          { label: s.services, href: "/student/services", icon: <Compass className="w-4 h-4" /> },
+          { label: s.stats, href: "/student/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+          { label: s.artifacts, href: "/student/artifacts", icon: <Layers className="w-4 h-4" /> },
+          { label: s.settings, href: "/student/settings", icon: <Settings className="w-4 h-4" /> },
         ],
       },
     ];
@@ -298,7 +340,8 @@ export function DashboardShell({
     };
   }, [moduleQuery]);
 
-  const navGroups = useMemo(() => getNavForRole(user.role, t), [user.role, t]);
+  const navGroups = useMemo(() => getNavForRole(user.role, t, locale), [user.role, t, locale]);
+  const studentLabels = useMemo(() => getStudentSocialLabels(locale), [locale]);
   const allItems = useMemo(() => navGroups.flatMap((g) => g.items), [navGroups]);
   const quickMatches = useMemo(() => {
     const q = moduleQuery.trim().toLowerCase();
@@ -325,7 +368,7 @@ export function DashboardShell({
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-200 dark:border-slate-800">
-        <Link href="/" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white">
+        <Link href={user.role === "student" ? "/student/home" : "/"} className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
             <GraduationCap className="h-5 w-5" />
           </div>
@@ -361,7 +404,11 @@ export function DashboardShell({
           const hasActiveItem = group.items.some(
             (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
           );
-          const isOpen = openSections[group.section] ?? (groupIndex < 2 || hasActiveItem);
+          const isOpen =
+            openSections[group.section] ??
+            (user.role === "student"
+              ? groupIndex === 0 || hasActiveItem
+              : groupIndex < 2 || hasActiveItem);
           return (
             <div key={group.section}>
               {!collapsed && (
@@ -489,7 +536,7 @@ export function DashboardShell({
                 aria-label="Recherche globale CampusMate"
                 value={moduleQuery}
                 onChange={(e) => setModuleQuery(e.target.value)}
-                placeholder="Rechercher cours, modules, offres... (Ctrl+K)"
+                placeholder={user.role === "student" ? studentLabels.searchPlaceholder : "Rechercher cours, modules, offres... (Ctrl+K)"}
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 ps-8 pe-3 py-1.5 text-xs focus:border-blue-500 focus:bg-white dark:focus:bg-slate-950 focus:outline-none"
               />
               {(quickMatches.length > 0 || globalResults.length > 0) && (
@@ -532,15 +579,53 @@ export function DashboardShell({
               )}
             </div>
 
-            {geminiLive && (
-              <div className="hidden xl:flex items-center gap-1.5">
-                <Badge variant="success">IA Gemini Active</Badge>
-              </div>
+            {user.role === "student" ? (
+              <nav aria-label="Navigation principale" className="hidden xl:flex items-center gap-1">
+                {[
+                  { label: studentLabels.home, href: "/student/home", icon: <Home className="w-4 h-4" /> },
+                  { label: studentLabels.university, href: "/student/university", icon: <Building2 className="w-4 h-4" /> },
+                  { label: studentLabels.communities, href: "/student/clubs", icon: <Users className="w-4 h-4" /> },
+                  { label: studentLabels.marketplace, href: "/student/marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
+                  { label: studentLabels.agent, href: "/student/agent", icon: <Sparkles className="w-4 h-4" /> },
+                ].map((tab) => {
+                  const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+                  return (
+                    <Link
+                      key={tab.href}
+                      href={tab.href}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition",
+                        active
+                          ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      )}
+                    >
+                      {tab.icon}
+                      <span>{tab.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            ) : (
+              geminiLive && (
+                <div className="hidden xl:flex items-center gap-1.5">
+                  <Badge variant="success">IA Gemini Active</Badge>
+                </div>
+              )
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            {demoMode && <Badge variant="primary">Portail</Badge>}
+            {user.role === "student" && (
+              <Link
+                href="/student/chats"
+                className="relative rounded-lg border border-slate-200 dark:border-slate-700 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                aria-label={studentLabels.messages}
+              >
+                <MessageSquare className="w-4 h-4" />
+              </Link>
+            )}
+            {demoMode && user.role !== "student" && <Badge variant="primary">Portail</Badge>}
 
             {/* Language Switcher */}
             <div className="flex items-center rounded-lg border border-slate-200 dark:border-slate-700 p-0.5 text-[11px]">
@@ -602,7 +687,7 @@ export function DashboardShell({
               )}
             >
               <Home className="w-4 h-4" />
-              <span>Accueil</span>
+              <span>{studentLabels.home}</span>
             </Link>
             <Link
               href="/student/chats"
@@ -612,14 +697,14 @@ export function DashboardShell({
               )}
             >
               <MessageSquare className="w-4 h-4" />
-              <span>Messages</span>
+              <span>{studentLabels.messages}</span>
             </Link>
             <Link
               href="/student/agent"
               className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-full bg-blue-600 text-white text-[10px] font-semibold shadow-sm"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Agent</span>
+              <span>{studentLabels.agent}</span>
             </Link>
             <Link
               href="/student/marketplace"
@@ -629,7 +714,7 @@ export function DashboardShell({
               )}
             >
               <ShoppingBag className="w-4 h-4" />
-              <span>Market</span>
+              <span>{studentLabels.marketplace}</span>
             </Link>
             <button
               type="button"
@@ -637,7 +722,7 @@ export function DashboardShell({
               className="flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium text-slate-500 dark:text-slate-400 cursor-pointer"
             >
               <Menu className="w-4 h-4" />
-              <span>Plus</span>
+              <span>{studentLabels.more}</span>
             </button>
           </nav>
         )}

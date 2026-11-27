@@ -118,12 +118,69 @@ export default function StudentSocialHomePage() {
     }
   }
 
-  const placeholderText =
+  const ui =
     locale === "ar"
-      ? "ما الجديد في الحرم الجامعي؟"
+      ? {
+          feedTitle: "ساحة الحرم الجامعي",
+          placeholder: "ما الجديد في الحرم الجامعي؟",
+          postTypePost: "منشور",
+          postTypeQuestion: "سؤال أكاديمي",
+          postTypeProject: "عرض مشروع",
+          titleOpt: "العنوان (اختياري)",
+          sellItem: "+ بيع غرض",
+          lostItem: "+ مفقودات",
+          publish: "نشر",
+          open: "فتح ←",
+          save: "حفظ",
+          commentPh: "أضف تعليقاً...",
+          send: "إرسال",
+          assistantTitle: "المساعد والوكيل الذكي",
+          assistantDesc: "اسأل عن المعهد أو أنشئ موقعاً أو عرضاً.",
+          examsTitle: "الامتحانات والمهام",
+          clubsTitle: "الأندية المعتمدة",
+          seeAll: "عرض الكل",
+        }
       : locale === "en"
-        ? "What's happening on campus?"
-        : "Quoi de neuf sur le campus ?";
+        ? {
+            feedTitle: "Campus Feed",
+            placeholder: "What's happening on campus?",
+            postTypePost: "Post",
+            postTypeQuestion: "Academic Question",
+            postTypeProject: "Project Showcase",
+            titleOpt: "Title (optional)",
+            sellItem: "+ Sell an item",
+            lostItem: "+ Lost & Found",
+            publish: "Publish",
+            open: "Open →",
+            save: "Save",
+            commentPh: "Write a comment...",
+            send: "Send",
+            assistantTitle: "AI Assistant & Agent",
+            assistantDesc: "Ask about ISET Béja or create websites, slides, and CVs.",
+            examsTitle: "Exams & Tasks",
+            clubsTitle: "Recognized Clubs",
+            seeAll: "See all",
+          }
+        : {
+            feedTitle: "Fil du Campus",
+            placeholder: "Quoi de neuf sur le campus ?",
+            postTypePost: "Publication",
+            postTypeQuestion: "Question académique",
+            postTypeProject: "Vitrine Projet / PFE",
+            titleOpt: "Titre (optionnel)",
+            sellItem: "+ Vendre un article",
+            lostItem: "+ Objet perdu/trouvé",
+            publish: "Publier",
+            open: "Ouvrir →",
+            save: "Enregistrer",
+            commentPh: "Ajouter un commentaire...",
+            send: "Envoyer",
+            assistantTitle: "Assistant & Agent",
+            assistantDesc: "Posez une question sur l'ISET Béja ou créez un livrable (site, CV, slides).",
+            examsTitle: "Examens & Tâches",
+            clubsTitle: "Clubs Reconnus",
+            seeAll: "Tout voir",
+          };
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -133,7 +190,7 @@ export default function StudentSocialHomePage() {
         <Card className="p-4 sm:p-5 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-base font-bold text-slate-900 dark:text-white">
-              {locale === "ar" ? "ساحة الحرم الجامعي" : locale === "en" ? "Campus Feed" : "Fil du Campus"}
+              {ui.feedTitle}
             </h1>
             <Link href="/student/agent">
               <Button size="sm" variant="secondary">
@@ -145,14 +202,14 @@ export default function StudentSocialHomePage() {
           <form onSubmit={(e) => void handleCreatePost(e)} className="space-y-2.5">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Select value={postType} onChange={(e) => setPostType(e.target.value as SocialPostType)}>
-                <option value="post">Publication</option>
-                <option value="question">Question académique</option>
-                <option value="project_showcase">Vitrine Projet / PFE</option>
+                <option value="post">{ui.postTypePost}</option>
+                <option value="question">{ui.postTypeQuestion}</option>
+                <option value="project_showcase">{ui.postTypeProject}</option>
               </Select>
               <Input
                 value={postTitle}
                 onChange={(e) => setPostTitle(e.target.value)}
-                placeholder="Titre (optionnel)"
+                placeholder={ui.titleOpt}
                 className="sm:col-span-2"
               />
             </div>
@@ -160,20 +217,20 @@ export default function StudentSocialHomePage() {
               value={postContent}
               onChange={(e) => setPostContent(e.target.value)}
               rows={2}
-              placeholder={placeholderText}
+              placeholder={ui.placeholder}
               className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm"
             />
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap gap-2 text-xs">
                 <Link href="/student/marketplace" className="text-blue-600 hover:underline">
-                  + Vendre un article
+                  {ui.sellItem}
                 </Link>
                 <Link href="/student/lost-found" className="text-blue-600 hover:underline">
-                  + Objet perdu/trouvé
+                  {ui.lostItem}
                 </Link>
               </div>
               <Button type="submit" size="sm" disabled={!postContent.trim()}>
-                <Send className="w-3.5 h-3.5 me-1.5" /> Publier
+                <Send className="w-3.5 h-3.5 me-1.5" /> {ui.publish}
               </Button>
             </div>
           </form>
@@ -282,13 +339,13 @@ export default function StudentSocialHomePage() {
                             item.bookmarkedByMe ? "text-blue-600 font-semibold" : "text-slate-500"
                           }`}
                         >
-                          <Bookmark className="w-3.5 h-3.5" /> Enregistrer
+                          <Bookmark className="w-3.5 h-3.5" /> {ui.save}
                         </button>
                       </>
                     )}
                   </div>
                   <Link href={item.href} className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
-                    Ouvrir →
+                    {ui.open}
                   </Link>
                 </div>
 
@@ -314,11 +371,11 @@ export default function StudentSocialHomePage() {
                       <Input
                         value={commentInputs[item.id] || ""}
                         onChange={(e) => setCommentInputs((p) => ({ ...p, [item.id]: e.target.value }))}
-                        placeholder="Ajouter un commentaire..."
+                        placeholder={ui.commentPh}
                         className="h-8 text-xs"
                       />
                       <Button type="submit" size="sm" variant="secondary">
-                        Envoyer
+                        {ui.send}
                       </Button>
                     </form>
                   </div>
@@ -341,11 +398,11 @@ export default function StudentSocialHomePage() {
         <Card className="p-4 space-y-2.5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold flex items-center gap-1.5">
-              <Bot className="w-4 h-4 text-blue-600" /> Assistant &amp; Agent
+              <Bot className="w-4 h-4 text-blue-600" /> {ui.assistantTitle}
             </h2>
           </div>
           <p className="text-xs text-slate-500">
-            Posez une question sur l&apos;ISET Béja ou créez un livrable (site, CV, slides).
+            {ui.assistantDesc}
           </p>
           <div className="flex gap-2">
             <Link href="/student/ai-assistant" className="flex-1">
@@ -360,10 +417,10 @@ export default function StudentSocialHomePage() {
         <Card className="p-4 space-y-2.5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-indigo-600" /> Examens &amp; Tâches
+              <Calendar className="w-4 h-4 text-indigo-600" /> {ui.examsTitle}
             </h2>
             <Link href="/student/study-planner" className="text-xs text-blue-600 hover:underline">
-              Planning
+              {ui.seeAll}
             </Link>
           </div>
           {context.upcomingExams.length === 0 && context.pendingTasks.length === 0 ? (
@@ -389,10 +446,10 @@ export default function StudentSocialHomePage() {
         <Card className="p-4 space-y-2.5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold flex items-center gap-1.5">
-              <Users className="w-4 h-4 text-emerald-600" /> Clubs Reconnus
+              <Users className="w-4 h-4 text-emerald-600" /> {ui.clubsTitle}
             </h2>
             <Link href="/student/clubs" className="text-xs text-blue-600 hover:underline">
-              Tout voir
+              {ui.seeAll}
             </Link>
           </div>
           <div className="space-y-2">

@@ -47,20 +47,20 @@ const DEMO_QA = [
 export function DemoSandbox({ initialTab = "student" }: { initialTab?: DemoRoleTab }) {
   const { locale, setLocale, dark, toggleTheme } = useApp();
   const [role, setRole] = useState<DemoRoleTab>(initialTab);
-  const [view, setView] = useState<DemoSubView>("overview");
+  const [view, setView] = useState<DemoSubView>(initialTab === "student" ? "feed" : "overview");
   const [selectedQa, setSelectedQa] = useState(0);
   const [flippedCourseOpp, setFlippedCourseOpp] = useState(false);
 
   function switchRole(next: DemoRoleTab) {
     setRole(next);
-    setView("overview");
+    setView(next === "student" ? "feed" : "overview");
   }
 
   const navItems: Array<{ id: DemoSubView; label: string; icon: React.ReactNode }> =
     role === "student"
       ? [
-          { id: "overview", label: "Vue d'ensemble", icon: <LayoutDashboard className="w-4 h-4" /> },
           { id: "feed", label: "Fil Campus (Démo)", icon: <MessageSquare className="w-4 h-4" /> },
+          { id: "overview", label: "Vue d'ensemble", icon: <LayoutDashboard className="w-4 h-4" /> },
           { id: "agent", label: "Agent & Studio IA", icon: <Sparkles className="w-4 h-4" /> },
           { id: "courses", label: "Mes Cours & IA", icon: <BookOpen className="w-4 h-4" /> },
           { id: "launchpad", label: "Launchpad Hub", icon: <Rocket className="w-4 h-4" /> },

@@ -120,7 +120,7 @@ export async function clearServerSessionCookie(): Promise<void> {
 export function getDashboardPathForRole(role: UserRole): string {
   switch (role) {
     case "student":
-      return "/student/dashboard";
+      return "/student/home";
     case "teacher":
       return "/teacher/dashboard";
     case "university_admin":

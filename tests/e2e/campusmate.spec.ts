@@ -25,8 +25,16 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await page.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
     await page.getByLabel("Mot de passe").fill("Student@2026!");
     await page.getByRole("button", { name: /Se connecter/i }).click();
-    await page.waitForURL("**/student/dashboard");
-    await expect(page.getByRole("heading", { name: /Amira Ben Ali/i })).toBeVisible();
+    await page.waitForURL("**/student/home");
+    await expect(page.getByRole("heading", { name: /Fil du Campus/i })).toBeVisible();
+    await expect(page.getByPlaceholder(/Quoi de neuf sur le campus/i)).toBeVisible();
+
+    // Verify EN language switching on social home translates UI properly
+    await page.getByRole("button", { name: "en", exact: true }).click();
+    await expect(page.getByRole("heading", { name: /Campus Feed/i })).toBeVisible();
+    await expect(page.getByPlaceholder(/What's happening on campus/i)).toBeVisible();
+    await page.getByRole("button", { name: "fr", exact: true }).click();
+    await expect(page.getByRole("heading", { name: /Fil du Campus/i })).toBeVisible();
 
     // University AI Assistant RAG
     await page.goto("/student/ai-assistant");
@@ -94,7 +102,7 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await page.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
     await page.getByLabel("Mot de passe").fill("Student@2026!");
     await page.getByRole("button", { name: /Se connecter/i }).click();
-    await page.waitForURL("**/student/dashboard");
+    await page.waitForURL("**/student/home");
 
     // Marketplace: seeded photo items + post new listing
     await page.goto("/student/marketplace");
@@ -143,7 +151,7 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await page.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
     await page.getByLabel("Mot de passe").fill("Student@2026!");
     await page.getByRole("button", { name: /Se connecter/i }).click();
-    await page.waitForURL("**/student/dashboard");
+    await page.waitForURL("**/student/home");
 
     // Step 2: Course-to-Opportunity from course detail
     await page.goto("/student/courses");
@@ -198,7 +206,7 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await page.context().clearCookies();
     await page.goto("/demo");
     await expect(page.getByText(/Mode Démo Lecture Seule/i)).toBeVisible();
-    await expect(page.getByText(/Bonjour, Amira Ben Ali/i)).toBeVisible();
+    await expect(page.getByText(/Fil Social du Campus/i)).toBeVisible();
 
     await page.getByRole("button", { name: "Enseignant", exact: true }).click();
     await expect(page.getByText(/Prof\. Karim Trabelsi/i)).toBeVisible();
@@ -222,7 +230,7 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
       await studentPage.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
       await studentPage.getByLabel("Mot de passe").fill("Student@2026!");
       await studentPage.getByRole("button", { name: /Se connecter/i }).click();
-      await studentPage.waitForURL("**/student/dashboard");
+      await studentPage.waitForURL("**/student/home");
 
       // Login Teacher
       await teacherPage.goto("http://127.0.0.1:3000/login/teacher");
@@ -252,7 +260,7 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     await page.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
     await page.getByLabel("Mot de passe").fill("Student@2026!");
     await page.getByRole("button", { name: /Se connecter/i }).click();
-    await page.waitForURL("**/student/dashboard");
+    await page.waitForURL("**/student/home");
 
     // 1. Central AI Agent
     await page.goto("/student/agent");
