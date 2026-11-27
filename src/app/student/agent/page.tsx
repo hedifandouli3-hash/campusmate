@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Bot,
@@ -74,7 +74,7 @@ export default function StudentAgentPage() {
   const [goal, setGoal] = useState("");
   const [running, setRunning] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     const res = await fetch("/api/agent");
     if (res.ok) {
       const data = await res.json();
@@ -83,18 +83,16 @@ export default function StudentAgentPage() {
       setApprovals(data.approvals || []);
       setArtifacts(data.artifacts || []);
       if (data.preferences) setPreferences(data.preferences);
-      if (!activeConvId && data.conversations?.length > 0) {
-        setActiveConvId(data.conversations[0].id);
-      }
+      setActiveConvId((prev) => prev || data.conversations?.[0]?.id || "");
     }
-  }
+  }, []);
 
   useEffect(() => {
     const id = setTimeout(() => {
       void load();
     }, 0);
     return () => clearTimeout(id);
-  }, []);
+  }, [load]);
 
   async function handleRun(e?: React.FormEvent, presetGoal?: string) {
     if (e) e.preventDefault();

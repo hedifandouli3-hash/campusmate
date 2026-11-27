@@ -64,11 +64,11 @@ export default function StudentArtifactsPage() {
             onChange={(e) => setFilterType(e.target.value)}
             className="w-44"
           >
-            <option value="all">Tous les types</option>
-            <option value="website">Sites Web</option>
-            <option value="presentation">Présentations</option>
+            <option value="all">{copy.allTypes}</option>
+            <option value="website">Websites</option>
+            <option value="presentation">Presentations</option>
             <option value="document">Documents</option>
-            <option value="brand_kit">Kits de Marque</option>
+            <option value="brand_kit">Brand Kits</option>
           </Select>
         }
       />
@@ -77,8 +77,8 @@ export default function StudentArtifactsPage() {
         <Card className="p-8">
           <EmptyState
             icon={<Layers className="w-6 h-6" />}
-            title="Aucun livrable dans cette catégorie"
-            description="Créez des livrables depuis CampusMate Agent ou le Studio de Création."
+            title={copy.emptyTitle}
+            description={copy.emptyDesc}
           />
         </Card>
       ) : (
@@ -100,7 +100,7 @@ export default function StudentArtifactsPage() {
                   href="/student/studio"
                   className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  Ouvrir dans Studio <ExternalLink className="w-3 h-3" />
+                  {copy.openInStudio} <ExternalLink className="w-3 h-3" />
                 </Link>
                 <Button
                   size="sm"

@@ -224,7 +224,7 @@ export default function StudentAutomationsPage() {
       <Card className="p-5 space-y-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
           <Workflow className="w-4 h-4 text-blue-600" />
-          Constructeur visuel (Déclencheur → Conditions → Actions → Résultat)
+          {copy.builderTitle}
         </div>
         <form onSubmit={(e) => void handleCreateAutomation(e)} className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <Input
@@ -264,7 +264,7 @@ export default function StudentAutomationsPage() {
       <div className="space-y-2">
         <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-500" />
-          7 modèles prêts à l&apos;emploi
+          {copy.templatesTitle}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {TEMPLATES.map((tpl) => (
@@ -280,7 +280,7 @@ export default function StudentAutomationsPage() {
                 variant="secondary"
                 onClick={() => void handleUseTemplate(tpl)}
               >
-                Activer ce modèle
+                {copy.activateTemplate}
               </Button>
             </Card>
           ))}
@@ -292,7 +292,7 @@ export default function StudentAutomationsPage() {
         <div className="lg:col-span-2 space-y-3">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
             <CalendarClock className="w-4 h-4 text-blue-600" />
-            Mes automatisations ({automations.length})
+            {copy.myAutomations} ({automations.length})
           </h2>
           {automations.length === 0 ? (
             <Card className="p-6">
@@ -321,7 +321,7 @@ export default function StudentAutomationsPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-1.5">
                     <Button size="sm" onClick={() => void handleRunNow(auto.id)}>
-                      <Play className="w-3.5 h-3.5 me-1" /> Exécuter maintenant
+                      <Play className="w-3.5 h-3.5 me-1" /> {copy.runNow}
                     </Button>
                     <Button
                       size="sm"
@@ -369,7 +369,7 @@ export default function StudentAutomationsPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <Mail className="w-4 h-4 text-amber-500" />
-              Brouillons d&apos;emails (Validation requise)
+              {copy.emailDraftsTitle}
             </h2>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -404,7 +404,7 @@ export default function StudentAutomationsPage() {
               className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 text-xs"
             />
             <Button type="submit" size="sm" className="w-full" disabled={!recipient.trim() || !subject.trim()}>
-              Enregistrer le brouillon
+              {copy.saveDraft}
             </Button>
           </form>
 

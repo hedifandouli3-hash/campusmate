@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, CalendarPlus, FolderKanban, Plus, Trash2 } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
 import { getV6Copy } from "@/lib/i18n/v6";
@@ -33,22 +33,22 @@ export default function StudentProjectsPage() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState<KanbanProjectTask["priority"]>("medium");
 
-  async function load() {
+  const load = useCallback(async () => {
     const res = await fetch("/api/studio");
     if (res.ok) {
       const data = await res.json();
       const list: StudentWorkspaceProject[] = data.projects || [];
       setProjects(list);
-      if (!selectedId && list.length > 0) setSelectedId(list[0].id);
+      setSelectedId((prev) => prev || list[0]?.id || "");
     }
-  }
+  }, []);
 
   useEffect(() => {
     const id = setTimeout(() => {
       void load();
     }, 0);
     return () => clearTimeout(id);
-  }, []);
+  }, [load]);
 
   const current = projects.find((p) => p.id === selectedId) || projects[0] || null;
 
@@ -157,11 +157,11 @@ export default function StudentProjectsPage() {
           <Input
             value={newProjectTitle}
             onChange={(e) => setNewProjectTitle(e.target.value)}
-            placeholder="Nouveau projet (ex: PFE Smart Irrigation ISET Béja)"
+            placeholder={copy.newProjectPlaceholder}
             className="flex-1"
           />
           <Button type="submit" disabled={!newProjectTitle.trim()}>
-            <Plus className="w-4 h-4 me-1.5" /> Créer projet
+            <Plus className="w-4 h-4 me-1.5" /> {copy.createProject}
           </Button>
         </form>
       </Card>
@@ -170,8 +170,8 @@ export default function StudentProjectsPage() {
         <Card className="p-8">
           <EmptyState
             icon={<FolderKanban className="w-6 h-6" />}
-            title="Aucun projet pour le moment"
-            description="Créez votre premier projet ci-dessus pour organiser vos tâches en Kanban."
+            title={copy.emptyTitle}
+            description={copy.emptyDesc}
           />
         </Card>
       ) : (
@@ -197,11 +197,11 @@ export default function StudentProjectsPage() {
                 onClick={() =>
                   downloadIcsReminder({
                     title: `Jalon Projet : ${current.title}`,
-                    description: `${current.description} — Progression actuelle : ${current.progress}%`,
+                    description: `${current.description} — ${current.progress}%`,
                   })
                 }
               >
-                <CalendarPlus className="w-3.5 h-3.5 me-1" /> Calendrier (.ics)
+                <CalendarPlus className="w-3.5 h-3.5 me-1" /> {copy.exportIcs}
               </Button>
             </div>
             <div className="flex items-center gap-3 min-w-[200px]">
@@ -223,7 +223,7 @@ export default function StudentProjectsPage() {
               <Input
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                placeholder="Ajouter une tâche au tableau Kanban..."
+                placeholder={copy.addTaskPlaceholder}
                 className="flex-1"
               />
               <Select
@@ -231,12 +231,12 @@ export default function StudentProjectsPage() {
                 onChange={(e) => setNewTaskPriority(e.target.value as KanbanProjectTask["priority"])}
                 className="sm:w-36"
               >
-                <option value="low">Priorité basse</option>
-                <option value="medium">Priorité moyenne</option>
-                <option value="high">Priorité haute</option>
+                <option value="low">low</option>
+                <option value="medium">medium</option>
+                <option value="high">high</option>
               </Select>
               <Button type="submit" disabled={!newTaskTitle.trim()}>
-                <Plus className="w-4 h-4 me-1" /> Ajouter tâche
+                <Plus className="w-4 h-4 me-1" /> {copy.addTask}
               </Button>
             </form>
           </Card>

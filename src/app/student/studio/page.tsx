@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Download,
   FileText,
@@ -47,27 +47,29 @@ export default function StudentStudioPage() {
   const [newType, setNewType] = useState<CreationArtifactType>("website");
   const [saving, setSaving] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     const res = await fetch("/api/studio");
     if (res.ok) {
       const data = await res.json();
       const list: CreationArtifact[] = data.artifacts || [];
       setArtifacts(list);
-      if (!selectedId && list.length > 0) {
-        setSelectedId(list[0].id);
-        if (list[0].type === "website" || list[0].type === "presentation" || list[0].type === "document" || list[0].type === "brand_kit") {
-          setActiveTab(list[0].type);
+      setSelectedId((prev) => {
+        if (prev || list.length === 0) return prev;
+        const first = list[0];
+        if (first.type === "website" || first.type === "presentation" || first.type === "document" || first.type === "brand_kit") {
+          setActiveTab(first.type);
         }
-      }
+        return first.id;
+      });
     }
-  }
+  }, []);
 
   useEffect(() => {
     const id = setTimeout(() => {
       void load();
     }, 0);
     return () => clearTimeout(id);
-  }, []);
+  }, [load]);
 
   const current = artifacts.find((a) => a.id === selectedId) || null;
 
@@ -188,11 +190,11 @@ export default function StudentStudioPage() {
           <Input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Nom du livrable (ex: Portfolio PFE, Pitch Deck...)"
+            placeholder={copy.createPlaceholder}
             className="flex-1"
           />
           <Button type="submit" disabled={!newTitle.trim()}>
-            <Plus className="w-4 h-4 me-1.5" /> Créer
+            <Plus className="w-4 h-4 me-1.5" /> {copy.createBtn}
           </Button>
         </form>
       </Card>
@@ -201,7 +203,7 @@ export default function StudentStudioPage() {
         {/* Artifact List */}
         <Card className="p-4 space-y-2 lg:col-span-1 h-fit">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
-            Mes créations ({artifacts.length})
+            {copy.myCreations} ({artifacts.length})
           </h2>
           {artifacts.length === 0 ? (
             <p className="text-xs text-slate-500">Aucun livrable.</p>
@@ -239,8 +241,8 @@ export default function StudentStudioPage() {
             <Card className="p-8">
               <EmptyState
                 icon={<Globe className="w-6 h-6" />}
-                title="Sélectionnez ou créez un livrable"
-                description="Utilisez le formulaire ci-dessus pour démarrer un site web, une présentation, un document ou un brand kit."
+                title={copy.emptyTitle}
+                description={copy.emptyDesc}
               />
             </Card>
           ) : (
@@ -261,14 +263,14 @@ export default function StudentStudioPage() {
                   {current.websiteData && (
                     <>
                       <Button variant="secondary" size="sm" onClick={handleExportHtml}>
-                        <Download className="w-3.5 h-3.5 me-1" /> Exporter HTML
+                        <Download className="w-3.5 h-3.5 me-1" /> {copy.exportHtml}
                       </Button>
                       <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => void exportWebsiteDeployZip(current)}
                       >
-                        <Download className="w-3.5 h-3.5 me-1" /> ZIP Déploiement (Vercel / Netlify)
+                        <Download className="w-3.5 h-3.5 me-1" /> {copy.exportZip}
                       </Button>
                     </>
                   )}
@@ -278,7 +280,7 @@ export default function StudentStudioPage() {
                       size="sm"
                       onClick={() => exportPresentationPdf(current.title, current.slides!)}
                     >
-                      <Download className="w-3.5 h-3.5 me-1" /> Exporter PDF (Slides)
+                      <Download className="w-3.5 h-3.5 me-1" /> {copy.exportSlidesPdf}
                     </Button>
                   )}
                   {current.type === "document" && (
@@ -287,11 +289,11 @@ export default function StudentStudioPage() {
                       size="sm"
                       onClick={() => exportDocumentPdf(current.title, current.documentMarkdown || "")}
                     >
-                      <Download className="w-3.5 h-3.5 me-1" /> Exporter PDF
+                      <Download className="w-3.5 h-3.5 me-1" /> {copy.exportDocPdf}
                     </Button>
                   )}
                   <Button size="sm" onClick={() => void handleSave(current)} disabled={saving}>
-                    <Save className="w-3.5 h-3.5 me-1" /> {saving ? "..." : "Enregistrer"}
+                    <Save className="w-3.5 h-3.5 me-1" /> {saving ? "..." : copy.save}
                   </Button>
                   <Button
                     size="sm"
@@ -397,7 +399,7 @@ export default function StudentStudioPage() {
                     />
                   </div>
 
-                  {/* Inline section editor */}
+                  {/* Inline section & card editor */}
                   <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
                       {copy.sectionsEditor}
@@ -405,7 +407,7 @@ export default function StudentStudioPage() {
                     {current.websiteData.sections.map((sec, secIdx) => (
                       <div
                         key={sec.id}
-                        className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-2"
+                        className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-2.5"
                       >
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div>
@@ -439,6 +441,38 @@ export default function StudentStudioPage() {
                             />
                           </div>
                         </div>
+                        {sec.items.length > 0 && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                            {sec.items.map((item, itemIdx) => (
+                              <div key={itemIdx} className="rounded border border-slate-100 dark:border-slate-800 p-2 space-y-1.5">
+                                <Input
+                                  value={item.title}
+                                  onChange={(e) => {
+                                    const nextSections = [...current.websiteData!.sections];
+                                    const nextItems = [...sec.items];
+                                    nextItems[itemIdx] = { ...item, title: e.target.value };
+                                    nextSections[secIdx] = { ...sec, items: nextItems };
+                                    updateCurrentLocal({
+                                      websiteData: { ...current.websiteData!, sections: nextSections },
+                                    });
+                                  }}
+                                />
+                                <Input
+                                  value={item.description}
+                                  onChange={(e) => {
+                                    const nextSections = [...current.websiteData!.sections];
+                                    const nextItems = [...sec.items];
+                                    nextItems[itemIdx] = { ...item, description: e.target.value };
+                                    nextSections[secIdx] = { ...sec, items: nextItems };
+                                    updateCurrentLocal({
+                                      websiteData: { ...current.websiteData!, sections: nextSections },
+                                    });
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -448,6 +482,26 @@ export default function StudentStudioPage() {
               {/* Presentation Builder */}
               {current.type === "presentation" && (
                 <div className="space-y-3">
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        const next = [
+                          ...(current.slides || []),
+                          {
+                            id: `slide-${Date.now()}`,
+                            title: `Slide ${(current.slides?.length || 0) + 1}`,
+                            bullets: ["Point clé 1", "Point clé 2"],
+                            speakerNotes: "",
+                          },
+                        ];
+                        updateCurrentLocal({ slides: next });
+                      }}
+                    >
+                      <Plus className="w-3.5 h-3.5 me-1" /> + Slide
+                    </Button>
+                  </div>
                   {(current.slides || []).map((slide, idx) => (
                     <div
                       key={slide.id}
@@ -455,6 +509,19 @@ export default function StudentStudioPage() {
                     >
                       <div className="flex items-center justify-between">
                         <Badge>Slide {idx + 1}</Badge>
+                        {(current.slides?.length || 0) > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = (current.slides || []).filter((_, i) => i !== idx);
+                              updateCurrentLocal({ slides: next });
+                            }}
+                            className="text-slate-400 hover:text-rose-500"
+                            aria-label="Supprimer la diapositive"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                       <Input
                         value={slide.title}

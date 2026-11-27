@@ -71,20 +71,20 @@ export default function StartupBuilderPage() {
         <Card className="p-5 space-y-4 lg:col-span-2">
           <div className="flex items-center gap-2 font-semibold text-sm text-slate-900 dark:text-white">
             <Lightbulb className="w-4 h-4 text-amber-500" />
-            1. Définition Cours → Problème → Startup
+            {copy.step1Title}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium">Nom de la startup</label>
+              <label className="text-xs font-medium">{copy.startupName}</label>
               <Input value={startupName} onChange={(e) => setStartupName(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs font-medium">Cours / compétence source</label>
+              <label className="text-xs font-medium">{copy.courseOrigin}</label>
               <Input value={courseOrigin} onChange={(e) => setCourseOrigin(e.target.value)} />
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium">Problème résolu</label>
+            <label className="text-xs font-medium">{copy.problemSolved}</label>
             <textarea
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
@@ -96,7 +96,7 @@ export default function StartupBuilderPage() {
           <div className="flex flex-wrap gap-2 pt-2">
             <Button onClick={() => void handleGenerateBundle()} disabled={building}>
               <Rocket className="w-4 h-4 me-1.5" />
-              {building ? "Génération..." : "Générer Site Web + Projet MVP"}
+              {building ? copy.generating : copy.generateBundle}
             </Button>
             <Link href="/student/launchpad/business-canvas">
               <Button variant="secondary">
@@ -132,10 +132,10 @@ export default function StartupBuilderPage() {
         <Card className="p-5 space-y-3">
           <div className="flex items-center gap-2 font-semibold text-sm text-slate-900 dark:text-white">
             <Calculator className="w-4 h-4 text-blue-600" />
-            2. Simulateur de Rentabilité (TND)
+            {copy.step2Title}
           </div>
           <div>
-            <label className="text-xs font-medium">Abonnement mensuel (TND)</label>
+            <label className="text-xs font-medium">{copy.monthlyPrice}</label>
             <Input
               type="number"
               min={1}
@@ -144,7 +144,7 @@ export default function StartupBuilderPage() {
             />
           </div>
           <div>
-            <label className="text-xs font-medium">Coûts fixes mensuels (TND)</label>
+            <label className="text-xs font-medium">{copy.fixedCost}</label>
             <Input
               type="number"
               min={0}
@@ -153,7 +153,7 @@ export default function StartupBuilderPage() {
             />
           </div>
           <div>
-            <label className="text-xs font-medium">Coût variable / client (TND)</label>
+            <label className="text-xs font-medium">{copy.variableCost}</label>
             <Input
               type="number"
               min={0}
@@ -163,11 +163,11 @@ export default function StartupBuilderPage() {
           </div>
           <div className="rounded-xl bg-blue-50 dark:bg-blue-950/40 p-3.5 space-y-1">
             <div className="text-xs text-slate-600 dark:text-slate-300">
-              Marge unitaire : <strong>{marginPerClient} TND / client</strong>
+              {copy.unitMargin} : <strong>{marginPerClient} TND</strong>
             </div>
             <div className="text-sm font-bold text-blue-700 dark:text-blue-300 flex items-center justify-between">
-              <span>Seuil de rentabilité :</span>
-              <Badge variant="success">{breakEvenClients} clients</Badge>
+              <span>{copy.breakEven}</span>
+              <Badge variant="success">{breakEvenClients} {copy.clientsUnit}</Badge>
             </div>
           </div>
         </Card>
