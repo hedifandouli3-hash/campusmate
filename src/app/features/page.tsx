@@ -30,6 +30,15 @@ const FEATURE_GROUPS = [
       "08 & 14. CV Builder PDF + Organisations vérifiées & Offres de Stage avec matching IA explicable.",
     ],
   },
+  {
+    title: "Pôle Agentic AI OS & Launchpad (V6)",
+    items: [
+      "15. CampusMate Launchpad & Startup Builder : compétences, freelance, Business Model Canvas, rentabilité et pitch.",
+      "16. CampusMate Agent : assistant agentique central avec registre d'outils sécurisé et approbations humaines.",
+      "17. Studio de Création IA : sites web en sandbox CSP + export ZIP Vercel/Netlify, présentations PDF et brand kits.",
+      "18, 19 & 20. Projets Kanban (.ics), Centre d'Automatisation (Resend/Cron/Gmail) & Bibliothèque des Livrables.",
+    ],
+  },
 ];
 
 export default function FeaturesPage() {
@@ -38,7 +47,7 @@ export default function FeaturesPage() {
       <PublicHeader />
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-14 space-y-8">
         <div className="space-y-3">
-          <Badge variant="indigo">14 Modules Intégrés</Badge>
+          <Badge variant="indigo">20 Modules Intégrés</Badge>
           <h1 className="text-3xl font-bold">Fonctionnalités de l&apos;écosystème CampusMate</h1>
           <p className="text-slate-600 dark:text-slate-300">
             Chaque module fonctionne de bout en bout avec contrôle d&apos;accès par rôle et persistance serveur.

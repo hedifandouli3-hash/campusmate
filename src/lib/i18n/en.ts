@@ -32,7 +32,7 @@ export const en = {
     ctaPrimary: "Get started",
     ctaSecondary: "Explore features",
     problemsTitle: "Real campus problems CampusMate solves",
-    featuresTitle: "15 integrated modules in one unified ecosystem",
+    featuresTitle: "20 integrated modules in one unified ecosystem",
     howTitle: "How CampusMate connects your university",
     faqTitle: "Frequently asked questions",
   },

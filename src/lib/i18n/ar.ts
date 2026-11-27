@@ -32,7 +32,7 @@ export const ar = {
     ctaPrimary: "ابدأ الآن",
     ctaSecondary: "استكشف الميزات",
     problemsTitle: "مشاكل جامعية حقيقية نحلّها يومياً",
-    featuresTitle: "15 وحدة متكاملة في نظام جامعي واحد",
+    featuresTitle: "20 وحدة متكاملة في نظام جامعي واحد",
     howTitle: "كيف يربط CampusMate مكونات الجامعة",
     faqTitle: "الأسئلة الشائعة",
   },

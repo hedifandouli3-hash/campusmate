@@ -97,7 +97,7 @@ export function PublicFooter() {
         <div>
           <h4 className="font-semibold mb-2">Plateforme</h4>
           <ul className="space-y-1.5 text-slate-500 text-xs">
-            <li><Link href="/features" className="hover:text-blue-600">14 Modules intégrés</Link></li>
+            <li><Link href="/features" className="hover:text-blue-600">20 Modules intégrés</Link></li>
             <li><Link href="/about" className="hover:text-blue-600">À propos</Link></li>
             <li><Link href="/register" className="hover:text-blue-600">Créer un compte</Link></li>
           </ul>

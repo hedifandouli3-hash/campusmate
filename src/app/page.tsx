@@ -15,7 +15,10 @@ import {
   CheckCircle2,
   DoorOpen,
   FileText,
+  FolderKanban,
+  Globe,
   GraduationCap,
+  Layers,
   MessageCircleWarning,
   MessageSquare,
   Rocket,
@@ -25,6 +28,7 @@ import {
   Sparkles,
   Ticket,
   Users,
+  Workflow,
 } from "lucide-react";
 import { PublicFooter, PublicHeader } from "@/components/layout/public-chrome";
 import { useApp } from "@/components/providers/app-provider";
@@ -46,6 +50,11 @@ const MODULES = [
   { num: "13", title: "Groupes Académiques", desc: "Discussions temps réel par promo, département, section et matière.", icon: <MessageSquare className="w-5 h-5 text-emerald-600" /> },
   { num: "14", title: "Organisations & Stages", desc: "Offres PFE/Perfectionnement vérifiées et matching IA explicable.", icon: <Briefcase className="w-5 h-5 text-blue-600" /> },
   { num: "15", title: "CampusMate Launchpad", desc: "Transformez vos cours en compétences, projets pratiques, freelance, Business Canvas et startups.", icon: <Rocket className="w-5 h-5 text-indigo-600" /> },
+  { num: "16", title: "CampusMate Agent", desc: "Agent IA central orchestrant outils autorisés, RAG et approbations humaines.", icon: <Sparkles className="w-5 h-5 text-blue-600" /> },
+  { num: "17", title: "Studio de Création IA", desc: "Sites web en sandbox sécurisée, slides PDF, documents et kits de marque.", icon: <Globe className="w-5 h-5 text-indigo-600" /> },
+  { num: "18", title: "Projets & Kanban", desc: "Tableaux Kanban PFE/startup avec progression réelle et export .ics.", icon: <FolderKanban className="w-5 h-5 text-emerald-600" /> },
+  { num: "19", title: "Centre d'Automatisation", desc: "Workflows planifiés, briefing quotidien, Resend & Gmail Compose.", icon: <Workflow className="w-5 h-5 text-blue-600" /> },
+  { num: "20", title: "Bibliothèque des Livrables", desc: "Centralisation et gestion des sites, présentations et rapports générés.", icon: <Layers className="w-5 h-5 text-indigo-600" /> },
 ];
 
 const ROLE_PREVIEWS = [
@@ -106,7 +115,7 @@ export default function LandingPage() {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="primary">ISET Béja • Écosystème Universitaire IA</Badge>
-              <Badge variant="success">Multi-Tenant • 15 Modules</Badge>
+              <Badge variant="success">Multi-Tenant • 20 Modules</Badge>
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
               {t.landing.heroTitle}
@@ -138,7 +147,7 @@ export default function LandingPage() {
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500 pt-1">
               <span>✓ Français, English, العربية (RTL)</span>
               <span>✓ Mode Clair & Sombre</span>
-              <span>✓ 5 Rôles • 14 Modules</span>
+              <span>✓ 5 Rôles • 20 Modules</span>
             </div>
           </div>
 
@@ -229,7 +238,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 14 Modules Grid */}
+      {/* 20 Modules Grid */}
       <section className="border-y border-slate-200 dark:border-slate-800 bg-[var(--bg-surface)] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -240,7 +249,7 @@ export default function LandingPage() {
               </p>
             </div>
             <Link href="/features" className="text-sm font-semibold text-blue-600 hover:underline">
-              Explorer les 15 modules →
+              Explorer les 20 modules →
             </Link>
           </div>
 

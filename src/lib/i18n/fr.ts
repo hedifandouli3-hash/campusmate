@@ -30,7 +30,7 @@ export const fr = {
     ctaPrimary: "Commencer maintenant",
     ctaSecondary: "Découvrir les fonctionnalités",
     problemsTitle: "Les défis réels de la vie estudiantine",
-    featuresTitle: "15 modules intégrés dans un seul écosystème",
+    featuresTitle: "20 modules intégrés dans un seul écosystème",
     howTitle: "Comment CampusMate connecte votre campus",
     faqTitle: "Questions fréquentes",
   },
