@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Layers, Trash2 } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
+import { getV6Copy } from "@/lib/i18n/v6";
 import {
   Badge,
   Button,
@@ -16,7 +17,8 @@ import { formatDate } from "@/lib/utils";
 import type { CreationArtifact } from "@/types/domain";
 
 export default function StudentArtifactsPage() {
-  const { notify } = useApp();
+  const { locale, notify } = useApp();
+  const copy = getV6Copy(locale).artifacts;
   const [artifacts, setArtifacts] = useState<CreationArtifact[]>([]);
   const [filterType, setFilterType] = useState<string>("all");
 
@@ -53,8 +55,8 @@ export default function StudentArtifactsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Bibliothèque des Livrables"
-        description="Retrouvez tous les sites web, présentations, documents et kits de marque générés par l'Agent ou le Studio."
+        title={copy.title}
+        description={copy.description}
         badge="Artifacts"
         actions={
           <Select

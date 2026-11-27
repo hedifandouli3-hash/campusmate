@@ -5,10 +5,12 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Calculator, Globe, Lightbulb, Rocket } from "lucide-react";
 import { LaunchpadNav } from "@/components/launchpad/launchpad-nav";
 import { useApp } from "@/components/providers/app-provider";
+import { getV6Copy } from "@/lib/i18n/v6";
 import { Badge, Button, Card, Input, PageHeader } from "@/components/ui/primitives";
 
 export default function StartupBuilderPage() {
-  const { notify } = useApp();
+  const { locale, notify } = useApp();
+  const copy = getV6Copy(locale).startupBuilder;
   const [startupName, setStartupName] = useState("AgriSmart Béja");
   const [courseOrigin, setCourseOrigin] = useState("Systèmes Embarqués & IoT");
   const [problem, setProblem] = useState("Optimiser l'irrigation agricole dans la région de Béja via capteurs IoT.");
@@ -60,8 +62,8 @@ export default function StartupBuilderPage() {
     <div className="space-y-6">
       <LaunchpadNav />
       <PageHeader
-        title="Startup Builder Unifié"
-        description="Reliez vos cours à une vraie startup : Problème → Modèle économique → Seuil de rentabilité → Site web → MVP Kanban."
+        title={copy.title}
+        description={copy.description}
         badge="V6 Startup OS"
       />
 

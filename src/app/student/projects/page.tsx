@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowRight, CalendarPlus, FolderKanban, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarPlus, FolderKanban, Plus, Trash2 } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
+import { getV6Copy } from "@/lib/i18n/v6";
 import {
   Badge,
   Button,
@@ -23,7 +24,8 @@ const COLUMNS: Array<{ status: KanbanProjectTask["status"]; label: string }> = [
 ];
 
 export default function StudentProjectsPage() {
-  const { notify } = useApp();
+  const { locale, notify } = useApp();
+  const copy = getV6Copy(locale).projects;
   const [projects, setProjects] = useState<StudentWorkspaceProject[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [newProjectTitle, setNewProjectTitle] = useState("");
@@ -112,11 +114,29 @@ export default function StudentProjectsPage() {
     }
   }
 
+  async function handleDeleteTask(taskId: string) {
+    if (!current) return;
+    const res = await fetch("/api/studio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        entity: "project",
+        action: "delete_task",
+        id: current.id,
+        taskId,
+      }),
+    });
+    if (res.ok) {
+      notify(copy.deleteTask, "info");
+      await load();
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Gestion de Projets & Kanban"
-        description="Suivez vos projets académiques, PFE, startups et portfolios avec calcul réel d'avancement."
+        title={copy.title}
+        description={copy.description}
         badge="Kanban Workspace"
       />
 
@@ -225,12 +245,13 @@ export default function StudentProjectsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {COLUMNS.map((col, colIdx) => {
               const colTasks = current.tasks.filter((t) => t.status === col.status);
+              const prevStatus = COLUMNS[colIdx - 1]?.status;
               const nextStatus = COLUMNS[colIdx + 1]?.status;
               return (
                 <Card key={col.status} className="p-3.5 space-y-3 bg-slate-50/70 dark:bg-slate-900/60">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-300">
-                      {col.label}
+                      {copy.columns[col.status]}
                     </span>
                     <Badge>{colTasks.length}</Badge>
                   </div>
@@ -240,10 +261,20 @@ export default function StudentProjectsPage() {
                         key={task.id}
                         className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 space-y-2"
                       >
-                        <div className="text-xs font-medium text-slate-900 dark:text-white">
-                          {task.title}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="text-xs font-medium text-slate-900 dark:text-white">
+                            {task.title}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => void handleDeleteTask(task.id)}
+                            aria-label={copy.deleteTask}
+                            className="text-slate-400 hover:text-rose-500 transition shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
                           <Badge
                             variant={
                               task.priority === "high"
@@ -253,15 +284,26 @@ export default function StudentProjectsPage() {
                           >
                             {task.priority}
                           </Badge>
-                          {nextStatus && (
-                            <button
-                              type="button"
-                              onClick={() => void handleMoveTask(task.id, nextStatus)}
-                              className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                            >
-                              Avancer <ArrowRight className="w-3 h-3" />
-                            </button>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {prevStatus && (
+                              <button
+                                type="button"
+                                onClick={() => void handleMoveTask(task.id, prevStatus)}
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:underline"
+                              >
+                                <ArrowLeft className="w-3 h-3" /> {copy.moveBack}
+                              </button>
+                            )}
+                            {nextStatus && (
+                              <button
+                                type="button"
+                                onClick={() => void handleMoveTask(task.id, nextStatus)}
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                              >
+                                {copy.moveForward} <ArrowRight className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

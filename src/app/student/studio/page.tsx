@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
+import { getV6Copy } from "@/lib/i18n/v6";
 import {
   Badge,
   Button,
@@ -36,7 +37,8 @@ type StudioTab = "website" | "presentation" | "document" | "brand_kit";
 type ViewportSize = "desktop" | "tablet" | "mobile";
 
 export default function StudentStudioPage() {
-  const { notify } = useApp();
+  const { locale, notify } = useApp();
+  const copy = getV6Copy(locale).studio;
   const [artifacts, setArtifacts] = useState<CreationArtifact[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [activeTab, setActiveTab] = useState<StudioTab>("website");
@@ -165,8 +167,8 @@ export default function StudentStudioPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Studio de Création IA"
-        description="Concevez des sites web en sandbox sécurisée, présentations, documents académiques et kits de marque."
+        title={copy.title}
+        description={copy.description}
         badge="Creation Studio"
       />
 
@@ -393,6 +395,52 @@ export default function StudentStudioPage() {
                       srcDoc={sandboxHtml}
                       className={`${frameWidthClass} h-[420px] rounded-lg border border-slate-300 dark:border-slate-700 bg-white transition-all`}
                     />
+                  </div>
+
+                  {/* Inline section editor */}
+                  <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                      {copy.sectionsEditor}
+                    </h3>
+                    {current.websiteData.sections.map((sec, secIdx) => (
+                      <div
+                        key={sec.id}
+                        className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-2"
+                      >
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] font-medium text-slate-500">
+                              {copy.headingLabel} ({sec.kind})
+                            </label>
+                            <Input
+                              value={sec.heading}
+                              onChange={(e) => {
+                                const nextSections = [...current.websiteData!.sections];
+                                nextSections[secIdx] = { ...sec, heading: e.target.value };
+                                updateCurrentLocal({
+                                  websiteData: { ...current.websiteData!, sections: nextSections },
+                                });
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-medium text-slate-500">
+                              {copy.subheadingLabel}
+                            </label>
+                            <Input
+                              value={sec.subheading}
+                              onChange={(e) => {
+                                const nextSections = [...current.websiteData!.sections];
+                                nextSections[secIdx] = { ...sec, subheading: e.target.value };
+                                updateCurrentLocal({
+                                  websiteData: { ...current.websiteData!, sections: nextSections },
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

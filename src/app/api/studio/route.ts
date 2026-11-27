@@ -77,6 +77,8 @@ export async function POST(request: Request) {
         if (task && ["todo", "in_progress", "under_review", "completed"].includes(body.status)) {
           task.status = body.status;
         }
+      } else if (body.action === "delete_task") {
+        project.tasks = project.tasks.filter((t) => t.id !== body.taskId);
       }
       const completed = project.tasks.filter((t) => t.status === "completed").length;
       project.progress = project.tasks.length > 0 ? Math.round((completed / project.tasks.length) * 100) : 0;

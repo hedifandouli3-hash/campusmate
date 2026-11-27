@@ -180,6 +180,30 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* 1-Tap Quick Actions Strip */}
+      <Card className="p-4 border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-r from-blue-50/70 via-white to-indigo-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            Que souhaitez-vous accomplir aujourd&apos;hui ?
+          </div>
+          <p className="text-xs text-slate-500">
+            Lancez CampusMate Agent pour créer un site, des slides PDF ou un plan d&apos;action, ou ouvrez le Studio.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <Link href="/student/agent">
+            <Button size="sm">
+              <Sparkles className="w-3.5 h-3.5 me-1.5" /> Ouvrir Agent
+            </Button>
+          </Link>
+          <Link href="/student/studio">
+            <Button size="sm" variant="secondary">
+              Créer dans Studio
+            </Button>
+          </Link>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
           { label: "AI Learning Hub", href: "/student/courses", icon: <Sparkles className="w-4 h-4 text-blue-600" /> },

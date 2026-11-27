@@ -16,6 +16,7 @@ import {
   Workflow,
 } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
+import { getV6Copy } from "@/lib/i18n/v6";
 import {
   Badge,
   Button,
@@ -89,7 +90,8 @@ const TEMPLATES = [
 ];
 
 export default function StudentAutomationsPage() {
-  const { notify } = useApp();
+  const { locale, notify } = useApp();
+  const copy = getV6Copy(locale).automations;
   const [automations, setAutomations] = useState<AutomationWorkflow[]>([]);
   const [emailDrafts, setEmailDrafts] = useState<EmailDraft[]>([]);
   const [integrations, setIntegrations] = useState({ resendConfigured: false, cronConfigured: false });
@@ -213,8 +215,8 @@ export default function StudentAutomationsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Centre d'Automatisation"
-        description="Workflows Déclencheur → Conditions → Actions → Résultat, briefing quotidien et brouillons d'emails sécurisés (Africa/Tunis)."
+        title={copy.title}
+        description={copy.description}
         badge="Automations"
       />
 

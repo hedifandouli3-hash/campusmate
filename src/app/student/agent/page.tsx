@@ -8,6 +8,7 @@ import {
   Clock,
   ExternalLink,
   Layers,
+  Plus,
   Send,
   ShieldAlert,
   ShieldCheck,
@@ -17,6 +18,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
+import { getV6Copy } from "@/lib/i18n/v6";
 import {
   Badge,
   Button,
@@ -55,6 +57,7 @@ const QUICK_GOALS = [
 
 export default function StudentAgentPage() {
   const { locale, notify } = useApp();
+  const copy = getV6Copy(locale).agent;
   const [conversations, setConversations] = useState<AgentConversation[]>([]);
   const [runs, setRuns] = useState<AgentRun[]>([]);
   const [approvals, setApprovals] = useState<AgentApprovalRequest[]>([]);
@@ -170,28 +173,42 @@ export default function StudentAgentPage() {
     }
   }
 
-  const activeConv = conversations.find((c) => c.id === activeConvId) || conversations[0];
+  const activeConv =
+    activeConvId === "__new__"
+      ? undefined
+      : conversations.find((c) => c.id === activeConvId) || conversations[0];
   const pendingApprovals = approvals.filter((a) => a.status === "pending");
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="CampusMate Agent"
-        description="Votre assistant agentique central : recherche ISET Béja, création de livrables, planification et automatisation sécurisée."
+        title={copy.title}
+        description={copy.description}
         badge="V6 Agent OS"
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => {
+                setActiveConvId("__new__");
+                setGoal("");
+              }}
+            >
+              <Plus className="w-4 h-4 me-1.5" />
+              {copy.newConversation}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleTogglePersonalization}
             >
               <ShieldCheck className="w-4 h-4 me-1.5" />
-              Mémoire : {preferences.enablePersonalization ? "Active" : "Désactivée"}
+              {preferences.enablePersonalization ? copy.memoryActive : copy.memoryDisabled}
             </Button>
             <Button variant="ghost" size="sm" onClick={handleClearHistory}>
               <Trash2 className="w-4 h-4 me-1.5" />
-              Effacer l&apos;historique
+              {copy.clearHistory}
             </Button>
           </div>
         }
@@ -201,18 +218,18 @@ export default function StudentAgentPage() {
       <Card className="p-5 border-blue-200/80 dark:border-blue-900/60 bg-gradient-to-br from-blue-50/60 via-white to-indigo-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/30">
         <form onSubmit={(e) => void handleRun(e)} className="space-y-3">
           <label className="block text-sm font-semibold text-slate-900 dark:text-white">
-            Que souhaitez-vous accomplir aujourd&apos;hui ?
+            {copy.promptLabel}
           </label>
           <div className="flex flex-col sm:flex-row gap-2.5">
             <Input
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              placeholder="Ex: Crée un site web pour mon projet startup, génère 5 slides de soutenance, ou prépare un email..."
+              placeholder={copy.promptPlaceholder}
               className="flex-1"
             />
             <Button type="submit" disabled={running || !goal.trim()}>
               <Send className="w-4 h-4 me-1.5" />
-              {running ? "Exécution..." : "Lancer l'agent"}
+              {running ? copy.runningButton : copy.runButton}
             </Button>
           </div>
           <div className="flex flex-wrap gap-2 pt-1">
