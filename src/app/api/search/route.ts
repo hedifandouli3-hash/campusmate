@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import {
-  getStore,
+  ensureStoreHydrated,
   getVisibleCourseDocuments,
   getVisibleDocumentRequests,
   requireUser,
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ results: [] });
     }
 
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const results: GlobalSearchResult[] = [];
     const matches = (text: string | undefined) => Boolean(text && text.toLowerCase().includes(rawQ));
 

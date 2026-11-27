@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getStore, persistToDisk, requireUser, toPublicProfile } from "@/lib/data/store";
+import { ensureStoreHydrated, persistStore, requireUser, toPublicProfile } from "@/lib/data/store";
 
 const ProfileUpdateSchema = z.object({
   fullName: z.string().min(2).max(120).optional(),
@@ -18,7 +18,7 @@ export async function PATCH(request: Request) {
     if (!parsed.success) {
       return NextResponse.json({ error: "Données profil invalides." }, { status: 400 });
     }
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const record = store.users.find((u) => u.id === user.id);
     if (!record) return NextResponse.json({ error: "Profil introuvable." }, { status: 404 });
 
@@ -28,7 +28,7 @@ export async function PATCH(request: Request) {
     if (parsed.data.skills) record.skills = parsed.data.skills;
     if (parsed.data.interests) record.interests = parsed.data.interests;
 
-    persistToDisk(store);
+    await persistStore(store);
     return NextResponse.json({ user: toPublicProfile(record) });
   } catch {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });

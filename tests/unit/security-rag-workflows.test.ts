@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { sanitizeText } from "@/lib/utils";
 import { chunkPages, extractDocumentContent, neutralizePromptInjection } from "@/lib/ai/document-processor";
 import { stripHtmlToCleanText } from "@/lib/ai/isetb-sync";
 import {
@@ -380,5 +381,10 @@ describe("CampusMate Core Security, Multi-Tenancy, RAG & Workflows", () => {
     });
     expect(social.posts.map((p) => p.platform)).toEqual(["linkedin", "instagram", "facebook"]);
     expect(social.posts[0].body).toContain("Certificat PostgreSQL");
+
+    // XSS & URL injection regression checks
+    const xss = sanitizeText('<script>alert("xss")</script>Bonjour', 200);
+    expect(xss).not.toContain("<script>");
+    expect(isSafeHttpUrl("javascript:alert(document.cookie)")).toBe(false);
   });
 });

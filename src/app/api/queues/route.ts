@@ -1,11 +1,11 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import { addNotification, getStore, persistToDisk, requireUser } from "@/lib/data/store";
+import { addNotification, ensureStoreHydrated, persistStore, requireUser } from "@/lib/data/store";
 
 export async function GET() {
   try {
     const user = await requireUser();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const services = store.queueServices.filter(
       (q) => user.role === "super_admin" || q.institutionId === user.institutionId
     );
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const user = await requireUser(["student"]);
     const body = await request.json();
     const queueId = String(body.queueId || "");
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const queue = store.queueServices.find(
       (q) => q.id === queueId && q.institutionId === user.institutionId
     );
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       joinedAt: new Date().toISOString(),
     };
     store.queueTickets.push(ticket);
-    persistToDisk(store);
+    await persistStore(store);
 
     return NextResponse.json({ ticket }, { status: 201 });
   } catch {
@@ -70,7 +70,7 @@ export async function PATCH(request: Request) {
   try {
     const user = await requireUser();
     const body = await request.json();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
 
     if (body.action === "cancel_ticket") {
       const ticket = store.queueTickets.find(
@@ -82,7 +82,7 @@ export async function PATCH(request: Request) {
       );
       if (!ticket) return NextResponse.json({ error: "Ticket introuvable." }, { status: 404 });
       ticket.status = "cancelled";
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ ticket });
     }
 
@@ -97,7 +97,7 @@ export async function PATCH(request: Request) {
 
     if (body.action === "toggle_open") {
       queue.isOpen = !queue.isOpen;
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ service: queue });
     }
 
@@ -124,7 +124,7 @@ export async function PATCH(request: Request) {
           actionUrl: "/student/queue",
         });
       }
-      persistToDisk(store);
+      await persistStore(store);
       return NextResponse.json({ service: queue, calledTicket: next || null });
     }
 
@@ -132,7 +132,7 @@ export async function PATCH(request: Request) {
       const tk = store.queueTickets.find((t) => t.id === body.ticketId && t.queueId === queue.id);
       if (tk && ["completed", "missed"].includes(body.status)) {
         tk.status = body.status;
-        persistToDisk(store);
+        await persistStore(store);
         return NextResponse.json({ ticket: tk });
       }
     }

@@ -31,6 +31,8 @@ export function formatDateTime(iso: string, locale: "fr" | "en" | "ar" = "fr"): 
 export function sanitizeText(input: string, maxLength = 4000): string {
   return input
     .replace(/\u0000/g, "")
+    .replace(/<\s*(script|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/<[^>]*>/g, "")
     .trim()
     .slice(0, maxLength);
 }

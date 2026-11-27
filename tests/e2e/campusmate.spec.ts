@@ -193,4 +193,58 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
       expect(overflow).toBe(false);
     }
   });
+
+  test("Isolated /demo works anonymously with all 3 experiences and zero production cookies", async ({ page }) => {
+    await page.context().clearCookies();
+    await page.goto("/demo");
+    await expect(page.getByText(/Mode Démo Anonyme Isolé/i)).toBeVisible();
+    await expect(page.getByText(/Simulation Assistant RAG Étudiant/i)).toBeVisible();
+
+    await page.getByRole("button", { name: /Expérience Enseignant/i }).click();
+    await expect(page.getByText(/Isolation Corrigés/i)).toBeVisible();
+
+    await page.getByRole("button", { name: /Expérience Launchpad/i }).click();
+    await page.getByRole("button", { name: /Simuler : Transformer ce cours en opportunités/i }).click();
+    await expect(page.getByText(/StockPulse TN/i)).toBeVisible();
+
+    const cookies = await page.context().cookies();
+    expect(cookies.some((c) => c.name === "campusmate_session")).toBe(false);
+  });
+
+  test("Two independent authenticated browser sessions exchange academic chat messages", async ({ browser }) => {
+    const studentCtx = await browser.newContext();
+    const teacherCtx = await browser.newContext();
+    const studentPage = await studentCtx.newPage();
+    const teacherPage = await teacherCtx.newPage();
+
+    try {
+      // Login Student
+      await studentPage.goto("http://127.0.0.1:3000/login/student");
+      await studentPage.getByLabel("Adresse e-mail").fill("amira.benali@isetb.rnu.tn");
+      await studentPage.getByLabel("Mot de passe").fill("Student@2026!");
+      await studentPage.getByRole("button", { name: /Se connecter/i }).click();
+      await studentPage.waitForURL("**/student/dashboard");
+
+      // Login Teacher
+      await teacherPage.goto("http://127.0.0.1:3000/login/teacher");
+      await teacherPage.getByLabel("Adresse e-mail").fill("karim.trabelsi@isetb.rnu.tn");
+      await teacherPage.getByLabel("Mot de passe").fill("Teacher@2026!");
+      await teacherPage.getByRole("button", { name: /Se connecter/i }).click();
+      await teacherPage.waitForURL("**/teacher/dashboard");
+
+      await studentPage.goto("http://127.0.0.1:3000/student/chats");
+      await teacherPage.goto("http://127.0.0.1:3000/teacher/chats");
+
+      const liveMsg = `Live dual-session msg ${Date.now()}`;
+      await studentPage.getByPlaceholder("Écrire un message au groupe...").fill(liveMsg);
+      await studentPage.locator('form button[type="submit"]').click();
+      await expect(studentPage.getByText(liveMsg)).toBeVisible();
+
+      // Teacher session receives the message via polling/reload
+      await expect(teacherPage.getByText(liveMsg)).toBeVisible({ timeout: 10_000 });
+    } finally {
+      await studentCtx.close();
+      await teacherCtx.close();
+    }
+  });
 });

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getStore, persistToDisk, requireUser } from "@/lib/data/store";
+import { ensureStoreHydrated, persistStore, requireUser } from "@/lib/data/store";
 
 export async function GET() {
   try {
     const user = await requireUser();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
     const notifications = store.notifications.filter((n) => n.userId === user.id);
     return NextResponse.json({
       notifications,
@@ -19,7 +19,7 @@ export async function PATCH(request: Request) {
   try {
     const user = await requireUser();
     const body = await request.json();
-    const store = getStore();
+    const store = await ensureStoreHydrated();
 
     if (body.markAll) {
       for (const n of store.notifications) {
@@ -30,7 +30,7 @@ export async function PATCH(request: Request) {
       if (target) target.isRead = true;
     }
 
-    persistToDisk(store);
+    await persistStore(store);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
