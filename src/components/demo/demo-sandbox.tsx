@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import type { Locale } from "@/types/domain";
 
 export type DemoRoleTab = "student" | "teacher" | "administration" | "commercial";
-type DemoSubView = "overview" | "agent" | "courses" | "launchpad" | "marketplace" | "chats" | "cv" | "knowledge";
+type DemoSubView = "overview" | "feed" | "agent" | "courses" | "launchpad" | "marketplace" | "chats" | "cv" | "knowledge";
 
 const DEMO_QA = [
   {
@@ -60,6 +60,7 @@ export function DemoSandbox({ initialTab = "student" }: { initialTab?: DemoRoleT
     role === "student"
       ? [
           { id: "overview", label: "Vue d'ensemble", icon: <LayoutDashboard className="w-4 h-4" /> },
+          { id: "feed", label: "Fil Campus (Démo)", icon: <MessageSquare className="w-4 h-4" /> },
           { id: "agent", label: "Agent & Studio IA", icon: <Sparkles className="w-4 h-4" /> },
           { id: "courses", label: "Mes Cours & IA", icon: <BookOpen className="w-4 h-4" /> },
           { id: "launchpad", label: "Launchpad Hub", icon: <Rocket className="w-4 h-4" /> },
@@ -261,6 +262,35 @@ export function DemoSandbox({ initialTab = "student" }: { initialTab?: DemoRoleT
           )}
 
           {/* STUDENT VIEWS */}
+          {role === "student" && view === "feed" && (
+            <Card className="p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-base">Fil Social du Campus — ISET Béja (Démo Lecture Seule)</h2>
+                <Badge variant="primary">V9 Super-App</Badge>
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-semibold">
+                    <span>Administration ISET Béja</span>
+                    <Badge variant="primary">Épinglé • Officiel</Badge>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    Centralisation officielle des parcours DSI/RSI, attestations et offres PFE depuis isetb.rnu.tn.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-3.5 space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-semibold">
+                    <span>Amira Ben Ali</span>
+                    <Badge>Vitrine Projet</Badge>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    Prototype PFE StockPulse TN généré depuis mon cours Architectures Web &amp; BDD.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {role === "student" && view === "agent" && (
             <Card className="p-5 space-y-4">
               <div className="flex items-center justify-between">

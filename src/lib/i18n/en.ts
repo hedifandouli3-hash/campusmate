@@ -26,7 +26,7 @@ export const en = {
     super_admin: "Super Admin",
   },
   landing: {
-    heroTitle: "One intelligent platform for the entire university.",
+    heroTitle: "Your university. Your community. Everything connected.",
     heroSubtitle:
       "CampusMate is licensed by educational institutions and provided free of charge to their students and professors — starting with ISET Béja.",
     ctaPrimary: "Access your university",

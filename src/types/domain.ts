@@ -1336,3 +1336,70 @@ export interface SponsorshipCampaign {
   isSimulated: boolean;
   createdAt: string;
 }
+
+
+// ============================================================================
+// CampusMate V9 — AI-Powered University Super-App (Social Feed, Clubs & Connect)
+// ============================================================================
+
+export type SocialPostType =
+  | "post"
+  | "question"
+  | "announcement"
+  | "project_showcase"
+  | "club_update";
+
+export interface SocialComment {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: UserRole;
+  content: string;
+  createdAt: string;
+}
+
+export interface SocialPost {
+  id: string;
+  institutionId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: UserRole;
+  postType: SocialPostType;
+  title?: string;
+  content: string;
+  sourceUrl?: string;
+  sourceAttribution?: string;
+  relatedHref?: string;
+  isPinned: boolean;
+  likesUserIds: string[];
+  bookmarkedUserIds: string[];
+  comments: SocialComment[];
+  moderationStatus: "approved" | "pending" | "removed";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClubProfile {
+  id: string;
+  institutionId: string;
+  name: string;
+  category: string;
+  description: string;
+  contactEmail: string;
+  isVerified: boolean;
+  memberIds: string[];
+  upcomingActivity: string;
+  createdAt: string;
+}
+
+export interface ExternalSourceConnection {
+  id: string;
+  institutionId: string;
+  name: string;
+  sourceType: "official_website" | "facebook_page" | "public_feed" | "club_page";
+  sourceUrl: string;
+  connectionStatus: "active" | "manual_import_only" | "pending_authorization";
+  lastSyncedAt?: string;
+  lastSummary: string;
+}

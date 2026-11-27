@@ -283,15 +283,34 @@ test.describe("CampusMate V2 End-to-End Journeys & Security Verification", () =>
     // 6. V8 Student Housing (free for students)
     await page.goto("/student/housing");
     await expect(page.getByRole("heading", { name: /CampusMate Housing/i })).toBeVisible();
+
+    // 7. V9 Social Home, My University, Clubs & Services Hub
+    await page.goto("/student/home");
+    await expect(page.getByRole("heading", { name: /Fil du Campus/i })).toBeVisible();
+    await page.getByPlaceholder(/Quoi de neuf sur le campus/i).fill("Test E2E V9 : révision Web & BDD ce soir !");
+    await page.getByRole("button", { name: /Publier/i }).click();
+    await expect(page.getByText(/Test E2E V9 : révision Web & BDD ce soir !/i)).toBeVisible();
+
+    await page.goto("/student/university");
+    await expect(page.getByText(/Sources Centralisées/i)).toBeVisible();
+
+    await page.goto("/student/clubs");
+    await expect(page.getByText(/Club Informatique & IA ISET Béja/i)).toBeVisible();
+
+    await page.goto("/student/services");
+    await expect(page.getByRole("heading", { name: /Hub des Services Universitaires/i })).toBeVisible();
   });
 
-  test("CampusMate V8 Public Pricing Calculator, Universities, Companies, Housing & Partners", async ({ page }) => {
+  test("CampusMate V8 & V9 Public Pricing Calculator, Universities, Companies, Housing & Partners", async ({ page }) => {
     await page.goto("/pricing");
     await expect(page.getByRole("heading", { name: /Licences Institutionnelles Annuelles/i })).toBeVisible();
     await expect(page.getByText(/17[\s\u202f]500 TND \/ an/i)).toBeVisible();
 
     await page.goto("/universities");
     await expect(page.getByRole("heading", { name: /Équipez votre établissement/i })).toBeVisible();
+
+    await page.goto("/universities/iset-beja");
+    await expect(page.getByRole("heading", { name: /ISET Béja/i })).toBeVisible();
 
     await page.goto("/companies");
     await expect(page.getByRole("heading", { name: /Recrutez des stagiaires/i })).toBeVisible();

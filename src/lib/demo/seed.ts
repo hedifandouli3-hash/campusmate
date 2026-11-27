@@ -11,6 +11,7 @@ import type {
   CampusRoom,
   ChatGroup,
   ChatMessage,
+  ClubProfile,
   CompanySubscription,
   ContentReport,
   Course,
@@ -21,6 +22,7 @@ import type {
   DocumentRequest,
   EducationalPartner,
   ExamItem,
+  ExternalSourceConnection,
   FeedbackReport,
   Flashcard,
   HousingListing,
@@ -34,6 +36,7 @@ import type {
   InternshipOffer,
   KnowledgeDocument,
   LicenseSeatAllocation,
+  SocialPost,
   SponsorshipCampaign,
   LaunchpadBusinessCanvas,
   LaunchpadFreelanceIdea,
@@ -139,6 +142,11 @@ export interface CampusMateStoreState {
   housingListings?: HousingListing[];
   educationalPartners?: EducationalPartner[];
   sponsorshipCampaigns?: SponsorshipCampaign[];
+  socialPosts?: SocialPost[];
+  clubProfiles?: ClubProfile[];
+  externalSources?: ExternalSourceConnection[];
+  userHiddenPostIds?: Record<string, string[]>;
+  userMutedAuthors?: Record<string, string[]>;
   feedbackReports: FeedbackReport[];
   events: CampusEvent[];
   organizations: Organization[];
@@ -2195,5 +2203,118 @@ Page 3 : L'extension pgvector permet d'indexer des vecteurs d'embeddings (768 di
         createdAt: now,
       },
     ],
+    socialPosts: [
+      {
+        id: "spost-1",
+        institutionId: DEMO_IDS.instBeja,
+        authorId: DEMO_IDS.adminBeja,
+        authorName: "Administration ISET Béja",
+        authorRole: "university_admin",
+        postType: "announcement",
+        title: "Centralisation officielle ISET Béja — Licences, PFE & Scolarité",
+        content:
+          "Retrouvez désormais les parcours DSI/RSI, les procédures d'attestation et les offres de stage PFE directement dans CampusMate University Connect, synchronisés depuis isetb.rnu.tn.",
+        sourceUrl: "https://www.isetb.rnu.tn/",
+        sourceAttribution: "Source officielle : isetb.rnu.tn",
+        relatedHref: "/student/university",
+        isPinned: true,
+        likesUserIds: [DEMO_IDS.studentAmira],
+        bookmarkedUserIds: [],
+        comments: [
+          {
+            id: "scom-1",
+            postId: "spost-1",
+            authorId: DEMO_IDS.studentAmira,
+            authorName: "Amira Ben Ali",
+            authorRole: "student",
+            content: "Super pratique d'avoir les infos officielles et nos cours au même endroit !",
+            createdAt: now,
+          },
+        ],
+        moderationStatus: "approved",
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: "spost-2",
+        institutionId: DEMO_IDS.instBeja,
+        authorId: DEMO_IDS.studentAmira,
+        authorName: "Amira Ben Ali",
+        authorRole: "student",
+        postType: "project_showcase",
+        title: "Prototype PFE — StockPulse TN (Next.js & PostgreSQL)",
+        content:
+          "J'ai transformé le cours Architectures Web & BDD en un tableau MVP et une landing page sandboxée dans le Creation Studio. Des étudiants en GE intéressés par la partie capteurs ?",
+        relatedHref: "/student/launchpad/startup-builder",
+        isPinned: false,
+        likesUserIds: [DEMO_IDS.teacherKarim],
+        bookmarkedUserIds: [],
+        comments: [],
+        moderationStatus: "approved",
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+    clubProfiles: [
+      {
+        id: "club-1",
+        institutionId: DEMO_IDS.instBeja,
+        name: "Club Informatique & IA ISET Béja",
+        category: "Technologie & IA",
+        description: "Ateliers hebdomadaires Next.js, bases de données, cybersécurité et préparation aux hackathons nationaux.",
+        contactEmail: "club.info@isetb.rnu.tn",
+        isVerified: true,
+        memberIds: [DEMO_IDS.studentAmira],
+        upcomingActivity: "Atelier RAG & Agents IA — Mercredi 14h00 (Salle B2)",
+        createdAt: now,
+      },
+      {
+        id: "club-2",
+        institutionId: DEMO_IDS.instBeja,
+        name: "Club Robotique & Systèmes Embarqués",
+        category: "Génie Électrique & IoT",
+        description: "Conception de systèmes embarqués, capteurs agricoles intelligents et compétitions robotiques.",
+        contactEmail: "club.robotique@isetb.rnu.tn",
+        isVerified: true,
+        memberIds: [],
+        upcomingActivity: "Session prototypage ESP32 — Vendredi 15h00",
+        createdAt: now,
+      },
+      {
+        id: "club-3",
+        institutionId: DEMO_IDS.instBeja,
+        name: "Enactus ISET Béja",
+        category: "Entrepreneuriat Social",
+        description: "Projets à impact social et économique dans la région de Béja, Business Model Canvas et pitchs.",
+        contactEmail: "enactus@isetb.rnu.tn",
+        isVerified: true,
+        memberIds: [],
+        upcomingActivity: "Bootcamp Idéation & Pitch — Samedi 10h00",
+        createdAt: now,
+      },
+    ],
+    externalSources: [
+      {
+        id: "ext-isetb-web",
+        institutionId: DEMO_IDS.instBeja,
+        name: "Site Officiel ISET Béja",
+        sourceType: "official_website",
+        sourceUrl: "https://www.isetb.rnu.tn/",
+        connectionStatus: "active",
+        lastSyncedAt: now,
+        lastSummary: "Crawler contrôlé actif (licences, départements, stages & PFE, contacts).",
+      },
+      {
+        id: "ext-isetb-fb",
+        institutionId: DEMO_IDS.instBeja,
+        name: "Page Facebook Officielle ISET Béja (Import manuel / flux autorisé)",
+        sourceType: "facebook_page",
+        sourceUrl: "https://www.facebook.com/",
+        connectionStatus: "manual_import_only",
+        lastSummary: "Connexion Graph API non configurée : import manuel avec attribution source par l'administration.",
+      },
+    ],
+    userHiddenPostIds: {},
+    userMutedAuthors: {},
   };
 }

@@ -74,7 +74,9 @@ function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGr
       {
         section: t.sidebar.main,
         items: [
+          { label: "Fil Campus", href: "/student/home", icon: <Home className="w-4 h-4" /> },
           { label: t.sidebar.overview, href: "/student/dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+          { label: "Mon Université", href: "/student/university", icon: <Building2 className="w-4 h-4" /> },
           { label: t.sidebar.agent, href: "/student/agent", icon: <Sparkles className="w-4 h-4" /> },
           { label: t.sidebar.studio, href: "/student/studio", icon: <Globe className="w-4 h-4" /> },
           { label: t.sidebar.projects, href: "/student/projects", icon: <FolderKanban className="w-4 h-4" /> },
@@ -105,6 +107,7 @@ function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGr
         section: t.sidebar.services,
         items: [
           { label: t.sidebar.documents, href: "/student/documents", icon: <FileText className="w-4 h-4" /> },
+          { label: "Hub Services", href: "/student/services", icon: <Compass className="w-4 h-4" /> },
           { label: t.sidebar.queue, href: "/student/queue", icon: <Ticket className="w-4 h-4" /> },
           { label: t.sidebar.studyRooms, href: "/student/study-rooms", icon: <DoorOpen className="w-4 h-4" /> },
           { label: t.sidebar.studentVoice, href: "/student/feedback", icon: <MessageCircleWarning className="w-4 h-4" /> },
@@ -114,6 +117,7 @@ function getNavForRole(role: UserRole, t: ReturnType<typeof useApp>["t"]): NavGr
         section: t.sidebar.community,
         items: [
           { label: t.sidebar.chats, href: "/student/chats", icon: <MessageSquare className="w-4 h-4" /> },
+          { label: "Clubs & Assoc.", href: "/student/clubs", icon: <Users className="w-4 h-4" /> },
           { label: t.sidebar.events, href: "/student/events", icon: <Calendar className="w-4 h-4" /> },
           { label: t.sidebar.marketplace, href: "/student/marketplace", icon: <ShoppingBag className="w-4 h-4" /> },
           { label: "Logement Étudiant", href: "/student/housing", icon: <Home className="w-4 h-4" /> },
@@ -579,10 +583,64 @@ export function DashboardShell({
           </div>
         </header>
 
-        <main id="main-content" className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-4">
+        <main id="main-content" className="flex-1 p-4 sm:p-6 pb-24 md:pb-6 max-w-7xl w-full mx-auto space-y-4">
           <Breadcrumbs items={breadcrumbs} />
           {children}
         </main>
+
+        {/* Mobile Bottom Navigation (5 primary destinations for Students) */}
+        {user.role === "student" && (
+          <nav
+            aria-label="Navigation mobile"
+            className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 dark:border-slate-800 bg-[var(--bg-surface)]/95 backdrop-blur px-2 py-1.5 flex items-center justify-around"
+          >
+            <Link
+              href="/student/home"
+              className={cn(
+                "flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium",
+                pathname === "/student/home" ? "text-blue-600" : "text-slate-500 dark:text-slate-400"
+              )}
+            >
+              <Home className="w-4 h-4" />
+              <span>Accueil</span>
+            </Link>
+            <Link
+              href="/student/chats"
+              className={cn(
+                "flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium",
+                pathname.startsWith("/student/chats") ? "text-blue-600" : "text-slate-500 dark:text-slate-400"
+              )}
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Messages</span>
+            </Link>
+            <Link
+              href="/student/agent"
+              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-full bg-blue-600 text-white text-[10px] font-semibold shadow-sm"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Agent</span>
+            </Link>
+            <Link
+              href="/student/marketplace"
+              className={cn(
+                "flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium",
+                pathname === "/student/marketplace" ? "text-blue-600" : "text-slate-500 dark:text-slate-400"
+              )}
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Market</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="flex flex-col items-center gap-0.5 px-2 py-1 text-[10px] font-medium text-slate-500 dark:text-slate-400 cursor-pointer"
+            >
+              <Menu className="w-4 h-4" />
+              <span>Plus</span>
+            </button>
+          </nav>
+        )}
       </div>
     </div>
   );

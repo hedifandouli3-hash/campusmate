@@ -191,6 +191,11 @@ export default function StudentDashboardPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
+          <Link href="/student/home">
+            <Button size="sm" variant="outline">
+              Fil Social Campus
+            </Button>
+          </Link>
           <Link href="/student/agent">
             <Button size="sm">
               <Sparkles className="w-3.5 h-3.5 me-1.5" /> Ouvrir Agent

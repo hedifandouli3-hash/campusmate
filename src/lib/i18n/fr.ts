@@ -24,7 +24,7 @@ export const fr = {
     super_admin: "Super Admin",
   },
   landing: {
-    heroTitle: "Une seule plateforme intelligente pour toute l'université.",
+    heroTitle: "Votre université. Votre communauté. Tout est connecté.",
     heroSubtitle:
       "CampusMate est financé par les établissements d'enseignement supérieur et offert gratuitement à leurs étudiants et enseignants — conçu pour l'ISET Béja.",
     ctaPrimary: "Accéder à votre université",
